@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "ActionsBoard-Solo",
+  "version": "1.0.0",
+  "description": "GitHub Actions の実行状態と Pages のデプロイを追跡するコンテキスト指向型ダッシュボード。",
+  "permissions": ["storage", "alarms", "notifications", "idle"],
+  "host_permissions": ["https://api.github.com/*"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "offline_enabled": true
+}

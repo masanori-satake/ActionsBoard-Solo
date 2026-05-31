@@ -5,11 +5,12 @@
 // --- Constants & State ---
 const DEFAULT_API_URL = 'https://api.github.com';
 const ALARM_NAME = 'poll_actions';
-const POLL_INTERVAL_ACTIVE = 1; // 1 minute (Minimum stable interval)
+const POLL_INTERVAL_ACTIVE = 0.5; // 30 seconds
 const POLL_INTERVAL_BG = 5; // 5 minutes
 const HISTORY_COUNT = 10;
 
 let activeConnections = 0;
+let activeIntervalId = null;
 
 // --- Lifecycle ---
 
@@ -20,12 +21,23 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 // Update polling interval based on popup connection
 chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== 'popup') return;
   activeConnections++;
-  setupAlarm(POLL_INTERVAL_ACTIVE);
+
+  if (activeConnections === 1) {
+    poll();
+    // Use setInterval for accurate 30s polling when popup is open (MV3 alarm is min 1min)
+    activeIntervalId = setInterval(poll, POLL_INTERVAL_ACTIVE * 60 * 1000);
+    chrome.alarms.clear(ALARM_NAME);
+  }
 
   port.onDisconnect.addListener(() => {
     activeConnections--;
     if (activeConnections === 0) {
+      if (activeIntervalId) {
+        clearInterval(activeIntervalId);
+        activeIntervalId = null;
+      }
       setupAlarm(POLL_INTERVAL_BG);
     }
   });

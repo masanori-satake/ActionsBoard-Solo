@@ -218,7 +218,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { Authorization: `token ${settings.pat}` },
       });
       if (res.ok) return (await res.json()).login;
-    } catch (e) {}
+    } catch (e) {
+      // Ignore authentication errors during initialization
+    }
     return null;
   }
 

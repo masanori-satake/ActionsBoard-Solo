@@ -323,8 +323,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.message || 'ワークフローの取得に失敗しました。');
+          let errMsg = 'ワークフローの取得に失敗しました。';
+          try {
+            const err = await response.json();
+            errMsg = err.message || errMsg;
+          } catch (e) {
+            errMsg = `${response.status} ${response.statusText}`;
+          }
+          throw new Error(errMsg);
         }
 
         const data = await response.json();

@@ -2,6 +2,7 @@ import json
 import sys
 import os
 
+
 def check_version_consistency():
     try:
         # 1. projects/app/manifest.json
@@ -49,6 +50,7 @@ def check_version_consistency():
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return False
+
 
 if __name__ == "__main__":
     if not check_version_consistency():

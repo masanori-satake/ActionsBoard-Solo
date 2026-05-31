@@ -20,6 +20,11 @@ chrome.runtime.onInstalled.addListener(async () => {
   setupAlarm(POLL_INTERVAL_BG);
 });
 
+// Enable opening the side panel when the extension icon is clicked
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error(error));
+
 // Update polling interval based on popup connection
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'popup') return;

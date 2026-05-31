@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     testApiBtn: document.getElementById('test-api'),
     workspaceList: document.getElementById('workspace-list'),
     addWorkspaceBtn: document.getElementById('add-workspace'),
+    addWorkspaceRepoBtn: document.getElementById('add-workspace-repo'),
     toast: document.getElementById('toast'),
     modal: document.getElementById('modal'),
     modalTitle: document.getElementById('modal-title'),
@@ -288,7 +289,80 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   elements.addWorkspaceBtn.onclick = () => openWorkspaceModal();
+  elements.addWorkspaceRepoBtn.onclick = () => openRepoWorkspaceModal();
   elements.modalCancel.onclick = () => elements.modal.close();
+
+  function openRepoWorkspaceModal() {
+    elements.modalTitle.textContent = 'リポジトリから新規ワークスペースを追加';
+    elements.modalContent.innerHTML = `
+      <div class="field">
+        <label>リポジトリ (Owner/Repo)</label>
+        <input type="text" id="modal-repo-path" placeholder="例: facebook/react" />
+        <div class="hint">指定されたリポジトリのワークフローを自動的に取得して登録します。</div>
+      </div>
+    `;
+
+    elements.modalSave.onclick = async () => {
+      const repoPath = document.getElementById('modal-repo-path').value.trim();
+      if (!repoPath || !repoPath.includes('/')) {
+        showToast('リポジトリを Owner/Repo 形式で入力してください。');
+        return;
+      }
+
+      const [owner, repo] = repoPath.split('/');
+      elements.modalSave.disabled = true;
+      elements.modalSave.textContent = '取得中...';
+
+      try {
+        const baseUrl = config.settings.baseUrl || 'https://api.github.com';
+        const response = await fetch(`${baseUrl}/repos/${owner}/${repo}/actions/workflows`, {
+          headers: {
+            Authorization: `token ${config.settings.pat}`,
+            Accept: 'application/vnd.github.v3+json',
+          },
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.message || 'ワークフローの取得に失敗しました。');
+        }
+
+        const data = await response.json();
+        if (!data.workflows || data.workflows.length === 0) {
+          throw new Error('ワークフローが見つかりませんでした。');
+        }
+
+        const items = data.workflows.map((wf) => {
+          // path is usually something like ".github/workflows/main.yml"
+          const workflowFile = wf.path.split('/').pop();
+          return {
+            owner,
+            repo,
+            workflowFile,
+            alias: wf.name,
+            isFavorite: false,
+          };
+        });
+
+        config.workspaces.push({
+          id: Date.now().toString(),
+          name: repo,
+          items,
+        });
+
+        await saveWorkspaces();
+        elements.modal.close();
+        showToast(`ワークスペース「${repo}」を追加しました。`);
+      } catch (e) {
+        showToast(`エラー: ${e.message}`);
+      } finally {
+        elements.modalSave.disabled = false;
+        elements.modalSave.textContent = '保存';
+      }
+    };
+
+    elements.modal.showModal();
+  }
 
   // --- Config Management ---
 
@@ -300,7 +374,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   document.getElementById('export-config').onclick = () => {
-    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    // Exclude PAT from export for security
+    const exportConfig = JSON.parse(JSON.stringify(config));
+    if (exportConfig.settings) {
+      delete exportConfig.settings.pat;
+    }
+
+    const blob = new Blob([JSON.stringify(exportConfig, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -325,7 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           } else {
             alert('無効な設定ファイルです。');
           }
-        } catch (err) {
+        } catch (e) {
           alert('ファイルの読み込みに失敗しました。');
         }
       };

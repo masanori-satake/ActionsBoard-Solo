@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     main: document.getElementById('main-content'),
     tabs: document.querySelectorAll('.tab'),
     refreshBtn: document.getElementById('refresh-btn'),
-    settingsBtn: document.getElementById('settings-btn')
+    settingsBtn: document.getElementById('settings-btn'),
   };
 
   let currentMode = 'developer';
@@ -22,17 +22,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     cache = data.cache || { runs: {}, pages: {}, history: {} };
     currentMode = data.activeMode || 'developer';
 
-    elements.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.mode === currentMode));
+    elements.tabs.forEach((tab) =>
+      tab.classList.toggle('active', tab.dataset.mode === currentMode),
+    );
     if (config.settings?.pat) currentUser = await getCurrentUser(config.settings);
     render();
   }
 
   await init();
 
-  elements.tabs.forEach(tab => {
+  elements.tabs.forEach((tab) => {
     tab.onclick = async () => {
       currentMode = tab.dataset.mode;
-      elements.tabs.forEach(t => t.classList.toggle('active', t === tab));
+      elements.tabs.forEach((t) => t.classList.toggle('active', t === tab));
       await chrome.storage.local.set({ activeMode: currentMode });
       render();
     };
@@ -70,15 +72,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderDeveloperMode() {
     const allItems = getAllItems();
-    const myActivity = allItems.filter(item => cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`]?.actor === currentUser);
-    const favorites = allItems.filter(item => item.isFavorite);
+    const myActivity = allItems.filter(
+      (item) =>
+        cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`]?.actor === currentUser,
+    );
+    const favorites = allItems.filter((item) => item.isFavorite);
     if (favorites.length) renderSection('お気に入り / ピン留め', favorites);
     if (myActivity.length) renderSection('マイ・アクティビティ', myActivity);
-    else if (!favorites.length) elements.main.innerHTML += '<p class="empty-state">アクティビティが見つかりませんでした。</p>';
+    else if (!favorites.length)
+      elements.main.innerHTML +=
+        '<p class="empty-state">アクティビティが見つかりませんでした。</p>';
   }
 
   function renderTeamMode() {
-    config.workspaces.forEach(ws => ws.items?.length && renderSection(ws.name, ws.items));
+    config.workspaces.forEach((ws) => ws.items?.length && renderSection(ws.name, ws.items));
   }
 
   function renderOperationsMode() {
@@ -89,9 +96,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const section = document.createElement('div');
     section.className = 'workspace-section';
     section.innerHTML = `<div class="workspace-title">${escapeHtml(title)}</div>`;
-    items.forEach(item => {
+    items.forEach((item) => {
       const runKey = `${item.owner}/${item.repo}/${item.workflowFile}`;
-      section.appendChild(createActionCard(item, cache.runs[runKey], cache.pages[`${item.owner}/${item.repo}`], cache.history[runKey]));
+      section.appendChild(
+        createActionCard(
+          item,
+          cache.runs[runKey],
+          cache.pages[`${item.owner}/${item.repo}`],
+          cache.history[runKey],
+        ),
+      );
     });
     elements.main.appendChild(section);
   }
@@ -99,7 +113,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   function createActionCard(item, run, pages, history) {
     const card = document.createElement('div');
     card.className = 'card';
-    const statusClass = run ? (run.status === 'completed' ? (run.conclusion === 'success' ? 'status-success' : 'status-failure') : 'status-progress') : '';
+    const statusClass = run
+      ? run.status === 'completed'
+        ? run.conclusion === 'success'
+          ? 'status-success'
+          : 'status-failure'
+        : 'status-progress'
+      : '';
 
     card.innerHTML = `
       <div class="card-header">
@@ -107,14 +127,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="card-body">
           <div class="workflow-name">${escapeHtml(item.alias || item.workflowFile)}</div>
           <div class="repo-info">${escapeHtml(item.owner)}/${escapeHtml(item.repo)}</div>
-          ${run ? `<div class="run-info"><strong>${escapeHtml(run.display_title || '')}</strong><br/><span style="opacity: 0.8">${run.actor} | ${relativeTime(run.updated_at)}</span></div>` : '<div class="run-info">取得中...</div>'}
+          ${
+            run
+              ? `<div class="run-info"><strong>${escapeHtml(
+                  run.display_title || '',
+                )}</strong><br/><span style="opacity: 0.8">${run.actor} | ${relativeTime(
+                  run.updated_at,
+                )}</span></div>`
+              : '<div class="run-info">取得中...</div>'
+          }
         </div>
         ${run?.conclusion === 'failure' ? '<button class="icon-btn log-toggle">📜</button>' : ''}
       </div>
       <div class="log-area"></div>
       <div class="card-footer">
-        <div class="history-dots">${(history || []).reverse().map(h => `<div class="dot ${h.status === 'completed' ? (h.conclusion === 'success' ? 'status-success' : 'status-failure') : 'status-progress'}"></div>`).join('')}</div>
-        ${pages && run?.conclusion === 'success' ? `<div class="pages-badge"><span>🌐</span><span>${pages.status === 'deliverable' ? 'Deployed' : 'Processing...'}</span></div>` : ''}
+        <div class="history-dots">${(history || [])
+          .reverse()
+          .map(
+            (h) =>
+              `<div class="dot ${
+                h.status === 'completed'
+                  ? h.conclusion === 'success'
+                    ? 'status-success'
+                    : 'status-failure'
+                  : 'status-progress'
+              }"></div>`,
+          )
+          .join('')}</div>
+        ${
+          pages && run?.conclusion === 'success'
+            ? `<div class="pages-badge"><span>🌐</span><span>${
+                pages.status === 'deliverable' ? 'Deployed' : 'Processing...'
+              }</span></div>`
+            : ''
+        }
       </div>
     `;
 
@@ -136,31 +182,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     logArea.textContent = 'ログを取得中...';
     logArea.style.display = 'block';
     try {
-      const res = await fetch(`${run.jobs_url}`, { headers: { 'Authorization': `token ${config.settings.pat}` } });
+      const res = await fetch(`${run.jobs_url}`, {
+        headers: { Authorization: `token ${config.settings.pat}` },
+      });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      const failedJob = data.jobs.find(j => j.conclusion === 'failure');
+      const failedJob = data.jobs.find((j) => j.conclusion === 'failure');
       if (failedJob) {
-        const failedStep = failedJob.steps.find(s => s.conclusion === 'failure');
-        logArea.textContent = `Failed at: ${failedStep?.name || failedJob.name}\n${failedJob.html_url}`;
+        const failedStep = failedJob.steps.find((s) => s.conclusion === 'failure');
+        logArea.textContent = `Failed at: ${failedStep?.name || failedJob.name}\n${
+          failedJob.html_url
+        }`;
       } else {
         logArea.textContent = '失敗ジョブの詳細が見つかりませんでした。';
       }
-    } catch (e) { logArea.textContent = 'ログの取得に失敗しました。'; }
+    } catch (e) {
+      logArea.textContent = 'ログの取得に失敗しました。';
+    }
   }
 
   function getAllItems() {
     const items = [];
-    config.workspaces?.forEach(ws => ws.items?.forEach(item => {
-      const key = `${item.owner}/${item.repo}/${item.workflowFile}`;
-      if (!items.find(i => `${i.owner}/${i.repo}/${i.workflowFile}` === key)) items.push(item);
-    }));
+    config.workspaces?.forEach((ws) =>
+      ws.items?.forEach((item) => {
+        const key = `${item.owner}/${item.repo}/${item.workflowFile}`;
+        if (!items.find((i) => `${i.owner}/${i.repo}/${i.workflowFile}` === key)) items.push(item);
+      }),
+    );
     return items;
   }
 
   async function getCurrentUser(settings) {
     try {
-      const res = await fetch(`${settings.baseUrl}/user`, { headers: { 'Authorization': `token ${settings.pat}` } });
+      const res = await fetch(`${settings.baseUrl}/user`, {
+        headers: { Authorization: `token ${settings.pat}` },
+      });
       if (res.ok) return (await res.json()).login;
     } catch (e) {}
     return null;
@@ -176,6 +232,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function escapeHtml(str) {
-    return str ? str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])) : '';
+    return str
+      ? str.replace(
+          /[&<>"']/g,
+          (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m],
+        )
+      : '';
   }
 });

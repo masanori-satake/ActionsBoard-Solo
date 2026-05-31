@@ -23,12 +23,11 @@ repos:
         additional_dependencies:
           - eslint@8.56.0
 
-  - repo: https://github.com/pre-commit/mirrors-stylelint
+  - repo: https://github.com/thibaudcolas/pre-commit-stylelint
     rev: v16.1.0
     hooks:
       - id: stylelint
         additional_dependencies:
-          - stylelint@16.1.0
           - stylelint-config-standard@36.0.0
 
   - repo: https://github.com/pre-commit/mirrors-prettier

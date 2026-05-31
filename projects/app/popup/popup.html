@@ -7,21 +7,218 @@
     <style>
       body {
         width: 400px;
+        min-height: 500px;
+        max-height: 600px;
         margin: 0;
-        padding: var(--md-sys-spacing-2);
+        display: flex;
+        flex-direction: column;
         background-color: var(--md-sys-color-background);
         color: var(--md-sys-color-on-background);
         font-family: var(--font-family);
+        overflow-y: auto;
+      }
+
+      /* Header & Tabs */
+      header {
+        position: sticky;
+        top: 0;
+        background-color: var(--md-sys-color-surface-container);
+        padding: var(--md-sys-spacing-1) var(--md-sys-spacing-2);
+        z-index: 100;
+        box-shadow: var(--md-sys-elevation-1);
+      }
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--md-sys-spacing-1);
+      }
+      .logo {
+        font-weight: bold;
+        color: var(--md-sys-color-primary);
+        font-size: var(--md-sys-typescale-title-medium-size);
+      }
+      .tabs {
+        display: flex;
+        justify-content: space-around;
+      }
+      .tab {
+        padding: var(--md-sys-spacing-1) var(--md-sys-spacing-2);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        font-size: var(--md-sys-typescale-label-large-size);
+        color: var(--md-sys-color-on-surface-variant);
+        transition:
+          color 0.2s,
+          border-color 0.2s;
+      }
+      .tab.active {
+        color: var(--md-sys-color-primary);
+        border-bottom-color: var(--md-sys-color-primary);
+      }
+
+      /* Content Area */
+      main {
+        padding: var(--md-sys-spacing-2);
+      }
+      .workspace-section {
+        margin-bottom: var(--md-sys-spacing-3);
+      }
+      .workspace-title {
+        font-size: var(--md-sys-typescale-title-small-size);
+        color: var(--md-sys-color-outline);
+        margin-bottom: var(--md-sys-spacing-1);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Action Card */
+      .card {
+        background-color: var(--md-sys-color-surface-container-low);
+        border-radius: var(--md-sys-shape-medium);
+        padding: var(--md-sys-spacing-2);
+        margin-bottom: var(--md-sys-spacing-2);
+        display: flex;
+        flex-direction: column;
+        gap: var(--md-sys-spacing-1);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        transition: background-color 0.2s;
+      }
+      .card:hover {
+        background-color: var(--md-sys-color-surface-container);
+      }
+      .card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--md-sys-spacing-1-5);
+      }
+      .status-icon {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-top: 6px;
+        flex-shrink: 0;
+      }
+      .status-success {
+        background-color: #388e3c;
+      }
+      .status-failure {
+        background-color: #d32f2f;
+      }
+      .status-progress {
+        background-color: #fbc02d;
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .card-body {
+        flex-grow: 1;
+      }
+      .workflow-name {
+        font-weight: 500;
+        font-size: var(--md-sys-typescale-title-medium-size);
+        margin-bottom: 2px;
+      }
+      .repo-info {
+        font-size: var(--md-sys-typescale-label-large-size);
+        color: var(--md-sys-color-on-surface-variant);
+      }
+      .run-info {
+        font-size: var(--md-sys-typescale-body-small-size);
+        margin-top: var(--md-sys-spacing-0-5);
+      }
+
+      .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--md-sys-spacing-1);
+        font-size: var(--md-sys-typescale-label-small-size);
+      }
+      .pages-badge {
+        background-color: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
+        padding: 2px 8px;
+        border-radius: var(--md-sys-shape-full);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* Dots */
+      .history-dots {
+        display: flex;
+        gap: 3px;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: var(--md-sys-spacing-6);
+        color: var(--md-sys-color-on-surface-variant);
+      }
+
+      button.icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--md-sys-color-on-surface-variant);
+        padding: 4px;
+        border-radius: 50%;
+      }
+      button.icon-btn:hover {
+        background-color: var(--md-sys-color-surface-variant);
+      }
+
+      /* Log area */
+      .log-area {
+        background-color: var(--md-sys-color-inverse-surface);
+        color: var(--md-sys-color-inverse-on-surface);
+        font-family: monospace;
+        font-size: 10px;
+        padding: var(--md-sys-spacing-1);
+        border-radius: var(--md-sys-shape-extra-small);
+        margin-top: var(--md-sys-spacing-1);
+        display: none;
+        white-space: pre-wrap;
       }
     </style>
   </head>
   <body>
     <header>
-      <h1 class="md-sys-typescale-title-large">ActionsBoard-Solo</h1>
+      <div class="header-top">
+        <div class="logo">ActionsBoard-Solo</div>
+        <div>
+          <button id="refresh-btn" class="icon-btn" title="更新">🔄</button>
+          <button id="settings-btn" class="icon-btn" title="設定">⚙️</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" data-mode="developer">開発者</div>
+        <div class="tab" data-mode="team">チームリード</div>
+        <div class="tab" data-mode="operations">運用保守</div>
+      </div>
     </header>
-    <main id="dashboard">
-      <!-- Dashboard content will be injected here -->
+
+    <main id="main-content">
+      <!-- Content will be rendered here -->
     </main>
+
     <script src="popup.js"></script>
   </body>
 </html>

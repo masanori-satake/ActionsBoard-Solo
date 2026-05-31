@@ -6,25 +6,222 @@
     <link rel="stylesheet" href="../lib/material3.css" />
     <style>
       body {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: var(--md-sys-spacing-4);
+        margin: 0;
         background-color: var(--md-sys-color-background);
         color: var(--md-sys-color-on-background);
         font-family: var(--font-family);
+        display: flex;
+        justify-content: center;
+      }
+      .container {
+        max-width: 800px;
+        width: 100%;
+        padding: var(--md-sys-spacing-4);
+      }
+      header {
+        margin-bottom: var(--md-sys-spacing-4);
+      }
+      section {
+        background-color: var(--md-sys-color-surface-container-low);
+        padding: var(--md-sys-spacing-3);
+        border-radius: var(--md-sys-shape-large);
+        margin-bottom: var(--md-sys-spacing-4);
+      }
+      h2 {
+        margin-top: 0;
+        margin-bottom: var(--md-sys-spacing-2);
+        color: var(--md-sys-color-primary);
+      }
+      .field {
+        margin-bottom: var(--md-sys-spacing-3);
+        display: flex;
+        flex-direction: column;
+      }
+      .field label {
+        margin-bottom: var(--md-sys-spacing-1);
+        font-weight: var(--md-sys-typescale-label-large-weight);
+        font-size: var(--md-sys-typescale-label-large-size);
+      }
+      input[type='text'],
+      input[type='password'],
+      textarea,
+      select {
+        padding: var(--md-sys-spacing-1-5) var(--md-sys-spacing-2);
+        border-radius: var(--md-sys-shape-extra-small);
+        border: 1px solid var(--md-sys-color-outline);
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        font-size: var(--md-sys-typescale-body-large-size);
+      }
+      input:focus {
+        outline: 2px solid var(--md-sys-color-primary);
+        border-color: transparent;
+      }
+      .button-row {
+        display: flex;
+        gap: var(--md-sys-spacing-2);
+        margin-top: var(--md-sys-spacing-2);
+      }
+      button {
+        padding: var(--md-sys-spacing-1-5) var(--md-sys-spacing-3);
+        border-radius: var(--md-sys-shape-full);
+        border: none;
+        font-weight: var(--md-sys-typescale-label-large-weight);
+        cursor: pointer;
+        transition:
+          background-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .btn-primary {
+        background-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+      }
+      .btn-primary:hover {
+        box-shadow: var(--md-sys-elevation-1);
+      }
+      .btn-secondary {
+        background-color: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
+      }
+      .btn-outline {
+        background-color: transparent;
+        border: 1px solid var(--md-sys-color-outline);
+        color: var(--md-sys-color-primary);
+      }
+      .btn-error {
+        color: var(--md-sys-color-error);
+      }
+
+      /* Workspace List Styles */
+      .workspace-card {
+        background-color: var(--md-sys-color-surface-container);
+        padding: var(--md-sys-spacing-2);
+        border-radius: var(--md-sys-shape-medium);
+        margin-bottom: var(--md-sys-spacing-2);
+      }
+      .workspace-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .item-list {
+        margin-top: var(--md-sys-spacing-2);
+        padding-left: var(--md-sys-spacing-4);
+      }
+      .item-row {
+        display: flex;
+        gap: var(--md-sys-spacing-1);
+        align-items: center;
+        margin-bottom: var(--md-sys-spacing-1);
+        font-size: var(--md-sys-typescale-body-large-size);
+      }
+      .badge-fav {
+        color: #fbc02d; /* Material Yellow */
+      }
+      .hint {
+        font-size: var(--md-sys-typescale-label-large-size);
+        color: var(--md-sys-color-on-surface-variant);
+        margin-top: var(--md-sys-spacing-0-5);
+      }
+
+      /* Toast Notification */
+      #toast {
+        position: fixed;
+        bottom: var(--md-sys-spacing-4);
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--md-sys-color-inverse-surface);
+        color: var(--md-sys-color-inverse-on-surface);
+        padding: var(--md-sys-spacing-1-5) var(--md-sys-spacing-3);
+        border-radius: var(--md-sys-shape-extra-small);
+        display: none;
+        z-index: 1000;
       }
     </style>
   </head>
   <body>
-    <header>
-      <h1 class="md-sys-typescale-headline-medium">ActionsBoard-Solo 設定</h1>
-    </header>
-    <main>
-      <section id="workspace-settings">
-        <h2 class="md-sys-typescale-title-large">ワークスペース設定</h2>
-        <!-- Settings form will be here -->
-      </section>
-    </main>
+    <div class="container">
+      <header>
+        <h1 class="md-sys-typescale-headline-large">ActionsBoard-Solo 設定</h1>
+        <p class="md-sys-typescale-body-large">GitHub Actions 監視のための設定を行います。</p>
+      </header>
+
+      <main>
+        <!-- API Settings -->
+        <section id="api-settings">
+          <h2 class="md-sys-typescale-title-large">GitHub 認証設定</h2>
+          <div class="field">
+            <label for="pat">個人アクセストークン (PAT)</label>
+            <input type="password" id="pat" placeholder="ghp_..." />
+            <div class="hint">`repo`, `workflow`, `notifications` 権限が必要です。</div>
+          </div>
+          <div class="field">
+            <label for="baseUrl">API ベース URL</label>
+            <input type="text" id="baseUrl" value="https://api.github.com" />
+            <div class="hint">GHE の場合は `https://{hostname}/api/v3` を入力してください。</div>
+          </div>
+          <div class="button-row">
+            <button id="save-api" class="btn-primary">認証情報を保存</button>
+            <button id="test-api" class="btn-outline">接続テスト</button>
+          </div>
+        </section>
+
+        <!-- Workspace Settings -->
+        <section id="workspace-settings">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: var(--md-sys-spacing-2);
+            "
+          >
+            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
+              仮想ワークスペース構成
+            </h2>
+            <button id="add-workspace" class="btn-secondary">新規ワークスペース追加</button>
+          </div>
+          <div id="workspace-list">
+            <!-- Workspaces will be rendered here -->
+          </div>
+        </section>
+
+        <!-- Advanced Settings (Optional) -->
+        <section id="other-settings">
+          <h2 class="md-sys-typescale-title-large">その他</h2>
+          <div class="button-row">
+            <button id="export-config" class="btn-outline">設定をエクスポート</button>
+            <button id="import-config" class="btn-outline">設定をインポート</button>
+            <button id="reset-config" class="btn-error">全設定を初期化</button>
+          </div>
+        </section>
+      </main>
+
+      <div id="toast"></div>
+    </div>
+
+    <!-- Modal for adding/editing workspace or item -->
+    <dialog
+      id="modal"
+      style="
+        border: none;
+        border-radius: var(--md-sys-shape-large);
+        padding: var(--md-sys-spacing-4);
+        background-color: var(--md-sys-color-surface-container-high);
+        box-shadow: var(--md-sys-elevation-3);
+      "
+    >
+      <h3 id="modal-title" class="md-sys-typescale-title-large"></h3>
+      <div id="modal-content"></div>
+      <div
+        class="button-row"
+        style="justify-content: flex-end; margin-top: var(--md-sys-spacing-4)"
+      >
+        <button id="modal-cancel" class="btn-outline">キャンセル</button>
+        <button id="modal-save" class="btn-primary">保存</button>
+      </div>
+    </dialog>
+
     <script src="options.js"></script>
   </body>
 </html>

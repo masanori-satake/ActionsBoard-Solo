@@ -2,9 +2,18 @@ import json
 import zipfile
 import os
 import sys
+import subprocess
 
 
 def build_extension():
+    # Generate icons before building the zip
+    print("Generating icons...")
+    try:
+        subprocess.run([sys.executable, "scripts/generate_png_icons.py"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error generating icons: {e}", file=sys.stderr)
+        return False
+
     try:
         with open("package.json", "r", encoding="utf-8") as f:
             package_data = json.load(f)

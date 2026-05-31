@@ -2,7 +2,6 @@ import json
 import sys
 import os
 
-
 def check_version_consistency():
     try:
         # 1. projects/app/manifest.json
@@ -40,6 +39,9 @@ def check_version_consistency():
         print("Checking version consistency:")
         for source, version in versions.items():
             print(f" - {source}: {version}")
+            if not version:
+                print(f"Error: Version is missing or empty in {source}", file=sys.stderr)
+                return False
 
         if len(set(versions.values())) > 1:
             print("\nError: Version mismatch detected!")
@@ -50,7 +52,6 @@ def check_version_consistency():
     except Exception as e:
         print(f"Error: {e}")
         return False
-
 
 if __name__ == "__main__":
     if not check_version_consistency():

@@ -1,10 +1,10 @@
-name: '監査: 透明性とセキュリティ (Audit: Transparency and Security)'
+name: "監査: 透明性とセキュリティ (Audit: Transparency and Security)"
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
     paths:
       - 'projects/**'
       - 'scripts/**'

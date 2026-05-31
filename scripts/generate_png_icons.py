@@ -1,11 +1,16 @@
 import os
 import sys
 
+
 def generate_icons(output_dir=None, bg_color=None, file_prefix="icon"):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(script_dir)
     svg_path = os.path.join(root_dir, "projects/app/assets/icon.svg")
-    output_dir = os.path.abspath(output_dir) if output_dir else os.path.join(root_dir, "projects/app/icons")
+    output_dir = (
+        os.path.abspath(output_dir)
+        if output_dir
+        else os.path.join(root_dir, "projects/app/icons")
+    )
 
     if not os.path.exists(svg_path):
         print(f"Error: {svg_path} not found.")
@@ -22,7 +27,9 @@ def generate_icons(output_dir=None, bg_color=None, file_prefix="icon"):
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        print("Error: playwright not found. Please install it with 'pip install playwright' and 'playwright install chromium'.")
+        print(
+            "Error: playwright not found. Please install it with 'pip install playwright' and 'playwright install chromium'."
+        )
         return False
 
     if not os.path.exists(output_dir):
@@ -31,7 +38,9 @@ def generate_icons(output_dir=None, bg_color=None, file_prefix="icon"):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": 512, "height": 512})
-        page.set_content(f'<!DOCTYPE html><html><head><style>html, body {{ margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }} svg {{ width: 100%; height: 100%; display: block; }}</style></head><body>{svg_content}</body></html>')
+        page.set_content(
+            f"<!DOCTYPE html><html><head><style>html, body {{ margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }} svg {{ width: 100%; height: 100%; display: block; }}</style></head><body>{svg_content}</body></html>"
+        )
 
         for size in [16, 32, 48, 128]:
             out = os.path.join(output_dir, f"{file_prefix}{size}.png")
@@ -42,6 +51,7 @@ def generate_icons(output_dir=None, bg_color=None, file_prefix="icon"):
             print(f"Generated {out}")
         browser.close()
     return True
+
 
 if __name__ == "__main__":
     output_dir = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] != "" else None

@@ -42,10 +42,7 @@
         font-weight: var(--md-sys-typescale-label-large-weight);
         font-size: var(--md-sys-typescale-label-large-size);
       }
-      input[type='text'],
-      input[type='password'],
-      textarea,
-      select {
+      input[type="text"], input[type="password"], textarea, select {
         padding: var(--md-sys-spacing-1-5) var(--md-sys-spacing-2);
         border-radius: var(--md-sys-shape-extra-small);
         border: 1px solid var(--md-sys-color-outline);
@@ -68,9 +65,7 @@
         border: none;
         font-weight: var(--md-sys-typescale-label-large-weight);
         cursor: pointer;
-        transition:
-          background-color 0.2s,
-          box-shadow 0.2s;
+        transition: background-color 0.2s, box-shadow 0.2s;
       }
       .btn-primary {
         background-color: var(--md-sys-color-primary);
@@ -168,17 +163,8 @@
 
         <!-- Workspace Settings -->
         <section id="workspace-settings">
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: var(--md-sys-spacing-2);
-            "
-          >
-            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
-              仮想ワークスペース構成
-            </h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--md-sys-spacing-2);">
+            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0;">仮想ワークスペース構成</h2>
             <button id="add-workspace" class="btn-secondary">新規ワークスペース追加</button>
           </div>
           <div id="workspace-list">
@@ -201,22 +187,10 @@
     </div>
 
     <!-- Modal for adding/editing workspace or item -->
-    <dialog
-      id="modal"
-      style="
-        border: none;
-        border-radius: var(--md-sys-shape-large);
-        padding: var(--md-sys-spacing-4);
-        background-color: var(--md-sys-color-surface-container-high);
-        box-shadow: var(--md-sys-elevation-3);
-      "
-    >
+    <dialog id="modal" style="border: none; border-radius: var(--md-sys-shape-large); padding: var(--md-sys-spacing-4); background-color: var(--md-sys-color-surface-container-high); box-shadow: var(--md-sys-elevation-3);">
       <h3 id="modal-title" class="md-sys-typescale-title-large"></h3>
       <div id="modal-content"></div>
-      <div
-        class="button-row"
-        style="justify-content: flex-end; margin-top: var(--md-sys-spacing-4)"
-      >
+      <div class="button-row" style="justify-content: flex-end; margin-top: var(--md-sys-spacing-4);">
         <button id="modal-cancel" class="btn-outline">キャンセル</button>
         <button id="modal-save" class="btn-primary">保存</button>
       </div>

@@ -48,9 +48,7 @@
         border-bottom: 2px solid transparent;
         font-size: var(--md-sys-typescale-label-large-size);
         color: var(--md-sys-color-on-surface-variant);
-        transition:
-          color 0.2s,
-          border-color 0.2s;
+        transition: color 0.2s, border-color 0.2s;
       }
       .tab.active {
         color: var(--md-sys-color-primary);
@@ -99,26 +97,13 @@
         margin-top: 6px;
         flex-shrink: 0;
       }
-      .status-success {
-        background-color: #388e3c;
-      }
-      .status-failure {
-        background-color: #d32f2f;
-      }
-      .status-progress {
-        background-color: #fbc02d;
-        animation: pulse 1.5s infinite;
-      }
+      .status-success { background-color: #388E3C; }
+      .status-failure { background-color: #D32F2F; }
+      .status-progress { background-color: #FBC02D; animation: pulse 1.5s infinite; }
       @keyframes pulse {
-        0% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.4;
-        }
-        100% {
-          opacity: 1;
-        }
+        0% { opacity: 1; }
+        50% { opacity: 0.4; }
+        100% { opacity: 1; }
       }
 
       .card-body {

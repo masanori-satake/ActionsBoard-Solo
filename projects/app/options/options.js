@@ -15,15 +15,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     modalTitle: document.getElementById('modal-title'),
     modalContent: document.getElementById('modal-content'),
     modalSave: document.getElementById('modal-save'),
-    modalCancel: document.getElementById('modal-cancel'),
+    modalCancel: document.getElementById('modal-cancel')
   };
 
   let config = {
     settings: {
       pat: '',
-      baseUrl: 'https://api.github.com',
+      baseUrl: 'https://api.github.com'
     },
-    workspaces: [],
+    workspaces: []
   };
 
   // --- Initialization ---
@@ -78,9 +78,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const response = await fetch(`${baseUrl}/user`, {
         headers: {
-          Authorization: `token ${pat}`,
-          Accept: 'application/vnd.github.v3+json',
-        },
+          'Authorization': `token ${pat}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
       });
 
       if (response.ok) {
@@ -104,8 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.workspaceList.innerHTML = '';
 
     if (config.workspaces.length === 0) {
-      elements.workspaceList.innerHTML =
-        '<p class="md-sys-typescale-body-large" style="text-align: center; opacity: 0.6; padding: var(--md-sys-spacing-4);">ワークスペースが登録されていません。</p>';
+      elements.workspaceList.innerHTML = '<p class="md-sys-typescale-body-large" style="text-align: center; opacity: 0.6; padding: var(--md-sys-spacing-4);">ワークスペースが登録されていません。</p>';
       return;
     }
 
@@ -152,19 +151,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function attachDynamicEvents() {
-    document.querySelectorAll('.edit-ws-btn').forEach((btn) => {
+    document.querySelectorAll('.edit-ws-btn').forEach(btn => {
       btn.onclick = () => openWorkspaceModal(parseInt(btn.dataset.wsIdx));
     });
-    document.querySelectorAll('.del-ws-btn').forEach((btn) => {
+    document.querySelectorAll('.del-ws-btn').forEach(btn => {
       btn.onclick = () => deleteWorkspace(parseInt(btn.dataset.wsIdx));
     });
-    document.querySelectorAll('.add-item-btn').forEach((btn) => {
+    document.querySelectorAll('.add-item-btn').forEach(btn => {
       btn.onclick = () => openItemModal(parseInt(btn.dataset.wsIdx));
     });
-    document.querySelectorAll('.edit-item-btn').forEach((btn) => {
+    document.querySelectorAll('.edit-item-btn').forEach(btn => {
       btn.onclick = () => openItemModal(parseInt(btn.dataset.wsIdx), parseInt(btn.dataset.itemIdx));
     });
-    document.querySelectorAll('.del-item-btn').forEach((btn) => {
+    document.querySelectorAll('.del-item-btn').forEach(btn => {
       btn.onclick = () => deleteItem(parseInt(btn.dataset.wsIdx), parseInt(btn.dataset.itemIdx));
     });
   }
@@ -179,9 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.modalContent.innerHTML = `
       <div class="field">
         <label>ワークスペース名</label>
-        <input type="text" id="modal-ws-name" value="${escapeHtml(
-          ws.name,
-        )}" placeholder="例: 認証サブシステム" />
+        <input type="text" id="modal-ws-name" value="${escapeHtml(ws.name)}" placeholder="例: 認証サブシステム" />
       </div>
     `;
 
@@ -205,16 +202,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openItemModal(wsIdx, itemIdx = -1) {
     const isEdit = itemIdx !== -1;
     elements.modalTitle.textContent = isEdit ? '監視項目の編集' : '監視項目の追加';
-    const item = isEdit
-      ? config.workspaces[wsIdx].items[itemIdx]
-      : { owner: '', repo: '', workflowFile: '', alias: '', isFavorite: false };
+    const item = isEdit ? config.workspaces[wsIdx].items[itemIdx] : { owner: '', repo: '', workflowFile: '', alias: '', isFavorite: false };
 
     elements.modalContent.innerHTML = `
       <div class="field">
         <label>リポジトリ所有者 (Owner)</label>
-        <input type="text" id="m-owner" value="${escapeHtml(
-          item.owner,
-        )}" placeholder="例: facebook" />
+        <input type="text" id="m-owner" value="${escapeHtml(item.owner)}" placeholder="例: facebook" />
       </div>
       <div class="field">
         <label>リポジトリ名 (Repo)</label>
@@ -222,20 +215,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
       <div class="field">
         <label>ワークフロー YAML ファイル名</label>
-        <input type="text" id="m-workflow" value="${escapeHtml(
-          item.workflowFile,
-        )}" placeholder="例: ci.yml" />
+        <input type="text" id="m-workflow" value="${escapeHtml(item.workflowFile)}" placeholder="例: ci.yml" />
       </div>
       <div class="field">
         <label>表示エイリアス (任意)</label>
-        <input type="text" id="m-alias" value="${escapeHtml(
-          item.alias,
-        )}" placeholder="例: 【本番】CIチェック" />
+        <input type="text" id="m-alias" value="${escapeHtml(item.alias)}" placeholder="例: 【本番】CIチェック" />
       </div>
       <div class="field" style="flex-direction: row; align-items: center; gap: 10px;">
-        <input type="checkbox" id="m-fav" ${
-          item.isFavorite ? 'checked' : ''
-        } style="width: 20px; height: 20px;" />
+        <input type="checkbox" id="m-fav" ${item.isFavorite ? 'checked' : ''} style="width: 20px; height: 20px;" />
         <label for="m-fav" style="margin-bottom: 0;">お気に入り (☆) に設定</label>
       </div>
     `;
@@ -246,7 +233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         repo: document.getElementById('m-repo').value.trim(),
         workflowFile: document.getElementById('m-workflow').value.trim(),
         alias: document.getElementById('m-alias').value.trim(),
-        isFavorite: document.getElementById('m-fav').checked,
+        isFavorite: document.getElementById('m-fav').checked
       };
 
       if (!newItem.owner || !newItem.repo || !newItem.workflowFile) {
@@ -337,16 +324,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(
-      /[&<>"']/g,
-      (m) =>
-        ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;',
-        })[m],
-    );
+    return str.replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
   }
 });

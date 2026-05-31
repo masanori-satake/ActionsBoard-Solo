@@ -3,7 +3,6 @@ import zipfile
 import os
 import sys
 
-
 def build_extension():
     try:
         with open("package.json", "r", encoding="utf-8") as f:
@@ -12,10 +11,7 @@ def build_extension():
             name = package_data.get("name")
 
             if not name or not version:
-                print(
-                    "Error: 'name' or 'version' is missing in package.json",
-                    file=sys.stderr,
-                )
+                print("Error: 'name' or 'version' is missing in package.json", file=sys.stderr)
                 return False
 
         release_dir = "releases"
@@ -43,7 +39,6 @@ def build_extension():
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return False
-
 
 if __name__ == "__main__":
     if not build_extension():

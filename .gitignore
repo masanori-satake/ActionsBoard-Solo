@@ -1,0 +1,18 @@
+# Dependency directories
+node_modules/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+
+# Temporary files
+reproduce_*.py
+verify_*.py
+
+# Build artifacts
+dist/
+build/

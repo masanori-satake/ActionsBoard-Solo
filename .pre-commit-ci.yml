@@ -1,0 +1,8 @@
+# pre-commit.ci configuration
+# See https://pre-commit.ci/ for more information
+ci:
+  autofix_commit_msg: 'chore(deps): [pre-commit.ci] auto fixes from pre-commit hooks'
+  autoupdate_commit_msg: 'chore(deps): [pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

@@ -11,6 +11,7 @@ const HISTORY_COUNT = 10;
 
 let activeConnections = 0;
 let activeIntervalId = null;
+let isPolling = false;
 
 // --- Lifecycle ---
 
@@ -67,64 +68,71 @@ chrome.alarms.onAlarm.addListener((alarm) => {
  * Main polling sequence
  */
 async function poll() {
-  const {
-    settings,
-    workspaces,
-    cache: storageCache,
-  } = await chrome.storage.local.get(['settings', 'workspaces', 'cache']);
+  if (isPolling) return;
+  isPolling = true;
 
-  if (!settings?.pat || !workspaces?.length) return;
+  try {
+    const {
+      settings,
+      workspaces,
+      cache: storageCache,
+    } = await chrome.storage.local.get(['settings', 'workspaces', 'cache']);
 
-  const currentCache = storageCache || { runs: {}, pages: {}, history: {} };
-  const results = {
-    runs: {},
-    pages: { ...currentCache.pages },
-    history: { ...currentCache.history },
-  };
+    if (!settings?.pat || !workspaces?.length) return;
 
-  // Deduplicate items to fetch
-  const itemsToFetch = new Map();
-  workspaces.forEach((ws) => {
-    ws.items.forEach((item) => {
-      const key = `${item.owner}/${item.repo}/${item.workflowFile}`;
-      if (!itemsToFetch.has(key)) itemsToFetch.set(key, item);
+    const currentCache = storageCache || { runs: {}, pages: {}, history: {} };
+    const results = {
+      runs: {},
+      pages: { ...currentCache.pages },
+      history: { ...currentCache.history },
+    };
+
+    // Deduplicate items to fetch
+    const itemsToFetch = new Map();
+    workspaces.forEach((ws) => {
+      ws.items?.forEach((item) => {
+        const key = `${item.owner}/${item.repo}/${item.workflowFile}`;
+        if (!itemsToFetch.has(key)) itemsToFetch.set(key, item);
+      });
     });
-  });
 
-  for (const [key, item] of itemsToFetch) {
-    try {
-      // Fetch multiple runs for history
-      const runs = await fetchWorkflowRuns(settings, item, HISTORY_COUNT);
-      if (runs && runs.length > 0) {
-        const latestRun = runs[0];
-        results.runs[key] = latestRun;
-        results.history[key] = runs.map((r) => ({
-          status: r.status,
-          conclusion: r.conclusion,
-          id: r.id,
-        }));
+    for (const [key, item] of itemsToFetch) {
+      try {
+        // Fetch multiple runs for history
+        const runs = await fetchWorkflowRuns(settings, item, HISTORY_COUNT);
+        if (runs && runs.length > 0) {
+          const latestRun = runs[0];
+          results.runs[key] = latestRun;
+          results.history[key] = runs.map((r) => ({
+            status: r.status,
+            conclusion: r.conclusion,
+            id: r.id,
+          }));
 
-        checkFailureNotification(key, latestRun, currentCache.runs[key]);
+          checkFailureNotification(key, latestRun, currentCache.runs[key]);
 
-        if (latestRun.conclusion === 'success') {
-          const pagesStatus = await fetchPagesStatus(settings, item.owner, item.repo);
-          if (pagesStatus) {
-            results.pages[`${item.owner}/${item.repo}`] = pagesStatus;
-            checkPagesNotification(
-              item,
-              pagesStatus,
-              currentCache.pages[`${item.owner}/${item.repo}`],
-            );
+          if (latestRun.conclusion === 'success') {
+            const pagesStatus = await fetchPagesStatus(settings, item.owner, item.repo);
+            if (pagesStatus) {
+              results.pages[`${item.owner}/${item.repo}`] = pagesStatus;
+              checkPagesNotification(
+                item,
+                pagesStatus,
+                currentCache.pages[`${item.owner}/${item.repo}`],
+              );
+            }
           }
         }
+      } catch (err) {
+        console.error(`[ActionsBoard-Solo] Error polling ${key}:`, err);
       }
-    } catch (err) {
-      console.error(`[ActionsBoard-Solo] Error polling ${key}:`, err);
     }
-  }
 
-  await chrome.storage.local.set({ cache: results });
-  updateBadge(results.runs);
+    await chrome.storage.local.set({ cache: results });
+    updateBadge(results.runs);
+  } finally {
+    isPolling = false;
+  }
 }
 
 // --- API Helpers ---
@@ -142,12 +150,14 @@ async function fetchWorkflowRuns(settings, item, count) {
 
   if (!response.ok) return null;
   const data = await response.json();
+  if (!data?.workflow_runs) return [];
+
   return data.workflow_runs.map((run) => ({
     id: run.id,
     status: run.status,
     conclusion: run.conclusion,
     event: run.event,
-    actor: run.actor.login,
+    actor: run.actor ? run.actor.login : 'system',
     html_url: run.html_url,
     updated_at: run.updated_at,
     display_title: run.display_title,
@@ -209,7 +219,7 @@ function checkPagesNotification(item, current, previous) {
 }
 
 function showNotification(title, message, url) {
-  const id = `notif_${Date.now()}`;
+  const id = 'notif|' + url + '|' + Date.now();
   chrome.notifications.create(id, {
     type: 'basic',
     iconUrl: 'icons/icon128.png',
@@ -217,13 +227,18 @@ function showNotification(title, message, url) {
     message,
     priority: 2,
   });
-  chrome.notifications.onClicked.addListener((clickedId) => {
-    if (clickedId === id) {
-      chrome.tabs.create({ url });
-      chrome.notifications.clear(clickedId);
-    }
-  });
 }
+
+chrome.notifications.onClicked.addListener((notificationId) => {
+  if (notificationId.startsWith('notif|')) {
+    const parts = notificationId.split('|');
+    const url = parts[1];
+    if (url) {
+      chrome.tabs.create({ url });
+    }
+    chrome.notifications.clear(notificationId);
+  }
+});
 
 function updateBadge(runs) {
   let failureCount = 0;

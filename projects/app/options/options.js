@@ -59,7 +59,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     config.settings.pat = elements.pat.value.trim();
     config.settings.baseUrl = elements.baseUrl.value.trim() || 'https://api.github.com';
 
-    await chrome.storage.local.set({ settings: config.settings });
+    // Reset currentUser cache when PAT is updated to ensure correct user identification
+    await chrome.storage.local.set({ settings: config.settings, currentUser: null });
     showToast('認証情報を保存しました。');
   });
 

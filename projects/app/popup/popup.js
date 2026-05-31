@@ -17,15 +17,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function init() {
     chrome.runtime.connect({ name: 'popup' });
-    const data = await chrome.storage.local.get(['settings', 'workspaces', 'cache', 'activeMode']);
+    const data = await chrome.storage.local.get([
+      'settings',
+      'workspaces',
+      'cache',
+      'activeMode',
+      'currentUser',
+    ]);
     config = data;
     cache = data.cache || { runs: {}, pages: {}, history: {} };
     currentMode = data.activeMode || 'developer';
+    currentUser = data.currentUser || null;
 
     elements.tabs.forEach((tab) =>
       tab.classList.toggle('active', tab.dataset.mode === currentMode),
     );
-    if (config.settings?.pat) currentUser = await getCurrentUser(config.settings);
+
+    if (config.settings?.pat && !currentUser) {
+      currentUser = await getCurrentUser(config.settings);
+      if (currentUser) {
+        await chrome.storage.local.set({ currentUser });
+      }
+    }
     render();
   }
 

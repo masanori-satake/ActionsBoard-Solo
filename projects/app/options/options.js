@@ -400,7 +400,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
           const imported = JSON.parse(re.target.result);
           if (imported.settings || imported.workspaces) {
-            await chrome.storage.local.set(imported);
+            // Retrieve existing settings to preserve the PAT
+            const existing = await chrome.storage.local.get(['settings']);
+            const mergedSettings = {
+              ...existing.settings,
+              ...imported.settings,
+            };
+
+            // If the imported data doesn't have a PAT, but the existing one does, keep it.
+            if (existing.settings?.pat && !imported.settings?.pat) {
+              mergedSettings.pat = existing.settings.pat;
+            }
+
+            await chrome.storage.local.set({
+              settings: mergedSettings,
+              workspaces: imported.workspaces || [],
+            });
             location.reload();
           } else {
             alert('無効な設定ファイルです。');

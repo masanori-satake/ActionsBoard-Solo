@@ -1,0 +1,56 @@
+name: "バージョン更新確認 (Check Version Bump)"
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'projects/app/**'
+
+permissions:
+  contents: read
+
+jobs:
+  version-bump-check:
+    name: バージョンが更新されているか確認 (Check if version is bumped)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check version bump
+        run: |
+          python3 -c "
+          import json
+          import subprocess
+          import sys
+          import os
+
+          def get_version(ref, path):
+              try:
+                  content = subprocess.check_output(['git', 'show', f'{ref}:{path}']).decode('utf-8')
+                  return json.loads(content).get('version')
+              except Exception:
+                  return None
+
+          manifest_path = 'projects/app/manifest.json'
+          base_ref = 'origin/' + os.environ.get('GITHUB_BASE_REF', 'main')
+
+          base_version = get_version(base_ref, manifest_path)
+
+          with open(manifest_path, 'r', encoding='utf-8') as f:
+              pr_version = json.load(f).get('version')
+
+          print(f'Base version: {base_version}')
+          print(f'PR version: {pr_version}')
+
+          if base_version and pr_version == base_version:
+              print(f'::error file={manifest_path}::Version must be bumped in {manifest_path} when changing files in projects/app/')
+              sys.exit(1)
+          "

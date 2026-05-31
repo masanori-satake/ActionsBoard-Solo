@@ -16,3 +16,4 @@ verify_*.py
 # Build artifacts
 dist/
 build/
+releases/

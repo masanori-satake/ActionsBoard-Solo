@@ -8,7 +8,7 @@ def check_version_consistency():
         # 1. projects/app/manifest.json
         manifest_path = "projects/app/manifest.json"
         if not os.path.exists(manifest_path):
-            print(f"Error: {manifest_path} not found")
+            print(f"Error: {manifest_path} not found", file=sys.stderr)
             return False
         with open(manifest_path, "r", encoding="utf-8") as f:
             manifest_version = json.load(f).get("version")
@@ -16,26 +16,26 @@ def check_version_consistency():
         # 2. package.json
         package_path = "package.json"
         if not os.path.exists(package_path):
-            print(f"Error: {package_path} not found")
+            print(f"Error: {package_path} not found", file=sys.stderr)
             return False
         with open(package_path, "r", encoding="utf-8") as f:
             package_json = json.load(f)
             package_version = package_json.get("version")
 
-        # 3. package-lock.json (if exists)
+        # 3. package-lock.json (Mandatory)
         lock_path = "package-lock.json"
-        lock_version = None
-        if os.path.exists(lock_path):
-            with open(lock_path, "r", encoding="utf-8") as f:
-                package_lock_json = json.load(f)
-                lock_version = package_lock_json.get("version")
+        if not os.path.exists(lock_path):
+            print(f"Error: {lock_path} not found", file=sys.stderr)
+            return False
+        with open(lock_path, "r", encoding="utf-8") as f:
+            package_lock_json = json.load(f)
+            lock_version = package_lock_json.get("version")
 
         versions = {
             "projects/app/manifest.json": manifest_version,
             "package.json": package_version,
+            "package-lock.json": lock_version,
         }
-        if lock_version:
-            versions["package-lock.json"] = lock_version
 
         print("Checking version consistency:")
         for source, version in versions.items():
@@ -47,13 +47,13 @@ def check_version_consistency():
                 return False
 
         if len(set(versions.values())) > 1:
-            print("\nError: Version mismatch detected!")
+            print("\nError: Version mismatch detected!", file=sys.stderr)
             return False
 
         print(f"\nAll versions are consistent: {package_version}")
         return True
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error: {e}", file=sys.stderr)
         return False
 
 

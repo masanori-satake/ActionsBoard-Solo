@@ -6,7 +6,7 @@
 const DEFAULT_API_URL = 'https://api.github.com';
 const ALARM_NAME = 'poll_actions';
 const POLL_INTERVAL_ACTIVE = 1; // 1 minute (Minimum stable interval)
-const POLL_INTERVAL_BG = 5;      // 5 minutes
+const POLL_INTERVAL_BG = 5; // 5 minutes
 const HISTORY_COUNT = 10;
 
 let activeConnections = 0;
@@ -55,7 +55,11 @@ chrome.alarms.onAlarm.addListener((alarm) => {
  * Main polling sequence
  */
 async function poll() {
-  const { settings, workspaces, cache: storageCache } = await chrome.storage.local.get(['settings', 'workspaces', 'cache']);
+  const {
+    settings,
+    workspaces,
+    cache: storageCache,
+  } = await chrome.storage.local.get(['settings', 'workspaces', 'cache']);
 
   if (!settings?.pat || !workspaces?.length) return;
 
@@ -63,13 +67,13 @@ async function poll() {
   const results = {
     runs: {},
     pages: { ...currentCache.pages },
-    history: { ...currentCache.history }
+    history: { ...currentCache.history },
   };
 
   // Deduplicate items to fetch
   const itemsToFetch = new Map();
-  workspaces.forEach(ws => {
-    ws.items.forEach(item => {
+  workspaces.forEach((ws) => {
+    ws.items.forEach((item) => {
       const key = `${item.owner}/${item.repo}/${item.workflowFile}`;
       if (!itemsToFetch.has(key)) itemsToFetch.set(key, item);
     });
@@ -82,7 +86,11 @@ async function poll() {
       if (runs && runs.length > 0) {
         const latestRun = runs[0];
         results.runs[key] = latestRun;
-        results.history[key] = runs.map(r => ({ status: r.status, conclusion: r.conclusion, id: r.id }));
+        results.history[key] = runs.map((r) => ({
+          status: r.status,
+          conclusion: r.conclusion,
+          id: r.id,
+        }));
 
         checkFailureNotification(key, latestRun, currentCache.runs[key]);
 
@@ -90,7 +98,11 @@ async function poll() {
           const pagesStatus = await fetchPagesStatus(settings, item.owner, item.repo);
           if (pagesStatus) {
             results.pages[`${item.owner}/${item.repo}`] = pagesStatus;
-            checkPagesNotification(item, pagesStatus, currentCache.pages[`${item.owner}/${item.repo}`]);
+            checkPagesNotification(
+              item,
+              pagesStatus,
+              currentCache.pages[`${item.owner}/${item.repo}`],
+            );
           }
         }
       }
@@ -111,14 +123,14 @@ async function fetchWorkflowRuns(settings, item, count) {
 
   const response = await fetch(url, {
     headers: {
-      'Authorization': `token ${settings.pat}`,
-      'Accept': 'application/vnd.github.v3+json'
-    }
+      Authorization: `token ${settings.pat}`,
+      Accept: 'application/vnd.github.v3+json',
+    },
   });
 
   if (!response.ok) return null;
   const data = await response.json();
-  return data.workflow_runs.map(run => ({
+  return data.workflow_runs.map((run) => ({
     id: run.id,
     status: run.status,
     conclusion: run.conclusion,
@@ -127,7 +139,7 @@ async function fetchWorkflowRuns(settings, item, count) {
     html_url: run.html_url,
     updated_at: run.updated_at,
     display_title: run.display_title,
-    jobs_url: run.jobs_url
+    jobs_url: run.jobs_url,
   }));
 }
 
@@ -138,9 +150,9 @@ async function fetchPagesStatus(settings, owner, repo) {
   try {
     const response = await fetch(url, {
       headers: {
-        'Authorization': `token ${settings.pat}`,
-        'Accept': 'application/vnd.github.v3+json'
-      }
+        Authorization: `token ${settings.pat}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
     });
     if (!response.ok) return null;
     const deployments = await response.json();
@@ -151,9 +163,11 @@ async function fetchPagesStatus(settings, owner, repo) {
       status: latest.status,
       id: latest.id,
       updated_at: latest.updated_at,
-      page_url: latest.page_url
+      page_url: latest.page_url,
     };
-  } catch (e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
 
 // --- Notification & UI Helpers ---
@@ -161,7 +175,11 @@ async function fetchPagesStatus(settings, owner, repo) {
 function checkFailureNotification(key, current, previous) {
   if (current.status === 'completed' && current.conclusion === 'failure') {
     if (!previous || previous.id !== current.id) {
-      showNotification(`❌ Build Failure: ${key}`, `${current.display_title} by ${current.actor}`, current.html_url);
+      showNotification(
+        `❌ Build Failure: ${key}`,
+        `${current.display_title} by ${current.actor}`,
+        current.html_url,
+      );
     }
   }
 }
@@ -169,7 +187,11 @@ function checkFailureNotification(key, current, previous) {
 function checkPagesNotification(item, current, previous) {
   if (current.status === 'deliverable') {
     if (!previous || (previous.id !== current.id && previous.status !== 'deliverable')) {
-      showNotification(`🟢 Pages Deployed: ${item.alias || item.repo}`, `Your changes are now live on GitHub Pages.`, current.page_url);
+      showNotification(
+        `🟢 Pages Deployed: ${item.alias || item.repo}`,
+        `Your changes are now live on GitHub Pages.`,
+        current.page_url,
+      );
     }
   }
 }
@@ -181,7 +203,7 @@ function showNotification(title, message, url) {
     iconUrl: 'icons/icon128.png',
     title,
     message,
-    priority: 2
+    priority: 2,
   });
   chrome.notifications.onClicked.addListener((clickedId) => {
     if (clickedId === id) {

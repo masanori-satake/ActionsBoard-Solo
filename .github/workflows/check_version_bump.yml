@@ -1,8 +1,8 @@
-name: "バージョン更新確認 (Check Version Bump)"
+name: 'バージョン更新確認 (Check Version Bump)'
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'projects/app/**'
 

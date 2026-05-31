@@ -3,6 +3,7 @@ import zipfile
 import os
 import sys
 
+
 def build_extension():
     try:
         with open("package.json", "r", encoding="utf-8") as f:
@@ -35,6 +36,7 @@ def build_extension():
     except Exception as e:
         print(f"Error: {e}")
         return False
+
 
 if __name__ == "__main__":
     if not build_extension():

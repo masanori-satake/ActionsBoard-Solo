@@ -21,18 +21,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.storage.onChanged.addListener((changes) => {
       // Refresh if config or cache changes
       if (changes.authConfigs || changes.workspaces || changes.cache || changes.currentUser) {
-        chrome.storage.local.get([
-          'authConfigs',
-          'workspaces',
-          'cache',
-          'currentUser',
-        ]).then(data => {
-          config.authConfigs = data.authConfigs;
-          config.workspaces = data.workspaces;
-          cache = data.cache || { runs: {}, pages: {}, history: {} };
-          currentUser = data.currentUser || {};
-          render();
-        });
+        chrome.storage.local
+          .get(['authConfigs', 'workspaces', 'cache', 'currentUser'])
+          .then((data) => {
+            config.authConfigs = data.authConfigs;
+            config.workspaces = data.workspaces;
+            cache = data.cache || { runs: {}, pages: {}, history: {} };
+            currentUser = data.currentUser || {};
+            render();
+          });
       }
     });
 

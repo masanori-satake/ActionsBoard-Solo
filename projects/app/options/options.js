@@ -153,9 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
       <div class="field">
         <label>個人アクセストークン (PAT)</label>
-        <input type="password" id="m-auth-pat" value="${escapeHtml(
-          auth.pat,
-        )}" placeholder="ghp_..." />
+        <input type="password" id="m-auth-pat" value="${escapeHtml(auth.pat)}" placeholder="ghp_..." />
         <div class="hint">\`repo\`, \`workflow\`, \`notifications\` 権限が必要です。</div>
       </div>
       <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -309,9 +307,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let authOptions = config.authConfigs
       .map(
         (auth) =>
-          `<option value="${auth.id}" ${auth.id === ws.authConfigId ? 'selected' : ''}>${escapeHtml(
-            auth.name,
-          )}</option>`,
+          `<option value="${auth.id}" ${
+            auth.id === ws.authConfigId ? 'selected' : ''
+          }>${escapeHtml(auth.name)}</option>`,
       )
       .join('');
 
@@ -420,9 +418,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (urlVal) {
         const parsed = parseGitHubUrl(urlVal);
         if (parsed && !validateUrlWithAuth(parsed, authConfig)) {
-          showToast(
-            `URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`,
-          );
+          showToast(`URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`);
           return;
         }
       }
@@ -480,7 +476,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.modalTitle.textContent = 'リポジトリから新規ワークスペースを追加';
 
     let authOptions = config.authConfigs
-      .map((auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`)
+      .map(
+        (auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`,
+      )
       .join('');
 
     elements.modalContent.innerHTML = `
@@ -627,23 +625,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       reader.onload = async (re) => {
         try {
           const imported = JSON.parse(re.target.result);
-          if (imported.settings || imported.workspaces) {
-            // Retrieve existing settings to preserve the PAT
-            const existing = await chrome.storage.local.get(['settings']);
-            const mergedSettings = {
-              ...existing.settings,
-              ...imported.settings,
-            };
+          if (imported.settings || imported.authConfigs || imported.workspaces) {
+            // Merge authConfigs, preserving PATs if they match by ID or legacy structure
+            const existingAuth = await chrome.storage.local.get(['authConfigs', 'settings']);
+            let importedAuths = imported.authConfigs;
 
-            // Merge authConfigs, preserving PATs if they match by ID
-            const existingAuth = await chrome.storage.local.get(['authConfigs']);
-            const mergedAuth = (imported.authConfigs || []).map((impAuth) => {
+            // Legacy import migration
+            if (!importedAuths && imported.settings) {
+              importedAuths = [
+                {
+                  id: 'default',
+                  name: 'デフォルト',
+                  baseUrl: imported.settings.baseUrl || DEFAULT_API_URL,
+                },
+              ];
+            }
+
+            const mergedAuth = (importedAuths || []).map((impAuth) => {
+              let existingPat = '';
               const ext = (existingAuth.authConfigs || []).find((e) => e.id === impAuth.id);
-              if (ext && ext.pat && !impAuth.pat) {
-                return { ...impAuth, pat: ext.pat };
+              if (ext && ext.pat) {
+                existingPat = ext.pat;
+              } else if (impAuth.id === 'default' && existingAuth.settings?.pat) {
+                existingPat = existingAuth.settings.pat;
+              }
+
+              if (existingPat && !impAuth.pat) {
+                return { ...impAuth, pat: existingPat };
               }
               return impAuth;
-            });
+                });
 
             await chrome.storage.local.set({
               authConfigs: mergedAuth,

@@ -77,13 +77,44 @@ async function poll() {
   isPolling = true;
 
   try {
-    const {
-      settings,
+    let {
+      authConfigs,
+      settings, // legacy
       workspaces,
       cache: storageCache,
-    } = await chrome.storage.local.get(['settings', 'workspaces', 'cache']);
+    } = await chrome.storage.local.get(['authConfigs', 'settings', 'workspaces', 'cache']);
 
-    if (!settings?.pat || !workspaces?.length) return;
+    let migrated = false;
+    // Migration logic
+    if (!authConfigs) {
+      if (settings?.pat) {
+        authConfigs = [
+          {
+            id: 'default',
+            name: 'デフォルト',
+            pat: settings.pat,
+            baseUrl: settings.baseUrl || DEFAULT_API_URL,
+          },
+        ];
+      } else {
+        authConfigs = [];
+      }
+      migrated = true;
+    }
+
+    if (!authConfigs.length || !workspaces?.length) return;
+
+    // Ensure all workspaces have an authConfigId (for migration)
+    workspaces.forEach((ws) => {
+      if (!ws.authConfigId) {
+        ws.authConfigId = authConfigs[0]?.id || 'default';
+        migrated = true;
+      }
+    });
+
+    if (migrated) {
+      await chrome.storage.local.set({ authConfigs, workspaces });
+    }
 
     const currentCache = storageCache || { runs: {}, pages: {}, history: {} };
     const results = {
@@ -92,44 +123,54 @@ async function poll() {
       history: { ...currentCache.history },
     };
 
-    // Deduplicate items to fetch
-    const itemsToFetch = new Map();
+    // Deduplicate items to fetch, grouping by authConfigId
+    // Map<authConfigId, Map<key, item>>
+    const fetchGroups = new Map();
     workspaces.forEach((ws) => {
+      if (!fetchGroups.has(ws.authConfigId)) {
+        fetchGroups.set(ws.authConfigId, new Map());
+      }
+      const itemsMap = fetchGroups.get(ws.authConfigId);
       ws.items?.forEach((item) => {
         const key = `${item.owner}/${item.repo}/${item.workflowFile}`;
-        if (!itemsToFetch.has(key)) itemsToFetch.set(key, item);
+        if (!itemsMap.has(key)) itemsMap.set(key, item);
       });
     });
 
-    for (const [key, item] of itemsToFetch) {
-      try {
-        // Fetch multiple runs for history
-        const runs = await fetchWorkflowRuns(settings, item, HISTORY_COUNT);
-        if (runs && runs.length > 0) {
-          const latestRun = runs[0];
-          results.runs[key] = latestRun;
-          results.history[key] = runs.map((r) => ({
-            status: r.status,
-            conclusion: r.conclusion,
-            id: r.id,
-          }));
+    for (const [authConfigId, itemsMap] of fetchGroups) {
+      const authConfig = authConfigs.find((c) => c.id === authConfigId);
+      if (!authConfig) continue;
 
-          checkFailureNotification(key, latestRun, currentCache.runs[key]);
+      for (const [key, item] of itemsMap) {
+        try {
+          // Fetch multiple runs for history
+          const runs = await fetchWorkflowRuns(authConfig, item, HISTORY_COUNT);
+          if (runs && runs.length > 0) {
+            const latestRun = runs[0];
+            results.runs[key] = latestRun;
+            results.history[key] = runs.map((r) => ({
+              status: r.status,
+              conclusion: r.conclusion,
+              id: r.id,
+            }));
 
-          if (latestRun.conclusion === 'success') {
-            const pagesStatus = await fetchPagesStatus(settings, item.owner, item.repo);
-            if (pagesStatus) {
-              results.pages[`${item.owner}/${item.repo}`] = pagesStatus;
-              checkPagesNotification(
-                item,
-                pagesStatus,
-                currentCache.pages[`${item.owner}/${item.repo}`],
-              );
+            checkFailureNotification(key, latestRun, currentCache.runs[key]);
+
+            if (latestRun.conclusion === 'success') {
+              const pagesStatus = await fetchPagesStatus(authConfig, item.owner, item.repo);
+              if (pagesStatus) {
+                results.pages[`${item.owner}/${item.repo}`] = pagesStatus;
+                checkPagesNotification(
+                  item,
+                  pagesStatus,
+                  currentCache.pages[`${item.owner}/${item.repo}`],
+                );
+              }
             }
           }
+        } catch (err) {
+          console.error(`[ActionsBoard-Solo] Error polling ${key} with ${authConfig.name}:`, err);
         }
-      } catch (err) {
-        console.error(`[ActionsBoard-Solo] Error polling ${key}:`, err);
       }
     }
 

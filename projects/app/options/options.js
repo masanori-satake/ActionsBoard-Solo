@@ -4,10 +4,8 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   const elements = {
-    pat: document.getElementById('pat'),
-    baseUrl: document.getElementById('baseUrl'),
-    saveApiBtn: document.getElementById('save-api'),
-    testApiBtn: document.getElementById('test-api'),
+    authList: document.getElementById('auth-list'),
+    addAuthBtn: document.getElementById('add-auth'),
     workspaceList: document.getElementById('workspace-list'),
     addWorkspaceBtn: document.getElementById('add-workspace'),
     addWorkspaceRepoBtn: document.getElementById('add-workspace-repo'),
@@ -20,25 +18,48 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   let config = {
-    settings: {
-      pat: '',
-      baseUrl: 'https://api.github.com',
-    },
+    authConfigs: [],
     workspaces: [],
   };
+
+  const DEFAULT_API_URL = 'https://api.github.com';
 
   // --- Initialization ---
 
   async function loadConfig() {
-    const data = await chrome.storage.local.get(['settings', 'workspaces']);
-    if (data.settings) {
-      config.settings = { ...config.settings, ...data.settings };
-      elements.pat.value = config.settings.pat || '';
-      elements.baseUrl.value = config.settings.baseUrl || 'https://api.github.com';
+    const data = await chrome.storage.local.get(['authConfigs', 'settings', 'workspaces']);
+
+    // Migration
+    if (data.authConfigs) {
+      config.authConfigs = data.authConfigs;
+    } else if (data.settings?.pat) {
+      config.authConfigs = [
+        {
+          id: 'default',
+          name: 'デフォルト',
+          pat: data.settings.pat,
+          baseUrl: data.settings.baseUrl || DEFAULT_API_URL,
+        },
+      ];
+      await chrome.storage.local.set({ authConfigs: config.authConfigs });
     }
+
     if (data.workspaces) {
       config.workspaces = data.workspaces;
+      // Ensure all workspaces have an authConfigId
+      let changed = false;
+      config.workspaces.forEach((ws) => {
+        if (!ws.authConfigId && config.authConfigs.length > 0) {
+          ws.authConfigId = config.authConfigs[0].id;
+          changed = true;
+        }
+      });
+      if (changed) {
+        await chrome.storage.local.set({ workspaces: config.workspaces });
+      }
     }
+
+    renderAuthConfigs();
     renderWorkspaces();
   }
 
@@ -56,31 +77,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // --- API Settings Logic ---
 
-  elements.saveApiBtn.addEventListener('click', async () => {
-    config.settings.pat = elements.pat.value.trim();
-    config.settings.baseUrl = elements.baseUrl.value.trim() || 'https://api.github.com';
-
-    // Reset currentUser cache when PAT is updated to ensure correct user identification
-    await chrome.storage.local.set({ settings: config.settings, currentUser: null });
-    showToast('認証情報を保存しました。');
-  });
-
-  elements.testApiBtn.addEventListener('click', async () => {
-    const pat = elements.pat.value.trim();
-    const baseUrl = elements.baseUrl.value.trim() || 'https://api.github.com';
-
-    if (!pat) {
-      showToast('PAT を入力してください。');
+  function renderAuthConfigs() {
+    elements.authList.innerHTML = '';
+    if (config.authConfigs.length === 0) {
+      elements.authList.innerHTML =
+        '<p class="md-sys-typescale-body-large" style="text-align: center; opacity: 0.6; padding: var(--md-sys-spacing-2);">認証設定が登録されていません。</p>';
       return;
     }
 
-    elements.testApiBtn.disabled = true;
-    elements.testApiBtn.textContent = 'テスト中...';
+    config.authConfigs.forEach((auth, idx) => {
+      const card = document.createElement('div');
+      card.className = 'auth-card';
+      card.innerHTML = `
+        <div style="flex-grow: 1;">
+          <div class="md-sys-typescale-title-medium">${escapeHtml(auth.name)}</div>
+          <div class="hint">${escapeHtml(auth.baseUrl)}</div>
+        </div>
+        <div class="button-row" style="margin-top: 0">
+          <button class="btn-icon-m3 test-auth-btn" data-idx="${idx}" data-tooltip="テスト"><span class="material-symbols-outlined">sync</span></button>
+          <button class="btn-icon-m3 edit-auth-btn" data-idx="${idx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
+          <button class="btn-icon-m3 del-auth-btn btn-error" data-idx="${idx}" data-tooltip="削除" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
+        </div>
+      `;
+      elements.authList.appendChild(card);
+    });
+
+    document.querySelectorAll('.test-auth-btn').forEach((btn) => {
+      btn.onclick = () => testAuthConfig(parseInt(btn.dataset.idx));
+    });
+    document.querySelectorAll('.edit-auth-btn').forEach((btn) => {
+      btn.onclick = () => openAuthModal(parseInt(btn.dataset.idx));
+    });
+    document.querySelectorAll('.del-auth-btn').forEach((btn) => {
+      btn.onclick = () => deleteAuthConfig(parseInt(btn.dataset.idx));
+    });
+  }
+
+  async function testAuthConfig(index) {
+    const auth = config.authConfigs[index];
+    showToast(`${auth.name} の接続テスト中...`);
 
     try {
-      const response = await fetch(`${baseUrl}/user`, {
+      const response = await fetch(`${auth.baseUrl}/user`, {
         headers: {
-          Authorization: `token ${pat}`,
+          Authorization: `token ${auth.pat}`,
           Accept: 'application/vnd.github.v3+json',
         },
       });
@@ -94,11 +134,95 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } catch (e) {
       showToast(`エラー: ${e.message}`);
-    } finally {
-      elements.testApiBtn.disabled = false;
-      elements.testApiBtn.textContent = '接続テスト';
     }
-  });
+  }
+
+  function openAuthModal(index = -1) {
+    const isEdit = index !== -1;
+    elements.modalTitle.textContent = isEdit ? '認証設定編集' : '新規認証設定追加';
+    const auth = isEdit
+      ? config.authConfigs[index]
+      : { name: '', pat: '', baseUrl: DEFAULT_API_URL };
+
+    elements.modalContent.innerHTML = `
+      <div class="field">
+        <label>設定名</label>
+        <input type="text" id="m-auth-name" value="${escapeHtml(
+          auth.name,
+        )}" placeholder="例: パブリックGitHub" />
+      </div>
+      <div class="field">
+        <label>個人アクセストークン (PAT)</label>
+        <input type="password" id="m-auth-pat" value="${escapeHtml(auth.pat)}" placeholder="ghp_..." />
+        <div class="hint">\`repo\`, \`workflow\`, \`notifications\` 権限が必要です。</div>
+      </div>
+      <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <input type="checkbox" id="m-auth-public" ${
+          auth.baseUrl === DEFAULT_API_URL ? 'checked' : ''
+        } style="width: 18px; height: 18px;" />
+        <label for="m-auth-public" style="margin-bottom: 0;">パブリックな GitHub (github.com) を使用</label>
+      </div>
+      <div class="field">
+        <label>API ベース URL</label>
+        <input type="text" id="m-auth-url" value="${escapeHtml(auth.baseUrl)}" ${
+          auth.baseUrl === DEFAULT_API_URL ? 'disabled' : ''
+        } />
+        <div class="hint">GHE の場合は \`https://{hostname}/api/v3\` を入力してください。</div>
+      </div>
+    `;
+
+    const publicCheck = document.getElementById('m-auth-public');
+    const urlInput = document.getElementById('m-auth-url');
+    publicCheck.onchange = () => {
+      if (publicCheck.checked) {
+        urlInput.value = DEFAULT_API_URL;
+        urlInput.disabled = true;
+      } else {
+        urlInput.disabled = false;
+      }
+    };
+
+    elements.modalSave.onclick = async () => {
+      const name = document.getElementById('m-auth-name').value.trim();
+      const pat = document.getElementById('m-auth-pat').value.trim();
+      const baseUrl = document.getElementById('m-auth-url').value.trim() || DEFAULT_API_URL;
+
+      if (!name || !pat) {
+        showToast('設定名とPATを入力してください。');
+        return;
+      }
+
+      if (isEdit) {
+        config.authConfigs[index] = { ...config.authConfigs[index], name, pat, baseUrl };
+      } else {
+        config.authConfigs.push({ id: Date.now().toString(), name, pat, baseUrl });
+      }
+
+      await chrome.storage.local.set({ authConfigs: config.authConfigs, currentUser: null });
+      renderAuthConfigs();
+      elements.modal.close();
+      showToast('認証設定を保存しました。');
+    };
+
+    elements.modal.showModal();
+  }
+
+  async function deleteAuthConfig(index) {
+    const auth = config.authConfigs[index];
+    const isUsed = config.workspaces.some((ws) => ws.authConfigId === auth.id);
+    if (isUsed) {
+      alert('この認証設定はワークスペースで使用されているため、削除できません。');
+      return;
+    }
+
+    if (confirm(`認証設定「${auth.name}」を削除してもよろしいですか？`)) {
+      config.authConfigs.splice(index, 1);
+      await chrome.storage.local.set({ authConfigs: config.authConfigs });
+      renderAuthConfigs();
+    }
+  }
+
+  elements.addAuthBtn.onclick = () => openAuthModal();
 
   // --- Workspace Logic ---
 
@@ -176,7 +300,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openWorkspaceModal(index = -1) {
     const isEdit = index !== -1;
     elements.modalTitle.textContent = isEdit ? 'ワークスペース編集' : '新規ワークスペース追加';
-    const ws = isEdit ? config.workspaces[index] : { name: '' };
+    const ws = isEdit
+      ? config.workspaces[index]
+      : { name: '', authConfigId: config.authConfigs[0]?.id || '' };
+
+    let authOptions = config.authConfigs
+      .map(
+        (auth) =>
+          `<option value="${auth.id}" ${
+            auth.id === ws.authConfigId ? 'selected' : ''
+          }>${escapeHtml(auth.name)}</option>`,
+      )
+      .join('');
 
     elements.modalContent.innerHTML = `
       <div class="field">
@@ -185,16 +320,27 @@ document.addEventListener('DOMContentLoaded', async () => {
           ws.name,
         )}" placeholder="例: 認証サブシステム" />
       </div>
+      <div class="field">
+        <label>使用する認証設定</label>
+        <select id="modal-ws-auth">
+          ${authOptions}
+        </select>
+      </div>
     `;
 
     elements.modalSave.onclick = async () => {
       const name = document.getElementById('modal-ws-name').value.trim();
-      if (!name) return;
+      const authConfigId = document.getElementById('modal-ws-auth').value;
+      if (!name || !authConfigId) {
+        showToast('必須項目を入力してください。');
+        return;
+      }
 
       if (isEdit) {
         config.workspaces[index].name = name;
+        config.workspaces[index].authConfigId = authConfigId;
       } else {
-        config.workspaces.push({ id: Date.now().toString(), name, items: [] });
+        config.workspaces.push({ id: Date.now().toString(), name, authConfigId, items: [] });
       }
 
       await saveWorkspaces();
@@ -212,6 +358,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       : { owner: '', repo: '', workflowFile: '', alias: '', isFavorite: false };
 
     elements.modalContent.innerHTML = `
+      <div class="field">
+        <label>URL (一括入力)</label>
+        <input type="text" id="m-url-shortcut" placeholder="例: https://github.com/owner/repo/actions/workflows/ci.yml" />
+        <div class="hint">URLを入力すると下の項目が自動入力されます。</div>
+      </div>
+      <hr style="border: none; border-top: 1px dashed var(--md-sys-color-outline-variant); margin: 16px 0;" />
       <div class="field">
         <label>リポジトリ所有者 (Owner)</label>
         <input type="text" id="m-owner" value="${escapeHtml(
@@ -242,11 +394,39 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     `;
 
+    const urlShortcut = document.getElementById('m-url-shortcut');
+    const ownerInput = document.getElementById('m-owner');
+    const repoInput = document.getElementById('m-repo');
+    const workflowInput = document.getElementById('m-workflow');
+
+    urlShortcut.oninput = () => {
+      const parsed = parseGitHubUrl(urlShortcut.value.trim());
+      if (parsed) {
+        ownerInput.value = parsed.owner;
+        repoInput.value = parsed.repo;
+        if (parsed.workflowFile) {
+          workflowInput.value = parsed.workflowFile;
+        }
+      }
+    };
+
     elements.modalSave.onclick = async () => {
+      const ws = config.workspaces[wsIdx];
+      const authConfig = config.authConfigs.find((c) => c.id === ws.authConfigId);
+      const urlVal = urlShortcut.value.trim();
+
+      if (urlVal) {
+        const parsed = parseGitHubUrl(urlVal);
+        if (parsed && !validateUrlWithAuth(parsed, authConfig)) {
+          showToast(`URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`);
+          return;
+        }
+      }
+
       const newItem = {
-        owner: document.getElementById('m-owner').value.trim(),
-        repo: document.getElementById('m-repo').value.trim(),
-        workflowFile: document.getElementById('m-workflow').value.trim(),
+        owner: ownerInput.value.trim(),
+        repo: repoInput.value.trim(),
+        workflowFile: workflowInput.value.trim(),
         alias: document.getElementById('m-alias').value.trim(),
         isFavorite: document.getElementById('m-fav').checked,
       };
@@ -294,33 +474,70 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openRepoWorkspaceModal() {
     elements.modalTitle.textContent = 'リポジトリから新規ワークスペースを追加';
+
+    let authOptions = config.authConfigs
+      .map(
+        (auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`,
+      )
+      .join('');
+
     elements.modalContent.innerHTML = `
       <div class="field">
-        <label>リポジトリ (Owner/Repo)</label>
-        <input type="text" id="modal-repo-path" placeholder="例: facebook/react" />
+        <label>リポジトリ (URL または Owner/Repo)</label>
+        <input type="text" id="modal-repo-path" placeholder="例: https://github.com/facebook/react" />
         <div class="hint">指定されたリポジトリのワークフローを自動的に取得して登録します。</div>
+      </div>
+      <div class="field">
+        <label>使用する認証設定</label>
+        <select id="modal-repo-auth">
+          ${authOptions}
+        </select>
       </div>
     `;
 
     elements.modalSave.onclick = async () => {
-      const repoPath = document.getElementById('modal-repo-path').value.trim();
-      if (!repoPath || !repoPath.includes('/')) {
-        showToast('リポジトリを Owner/Repo 形式で入力してください。');
+      const inputVal = document.getElementById('modal-repo-path').value.trim();
+      const authConfigId = document.getElementById('modal-repo-auth').value;
+
+      if (!inputVal || !authConfigId) {
+        showToast('必須項目を入力してください。');
         return;
       }
 
-      const [owner, repo] = repoPath.split('/');
+      const authConfig = config.authConfigs.find((c) => c.id === authConfigId);
+      const parsed = parseGitHubUrl(inputVal);
+
+      if (parsed) {
+        if (!validateUrlWithAuth(parsed, authConfig)) {
+          showToast(`URLのドメインが選択した認証設定 (${authConfig.name}) と一致しません。`);
+          return;
+        }
+      }
+
+      let owner, repo;
+      if (parsed) {
+        owner = parsed.owner;
+        repo = parsed.repo;
+      } else if (inputVal.includes('/')) {
+        [owner, repo] = inputVal.split('/');
+      } else {
+        showToast('正確なURLまたは Owner/Repo 形式で入力してください。');
+        return;
+      }
+
       elements.modalSave.disabled = true;
       elements.modalSave.textContent = '取得中...';
 
       try {
-        const baseUrl = config.settings.baseUrl || 'https://api.github.com';
-        const response = await fetch(`${baseUrl}/repos/${owner}/${repo}/actions/workflows`, {
-          headers: {
-            Authorization: `token ${config.settings.pat}`,
-            Accept: 'application/vnd.github.v3+json',
+        const response = await fetch(
+          `${authConfig.baseUrl}/repos/${owner}/${repo}/actions/workflows`,
+          {
+            headers: {
+              Authorization: `token ${authConfig.pat}`,
+              Accept: 'application/vnd.github.v3+json',
+            },
           },
-        });
+        );
 
         if (!response.ok) {
           let errMsg = 'ワークフローの取得に失敗しました。';
@@ -353,6 +570,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         config.workspaces.push({
           id: Date.now().toString(),
           name: repo,
+          authConfigId: authConfig.id,
           items,
         });
 
@@ -382,9 +600,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('export-config').onclick = () => {
     // Exclude PAT from export for security
     const exportConfig = JSON.parse(JSON.stringify(config));
-    if (exportConfig.settings) {
-      delete exportConfig.settings.pat;
+    if (exportConfig.authConfigs) {
+      exportConfig.authConfigs.forEach((auth) => delete auth.pat);
     }
+    // Also remove legacy settings if any
+    delete exportConfig.settings;
 
     const blob = new Blob([JSON.stringify(exportConfig, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -413,13 +633,18 @@ document.addEventListener('DOMContentLoaded', async () => {
               ...imported.settings,
             };
 
-            // If the imported data doesn't have a PAT, but the existing one does, keep it.
-            if (existing.settings?.pat && !imported.settings?.pat) {
-              mergedSettings.pat = existing.settings.pat;
-            }
+            // Merge authConfigs, preserving PATs if they match by ID
+            const existingAuth = await chrome.storage.local.get(['authConfigs']);
+            const mergedAuth = (imported.authConfigs || []).map((impAuth) => {
+              const ext = (existingAuth.authConfigs || []).find((e) => e.id === impAuth.id);
+              if (ext && ext.pat && !impAuth.pat) {
+                return { ...impAuth, pat: ext.pat };
+              }
+              return impAuth;
+            });
 
             await chrome.storage.local.set({
-              settings: mergedSettings,
+              authConfigs: mergedAuth,
               workspaces: imported.workspaces || [],
             });
             location.reload();
@@ -436,6 +661,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // --- Utils ---
+
+  /**
+   * Parse GitHub browse URL to extract owner, repo, and workflow file.
+   * Supports:
+   * - https://github.com/owner/repo
+   * - https://github.com/owner/repo/actions/workflows/ci.yml
+   * - https://github.com/owner/repo/blob/main/.github/workflows/ci.yml
+   */
+  function parseGitHubUrl(urlStr) {
+    try {
+      const url = new URL(urlStr);
+      const parts = url.pathname.split('/').filter((p) => p);
+      if (parts.length < 2) return null;
+
+      const owner = parts[0];
+      const repo = parts[1];
+      let workflowFile = '';
+
+      // Check if it's a workflow URL
+      if (parts[2] === 'actions' && parts[3] === 'workflows') {
+        workflowFile = parts[4];
+      } else if (parts[2] === 'blob' && url.pathname.includes('/.github/workflows/')) {
+        workflowFile = parts[parts.length - 1];
+      }
+
+      return { hostname: url.hostname, owner, repo, workflowFile };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function validateUrlWithAuth(parsed, auth) {
+    if (!parsed) return true; // Not a URL, allow Owner/Repo format
+    const authHost = new URL(auth.baseUrl).hostname;
+    // For github.com, hostname might be github.com while API is api.github.com
+    if (auth.baseUrl === DEFAULT_API_URL) {
+      return parsed.hostname === 'github.com';
+    }
+    // For GHE, typically hostname is the same
+    return parsed.hostname === authHost;
+  }
 
   function escapeHtml(str) {
     if (!str) return '';

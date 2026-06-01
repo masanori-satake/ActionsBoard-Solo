@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function init() {
     chrome.runtime.connect({ name: 'popup' });
     const data = await chrome.storage.local.get([
+      'authConfigs',
       'settings',
       'workspaces',
       'cache',
@@ -25,17 +26,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       'currentUser',
     ]);
     config = data;
+
+    // Support for multiple current users (one per auth config)
+    // Mapping: { authConfigId: login }
+    currentUser = data.currentUser || {};
+
     cache = data.cache || { runs: {}, pages: {}, history: {} };
     currentMode = data.activeMode || 'developer';
-    currentUser = data.currentUser || null;
 
     elements.tabs.forEach((tab) =>
       tab.classList.toggle('active', tab.dataset.mode === currentMode),
     );
 
-    if (config.settings?.pat && !currentUser) {
-      currentUser = await getCurrentUser(config.settings);
-      if (currentUser) {
+    if (config.authConfigs?.length) {
+      let changed = false;
+      for (const auth of config.authConfigs) {
+        if (!currentUser[auth.id]) {
+          const login = await getCurrentUser(auth);
+          if (login) {
+            currentUser[auth.id] = login;
+            changed = true;
+          }
+        }
+      }
+      if (changed) {
         await chrome.storage.local.set({ currentUser });
       }
     }
@@ -63,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function render() {
     elements.main.innerHTML = '';
-    if (!config.settings?.pat || !config.workspaces?.length) {
+    if (!config.authConfigs?.length || !config.workspaces?.length) {
       renderEmptyState();
       return;
     }
@@ -85,10 +99,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderDeveloperMode() {
     const allItems = getAllItems();
-    const myActivity = allItems.filter(
-      (item) =>
-        cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`]?.actor === currentUser,
-    );
+    const myActivity = allItems.filter((item) => {
+      const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+      if (!run) return false;
+      const ws = config.workspaces.find((w) =>
+        w.items?.some(
+          (i) =>
+            i.owner === item.owner && i.repo === item.repo && i.workflowFile === item.workflowFile,
+        ),
+      );
+      if (!ws) return false;
+      return run.actor === currentUser[ws.authConfigId];
+    });
     const favorites = allItems.filter((item) => item.isFavorite);
     if (favorites.length) renderSection('お気に入り / ピン留め', favorites);
     if (myActivity.length) renderSection('マイ・アクティビティ', myActivity);
@@ -111,19 +133,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     section.innerHTML = `<div class="workspace-title">${escapeHtml(title)}</div>`;
     items.forEach((item) => {
       const runKey = `${item.owner}/${item.repo}/${item.workflowFile}`;
+      const ws = config.workspaces.find((w) =>
+        w.items?.some(
+          (i) =>
+            i.owner === item.owner && i.repo === item.repo && i.workflowFile === item.workflowFile,
+        ),
+      );
+      const auth = config.authConfigs.find((a) => a.id === ws?.authConfigId);
+
       section.appendChild(
         createActionCard(
           item,
+          ws,
           cache.runs[runKey],
           cache.pages[`${item.owner}/${item.repo}`],
           cache.history[runKey],
+          auth,
         ),
       );
     });
     elements.main.appendChild(section);
   }
 
-  function createActionCard(item, run, pages, history) {
+  function createActionCard(item, ws, run, pages, history, auth) {
     const card = document.createElement('div');
     card.className = 'card';
     const statusClass = run
@@ -177,13 +209,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     `;
 
-    if (run?.conclusion === 'failure') {
+    if (run?.conclusion === 'failure' && auth) {
       const logToggle = card.querySelector('.log-toggle');
       const logArea = card.querySelector('.log-area');
       logToggle.onclick = (e) => {
         e.stopPropagation();
         if (logArea.style.display === 'block') logArea.style.display = 'none';
-        else fetchAndShowLogs(run, logArea);
+        else fetchAndShowLogs(run, logArea, auth);
       };
     }
 
@@ -191,12 +223,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     return card;
   }
 
-  async function fetchAndShowLogs(run, logArea) {
+  async function fetchAndShowLogs(run, logArea, auth) {
     logArea.textContent = 'ログを取得中...';
     logArea.style.display = 'block';
     try {
       const res = await fetch(`${run.jobs_url}`, {
-        headers: { Authorization: `token ${config.settings.pat}` },
+        headers: { Authorization: `token ${auth.pat}` },
       });
       if (!res.ok) throw new Error();
       const data = await res.json();

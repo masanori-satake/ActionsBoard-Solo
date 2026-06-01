@@ -470,10 +470,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (urlVal) {
         const parsed = parseGitHubUrl(urlVal);
-        if (parsed && !validateUrlWithAuth(parsed, authConfig)) {
-          elements.errorMsg.textContent = `URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`;
-          elements.errorMsg.style.display = 'block';
-          return;
+        if (parsed) {
+          if (!authConfig) {
+            elements.errorMsg.textContent = 'ワークスペースの認証設定が見つかりません。';
+            elements.errorMsg.style.display = 'block';
+            return;
+          }
+          if (!validateUrlWithAuth(parsed, authConfig)) {
+            elements.errorMsg.textContent = `URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`;
+            elements.errorMsg.style.display = 'block';
+            return;
+          }
         }
       }
 

@@ -16,22 +16,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentUser = null;
 
   async function init() {
-    chrome.runtime.connect({ name: 'popup' });
+    if (!init.initialized) {
+      chrome.runtime.connect({ name: 'popup' });
 
-    chrome.storage.onChanged.addListener((changes) => {
-      // Refresh if config or cache changes
-      if (changes.authConfigs || changes.workspaces || changes.cache || changes.currentUser) {
-        chrome.storage.local
-          .get(['authConfigs', 'workspaces', 'cache', 'currentUser'])
-          .then((data) => {
-            config.authConfigs = data.authConfigs;
-            config.workspaces = data.workspaces;
-            cache = data.cache || { runs: {}, pages: {}, history: {} };
-            currentUser = data.currentUser || {};
-            render();
-          });
-      }
-    });
+      chrome.storage.onChanged.addListener((changes) => {
+        // Refresh if config or cache changes
+        if (changes.authConfigs || changes.workspaces || changes.cache || changes.currentUser) {
+          chrome.storage.local
+            .get(['authConfigs', 'workspaces', 'cache', 'currentUser'])
+            .then((data) => {
+              config.authConfigs = data.authConfigs;
+              config.workspaces = data.workspaces;
+              cache = data.cache || { runs: {}, pages: {}, history: {} };
+              currentUser = data.currentUser || {};
+              render();
+            });
+        }
+      });
+      init.initialized = true;
+    }
 
     const data = await chrome.storage.local.get([
       'authConfigs',
@@ -194,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         runInfoHtml = `<div class="run-info"><strong>${escapeHtml(
           run.display_title || '',
-        )}</strong><br/><span style="opacity: 0.8">${run.actor} | ${relativeTime(
+        )}</strong><br/><span style="opacity: 0.8">${escapeHtml(run.actor)} | ${relativeTime(
           run.updated_at,
         )}</span></div>`;
       }

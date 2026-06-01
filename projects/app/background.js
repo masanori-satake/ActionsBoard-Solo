@@ -171,8 +171,15 @@ async function poll() {
                 );
               }
             }
+          } else if (runs === null) {
+            // API Error
+            results.runs[key] = {
+              status: 'error',
+              conclusion: 'error',
+              error: 'APIエラーが発生しました',
+            };
           } else {
-            // No runs found or error
+            // No runs found
             results.runs[key] = { status: 'none', conclusion: 'none' };
             results.history[key] = [];
           }

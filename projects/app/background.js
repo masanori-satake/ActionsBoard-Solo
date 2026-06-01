@@ -201,7 +201,8 @@ async function poll() {
 
 async function fetchWorkflowRuns(settings, item, count) {
   const baseUrl = settings.baseUrl || DEFAULT_API_URL;
-  const url = `${baseUrl}/repos/${item.owner}/${item.repo}/actions/workflows/${item.workflowFile}/runs?per_page=${count}`;
+  const workflowSelector = item.workflowId || item.workflowFile;
+  const url = `${baseUrl}/repos/${item.owner}/${item.repo}/actions/workflows/${workflowSelector}/runs?per_page=${count}`;
 
   const response = await fetch(url, {
     headers: {

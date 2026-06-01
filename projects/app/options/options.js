@@ -120,9 +120,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       header.innerHTML = `
         <h3 class="md-sys-typescale-title-medium">${escapeHtml(ws.name)}</h3>
         <div class="button-row" style="margin-top: 0">
-          <button class="btn-outline add-item-btn" data-ws-idx="${wsIdx}">追加</button>
-          <button class="btn-outline edit-ws-btn" data-ws-idx="${wsIdx}">編集</button>
-          <button class="btn-error del-ws-btn" data-ws-idx="${wsIdx}">削除</button>
+          <button class="btn-icon-m3 add-item-btn" data-ws-idx="${wsIdx}" data-tooltip="追加"><span class="material-symbols-outlined">add</span></button>
+          <button class="btn-icon-m3 edit-ws-btn" data-ws-idx="${wsIdx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
+          <button class="btn-icon-m3 del-ws-btn btn-error" data-ws-idx="${wsIdx}" data-tooltip="削除"><span class="material-symbols-outlined">delete_sweep</span></button>
         </div>
       `;
       card.appendChild(header);
@@ -139,8 +139,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             <strong>${escapeHtml(item.alias || item.workflowFile)}</strong>
             <small>(${escapeHtml(item.owner)}/${escapeHtml(item.repo)})</small>
           </span>
-          <button class="btn-outline edit-item-btn" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}">編集</button>
-          <button class="btn-error del-item-btn" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}">削除</button>
+          <button class="btn-icon-m3 edit-item-btn" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
+          <button class="btn-icon-m3 del-item-btn btn-error" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="削除"><span class="material-symbols-outlined">delete_sweep</span></button>
         `;
         itemList.appendChild(row);
       });
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           } else {
             alert('無効な設定ファイルです。');
           }
-        } catch (e) {
+        } catch (_e) {
           alert('ファイルの読み込みに失敗しました。');
         }
       };

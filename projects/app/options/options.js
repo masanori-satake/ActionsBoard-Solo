@@ -117,6 +117,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const auth = config.authConfigs[index];
     showToast(`${auth.name} の接続テスト中...`);
 
+    // Request host permission if not already granted (e.g., GHE domains)
+    if (auth.baseUrl !== DEFAULT_API_URL) {
+      const origin = new URL(auth.baseUrl).origin + '/*';
+      const granted = await chrome.permissions.request({ origins: [origin] });
+      if (!granted) {
+        showToast('APIへのアクセス権限が拒否されました。接続テストを中止します。');
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`${auth.baseUrl}/user`, {
         headers: {
@@ -153,9 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
       <div class="field">
         <label>個人アクセストークン (PAT)</label>
-        <input type="password" id="m-auth-pat" value="${escapeHtml(
-          auth.pat,
-        )}" placeholder="ghp_..." />
+        <input type="password" id="m-auth-pat" value="${escapeHtml(auth.pat)}" placeholder="ghp_..." />
         <div class="hint">\`repo\`, \`workflow\`, \`notifications\` 権限が必要です。</div>
       </div>
       <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -192,6 +200,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!name || !pat) {
         showToast('設定名とPATを入力してください。');
         return;
+      }
+
+      // Request host permission for custom GHE domains on save
+      if (baseUrl !== DEFAULT_API_URL) {
+        try {
+          const origin = new URL(baseUrl).origin + '/*';
+          const granted = await chrome.permissions.request({ origins: [origin] });
+          if (!granted) {
+            showToast('APIへのアクセス権限が必要です。保存を中止しました。');
+            return;
+          }
+        } catch (e) {
+          showToast('無効な URL 形式です。');
+          return;
+        }
       }
 
       if (isEdit) {
@@ -309,9 +332,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let authOptions = config.authConfigs
       .map(
         (auth) =>
-          `<option value="${auth.id}" ${auth.id === ws.authConfigId ? 'selected' : ''}>${escapeHtml(
-            auth.name,
-          )}</option>`,
+          `<option value="${auth.id}" ${
+            auth.id === ws.authConfigId ? 'selected' : ''
+          }>${escapeHtml(auth.name)}</option>`,
       )
       .join('');
 
@@ -420,9 +443,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (urlVal) {
         const parsed = parseGitHubUrl(urlVal);
         if (parsed && !validateUrlWithAuth(parsed, authConfig)) {
-          showToast(
-            `URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`,
-          );
+          showToast(`URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`);
           return;
         }
       }
@@ -480,7 +501,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.modalTitle.textContent = 'リポジトリから新規ワークスペースを追加';
 
     let authOptions = config.authConfigs
-      .map((auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`)
+      .map(
+        (auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`,
+      )
       .join('');
 
     elements.modalContent.innerHTML = `
@@ -656,7 +679,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return { ...impAuth, pat: existingPat };
               }
               return impAuth;
-            });
+                });
 
             await chrome.storage.local.set({
               authConfigs: mergedAuth,

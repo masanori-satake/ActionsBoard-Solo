@@ -487,6 +487,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const newItem = {
         owner: ownerInput.value.trim(),
         repo: repoInput.value.trim(),
+        workflowId: item.workflowId || null,
         workflowFile: workflowInput.value.trim(),
         alias: document.getElementById('m-alias').value.trim(),
         isFavorite: document.getElementById('m-fav').checked,
@@ -628,6 +629,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           return {
             owner,
             repo,
+            workflowId: wf.id,
             workflowFile,
             alias: wf.name,
             isFavorite: false,

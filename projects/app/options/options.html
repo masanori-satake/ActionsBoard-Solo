@@ -92,6 +92,29 @@
         color: var(--md-sys-color-error);
       }
 
+      .btn-icon-m3 {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--md-sys-color-on-surface-variant);
+        padding: 8px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+      }
+      .btn-icon-m3:hover {
+        background-color: var(--md-sys-color-surface-variant);
+      }
+      .btn-icon-m3.btn-error {
+        color: var(--md-sys-color-error);
+      }
+      .btn-icon-m3.btn-error:hover {
+        background-color: var(--md-sys-color-error-container);
+        color: var(--md-sys-color-on-error-container);
+      }
+
       /* Workspace List Styles */
       .workspace-card {
         background-color: var(--md-sys-color-surface-container);

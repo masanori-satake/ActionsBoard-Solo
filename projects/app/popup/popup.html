@@ -177,8 +177,11 @@
         border: none;
         cursor: pointer;
         color: var(--md-sys-color-on-surface-variant);
-        padding: 4px;
+        padding: 8px;
         border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       button.icon-btn:hover {
         background-color: var(--md-sys-color-surface-variant);
@@ -201,10 +204,25 @@
   <body>
     <header>
       <div class="header-top">
-        <div class="logo">ActionsBoard-Solo</div>
+        <div style="flex-grow: 1"></div>
         <div>
-          <button id="refresh-btn" class="icon-btn" title="更新">🔄</button>
-          <button id="settings-btn" class="icon-btn" title="設定">⚙️</button>
+          <button
+            id="refresh-btn"
+            class="icon-btn"
+            data-tooltip="更新"
+            data-tooltip-position="bottom"
+          >
+            <span class="material-symbols-outlined">sync</span>
+          </button>
+          <button
+            id="settings-btn"
+            class="icon-btn"
+            data-tooltip="設定"
+            data-tooltip-position="bottom"
+            data-tooltip-align="right"
+          >
+            <span class="material-symbols-outlined">settings</span>
+          </button>
         </div>
       </div>
       <div class="tabs">

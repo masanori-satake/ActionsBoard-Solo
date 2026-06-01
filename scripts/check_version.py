@@ -40,10 +40,14 @@ def check_version_consistency():
             return False
         with open(readme_path, "r", encoding="utf-8") as f:
             content = f.read()
-            # Regex to match version in shields.io badge (supports SemVer including pre-release)
-            match = re.search(r"img\.shields\.io/badge/version-([v\d\.\-]+)-", content)
+            # Regex to match version in shields.io badge (supports SemVer including alpha/beta pre-release)
+            # Shields.io URL format: version-{version}-{color}
+            # Note: Hyphens in version are encoded as double hyphens (--) in shields.io URLs
+            match = re.search(
+                r"img\.shields\.io/badge/version-([a-zA-Z0-9\.\-]+)-[a-zA-Z]+", content
+            )
             if match:
-                readme_version = match.group(1)
+                readme_version = match.group(1).replace("--", "-")
 
         versions = {
             "projects/app/manifest.json": manifest_version,

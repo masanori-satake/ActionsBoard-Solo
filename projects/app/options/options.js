@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast(`接続成功: ${user.login} として認証されました。`);
       } else {
         const err = await response.json();
-        showToast(`接続失敗: ${err.message}`);
+        showToast(`接続失敗: ${err?.message || err}`);
       }
     } catch (err) {
       showToast(`エラー: ${err?.message || err}`);
@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.modal.close();
         showToast(`ワークスペース「${repo}」を追加しました。`);
       } catch (err) {
-        showToast(`エラー: ${err.message}`);
+        showToast(`エラー: ${err?.message || err}`);
       } finally {
         elements.modalSave.disabled = false;
         elements.modalSave.textContent = '保存';

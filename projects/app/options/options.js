@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="button-row" style="margin-top: 0">
           <button class="btn-icon-m3 add-item-btn" data-ws-idx="${wsIdx}" data-tooltip="追加"><span class="material-symbols-outlined">add</span></button>
           <button class="btn-icon-m3 edit-ws-btn" data-ws-idx="${wsIdx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
-          <button class="btn-icon-m3 del-ws-btn btn-error" data-ws-idx="${wsIdx}" data-tooltip="削除"><span class="material-symbols-outlined">delete_sweep</span></button>
+          <button class="btn-icon-m3 del-ws-btn btn-error" data-ws-idx="${wsIdx}" data-tooltip="削除" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
         </div>
       `;
       card.appendChild(header);
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <small>(${escapeHtml(item.owner)}/${escapeHtml(item.repo)})</small>
           </span>
           <button class="btn-icon-m3 edit-item-btn" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
-          <button class="btn-icon-m3 del-item-btn btn-error" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="削除"><span class="material-symbols-outlined">delete_sweep</span></button>
+          <button class="btn-icon-m3 del-item-btn btn-error" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="削除" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
         `;
         itemList.appendChild(row);
       });

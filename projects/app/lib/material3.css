@@ -199,6 +199,28 @@
   opacity: 1;
 }
 
+/* Tooltip Position Customization */
+[data-tooltip-position='bottom']::before {
+  bottom: auto;
+  top: 100%;
+  transform: translateX(-50%) translateY(8px);
+}
+
+/* Tooltip Alignment Customization */
+[data-tooltip-align='right']::before {
+  left: auto;
+  right: 0;
+  transform: translateY(-8px);
+}
+
+[data-tooltip-position='bottom'][data-tooltip-align='right']::before {
+  bottom: auto;
+  top: 100%;
+  left: auto;
+  right: 0;
+  transform: translateY(8px);
+}
+
 body.theme-dark {
   --md-sys-color-primary: #b1c5ff;
   --md-sys-color-on-primary: #002c72;

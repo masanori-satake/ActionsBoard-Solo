@@ -72,24 +72,33 @@
       }
 
       /* Action Card */
-      .card {
+      .workspace-card {
         background-color: var(--md-sys-color-surface-container-low);
         border-radius: var(--md-sys-shape-medium);
-        padding: var(--md-sys-spacing-2);
         margin-bottom: var(--md-sys-spacing-2);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        overflow: hidden;
+      }
+      .workflow-row {
         display: flex;
         flex-direction: column;
-        gap: var(--md-sys-spacing-1);
-        border: 1px solid var(--md-sys-color-outline-variant);
+        padding: 6px var(--md-sys-spacing-2);
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
         transition: background-color 0.2s;
+        cursor: pointer;
+        gap: 2px;
       }
-      .card:hover {
+      .workflow-row:last-child {
+        border-bottom: none;
+      }
+      .workflow-row:hover {
         background-color: var(--md-sys-color-surface-container);
       }
-      .card-header {
+      .row-main {
         display: flex;
-        align-items: flex-start;
-        gap: var(--md-sys-spacing-1-5);
+        align-items: center;
+        gap: var(--md-sys-spacing-1);
+        min-width: 0;
       }
       .status-icon {
         width: 12px;
@@ -125,24 +134,35 @@
       }
       .workflow-name {
         font-weight: 500;
-        font-size: var(--md-sys-typescale-title-medium-size);
-        margin-bottom: 2px;
+        font-size: var(--md-sys-typescale-label-large-size);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+        min-width: 0;
       }
       .repo-info {
-        font-size: var(--md-sys-typescale-label-large-size);
+        font-size: var(--md-sys-typescale-label-small-size);
         color: var(--md-sys-color-on-surface-variant);
+        font-weight: normal;
       }
       .run-info {
-        font-size: var(--md-sys-typescale-body-small-size);
-        margin-top: var(--md-sys-spacing-0-5);
+        font-size: var(--md-sys-typescale-label-small-size);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .run-info strong {
+        font-weight: normal;
       }
 
-      .card-footer {
+      .row-sub {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: var(--md-sys-spacing-1);
-        font-size: var(--md-sys-typescale-label-small-size);
+        padding-left: 20px; /* status-icon (12px) + gap (8px) */
+        min-width: 0;
+        gap: var(--md-sys-spacing-1);
       }
       .pages-badge {
         background-color: var(--md-sys-color-secondary-container);

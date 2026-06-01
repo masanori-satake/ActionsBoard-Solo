@@ -150,6 +150,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const section = document.createElement('div');
     section.className = 'workspace-section';
     section.innerHTML = `<div class="workspace-title">${escapeHtml(title)}</div>`;
+
+    const wsCard = document.createElement('div');
+    wsCard.className = 'workspace-card';
+
     items.forEach((item) => {
       const runKey = `${item.owner}/${item.repo}/${item.workflowFile}`;
       const ws = config.workspaces.find((w) =>
@@ -160,8 +164,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
       const auth = config.authConfigs.find((a) => a.id === ws?.authConfigId);
 
-      section.appendChild(
-        createActionCard(
+      wsCard.appendChild(
+        createActionRow(
           item,
           ws,
           cache.runs[runKey],
@@ -171,12 +175,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         ),
       );
     });
+    section.appendChild(wsCard);
     elements.main.appendChild(section);
   }
 
-  function createActionCard(item, ws, run, pages, history, auth) {
+  function createActionRow(item, ws, run, pages, history, auth) {
     const card = document.createElement('div');
-    card.className = 'card';
+    card.className = 'workflow-row';
     const statusClass =
       run && run.status !== 'none' && run.status !== 'error'
         ? run.status === 'completed'
@@ -197,24 +202,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         runInfoHtml = `<div class="run-info"><strong>${escapeHtml(
           run.display_title || '',
-        )}</strong><br/><span style="opacity: 0.8">${escapeHtml(run.actor)} | ${relativeTime(
+        )}</strong> <span style="opacity: 0.8">| ${escapeHtml(run.actor)} | ${relativeTime(
           run.updated_at,
         )}</span></div>`;
       }
     }
 
     card.innerHTML = `
-      <div class="card-header">
+      <div class="row-main">
         <div class="status-icon ${statusClass}"></div>
-        <div class="card-body">
-          <div class="workflow-name">${escapeHtml(item.alias || item.workflowFile)}</div>
-          <div class="repo-info">${escapeHtml(item.owner)}/${escapeHtml(item.repo)}</div>
-          ${runInfoHtml}
-        </div>
+        <div class="workflow-name">${escapeHtml(item.alias || item.workflowFile)} <span class="repo-info">(${escapeHtml(item.owner)}/${escapeHtml(item.repo)})</span></div>
         ${run?.conclusion === 'failure' ? '<button class="icon-btn log-toggle">📜</button>' : ''}
       </div>
       <div class="log-area"></div>
-      <div class="card-footer">
+      <div class="row-sub">
+        <div style="min-width: 0; flex-grow: 1;">${runInfoHtml}</div>
         <div class="history-dots">${[...(history || [])]
           .reverse()
           .map(

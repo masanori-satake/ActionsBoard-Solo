@@ -103,6 +103,14 @@
       .btn-error {
         color: var(--md-sys-color-error);
       }
+      .btn-error-filled {
+        background-color: var(--md-sys-color-error);
+        color: var(--md-sys-color-on-error);
+      }
+      .btn-error-filled:hover {
+        box-shadow: var(--md-sys-elevation-1);
+        opacity: 0.9;
+      }
 
       .btn-icon-m3 {
         background: none;
@@ -160,6 +168,16 @@
         align-items: center;
         margin-bottom: var(--md-sys-spacing-1);
         font-size: var(--md-sys-typescale-body-large-size);
+      }
+      .item-name,
+      .item-repo {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .item-repo {
+        font-size: var(--md-sys-typescale-label-large-size);
+        color: var(--md-sys-color-on-surface-variant);
       }
       .badge-fav {
         color: #fbc02d; /* Material Yellow */
@@ -253,7 +271,7 @@
           <div class="button-row">
             <button id="export-config" class="btn-outline">エクスポート</button>
             <button id="import-config" class="btn-outline">インポート</button>
-            <button id="reset-config" class="btn-error">全設定を初期化</button>
+            <button id="reset-config" class="btn-error-filled">全設定を初期化</button>
           </div>
           <div class="hint" style="margin-top: var(--md-sys-spacing-2)">
             ※ セキュリティのため、個人アクセストークン（PAT）はエクスポートに含まれません。

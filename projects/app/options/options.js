@@ -153,7 +153,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
       <div class="field">
         <label>個人アクセストークン (PAT)</label>
-        <input type="password" id="m-auth-pat" value="${escapeHtml(auth.pat)}" placeholder="ghp_..." />
+        <input type="password" id="m-auth-pat" value="${escapeHtml(
+          auth.pat,
+        )}" placeholder="ghp_..." />
         <div class="hint">\`repo\`, \`workflow\`, \`notifications\` 権限が必要です。</div>
       </div>
       <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -307,9 +309,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let authOptions = config.authConfigs
       .map(
         (auth) =>
-          `<option value="${auth.id}" ${
-            auth.id === ws.authConfigId ? 'selected' : ''
-          }>${escapeHtml(auth.name)}</option>`,
+          `<option value="${auth.id}" ${auth.id === ws.authConfigId ? 'selected' : ''}>${escapeHtml(
+            auth.name,
+          )}</option>`,
       )
       .join('');
 
@@ -418,7 +420,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (urlVal) {
         const parsed = parseGitHubUrl(urlVal);
         if (parsed && !validateUrlWithAuth(parsed, authConfig)) {
-          showToast(`URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`);
+          showToast(
+            `URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`,
+          );
           return;
         }
       }
@@ -476,9 +480,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.modalTitle.textContent = 'リポジトリから新規ワークスペースを追加';
 
     let authOptions = config.authConfigs
-      .map(
-        (auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`,
-      )
+      .map((auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`)
       .join('');
 
     elements.modalContent.innerHTML = `

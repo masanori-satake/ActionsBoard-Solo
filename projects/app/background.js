@@ -142,6 +142,10 @@ async function poll() {
       if (!authConfig) continue;
 
       for (const [key, item] of itemsMap) {
+        // Initialize with null if not present, to avoid "取得中..." forever if fetch fails silently
+        if (!results.runs[key]) results.runs[key] = currentCache.runs[key] || null;
+        if (!results.history[key]) results.history[key] = currentCache.history[key] || [];
+
         try {
           // Fetch multiple runs for history
           const runs = await fetchWorkflowRuns(authConfig, item, HISTORY_COUNT);
@@ -167,9 +171,14 @@ async function poll() {
                 );
               }
             }
+          } else {
+            // No runs found or error
+            results.runs[key] = { status: 'none', conclusion: 'none' };
+            results.history[key] = [];
           }
         } catch (err) {
           console.error(`[ActionsBoard-Solo] Error polling ${key} with ${authConfig.name}:`, err);
+          results.runs[key] = { status: 'error', conclusion: 'error', error: err.message };
         }
       }
     }

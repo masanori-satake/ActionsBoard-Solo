@@ -21,6 +21,12 @@
       header {
         margin-bottom: var(--md-sys-spacing-4);
       }
+      #error-msg {
+        color: var(--md-sys-color-error);
+        font-weight: bold;
+        margin-bottom: var(--md-sys-spacing-2);
+        display: none;
+      }
       section {
         background-color: var(--md-sys-color-surface-container-low);
         padding: var(--md-sys-spacing-3);
@@ -56,6 +62,12 @@
       input:focus {
         outline: 2px solid var(--md-sys-color-primary);
         border-color: transparent;
+      }
+      input:disabled {
+        background-color: var(--md-sys-color-surface-variant) !important;
+        color: var(--md-sys-color-on-surface-variant) !important;
+        cursor: not-allowed;
+        opacity: 0.7;
       }
       .button-row {
         display: flex;
@@ -191,8 +203,10 @@
               margin-bottom: var(--md-sys-spacing-2);
             "
           >
-            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">GitHub 認証設定</h2>
-            <button id="add-auth" class="btn-secondary">新規認証設定追加</button>
+            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">アカウント</h2>
+            <button id="add-auth" class="btn-icon-m3 btn-secondary" data-tooltip="追加">
+              <span class="material-symbols-outlined">add</span>
+            </button>
           </div>
           <div id="auth-list">
             <!-- Auth configs will be rendered here -->
@@ -209,14 +223,23 @@
               margin-bottom: var(--md-sys-spacing-2);
             "
           >
-            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
-              仮想ワークスペース構成
-            </h2>
-            <div class="button-row" style="margin-top: 0">
-              <button id="add-workspace-repo" class="btn-outline">
-                リポジトリから新規ワークスペースを追加
+            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">ワークスペース</h2>
+            <div class="button-row" style="margin-top: 0; align-items: center;">
+              <button
+                id="add-workspace-repo"
+                class="btn-icon-m3 btn-outline"
+                data-tooltip="リポジトリから追加"
+              >
+                <span class="material-symbols-outlined">account_tree</span>
+                <span
+                  class="material-symbols-outlined"
+                  style="font-size: 18px; margin-left: -8px; margin-top: 8px"
+                  >add</span
+                >
               </button>
-              <button id="add-workspace" class="btn-secondary">新規ワークスペース追加</button>
+              <button id="add-workspace" class="btn-icon-m3 btn-secondary" data-tooltip="追加">
+                <span class="material-symbols-outlined">add</span>
+              </button>
             </div>
           </div>
           <div id="workspace-list">
@@ -228,14 +251,12 @@
         <section id="other-settings">
           <h2 class="md-sys-typescale-title-large">設定</h2>
           <div class="button-row">
-            <div style="display: flex; flex-direction: column; gap: var(--md-sys-spacing-1)">
-              <button id="export-config" class="btn-outline">エクスポート</button>
-              <div class="hint">
-                ※ セキュリティのため、個人アクセストークン（PAT）はエクスポートに含まれません。
-              </div>
-            </div>
+            <button id="export-config" class="btn-outline">エクスポート</button>
             <button id="import-config" class="btn-outline">インポート</button>
             <button id="reset-config" class="btn-error">全設定を初期化</button>
+          </div>
+          <div class="hint" style="margin-top: var(--md-sys-spacing-2)">
+            ※ セキュリティのため、個人アクセストークン（PAT）はエクスポートに含まれません。
           </div>
         </section>
       </main>
@@ -252,9 +273,11 @@
         padding: var(--md-sys-spacing-4);
         background-color: var(--md-sys-color-surface-container-high);
         box-shadow: var(--md-sys-elevation-3);
+        min-width: 400px;
       "
     >
       <h3 id="modal-title" class="md-sys-typescale-title-large"></h3>
+      <div id="error-msg"></div>
       <div id="modal-content"></div>
       <div
         class="button-row"

@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     toast: document.getElementById('toast'),
     modal: document.getElementById('modal'),
     modalTitle: document.getElementById('modal-title'),
+    errorMsg: document.getElementById('error-msg'),
     modalContent: document.getElementById('modal-content'),
     modalSave: document.getElementById('modal-save'),
     modalCancel: document.getElementById('modal-cancel'),
@@ -103,7 +104,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.querySelectorAll('.test-auth-btn').forEach((btn) => {
-      btn.onclick = () => testAuthConfig(parseInt(btn.dataset.idx));
+      btn.onclick = async () => {
+        const auth = config.authConfigs[parseInt(btn.dataset.idx)];
+        showToast(`${auth.name} の接続テスト中...`);
+        const result = await testAuthConfig(auth);
+        if (result.success) {
+          showToast(`接続成功: ${result.login} として認証されました。`);
+        } else {
+          showToast(result.message);
+        }
+      };
     });
     document.querySelectorAll('.edit-auth-btn').forEach((btn) => {
       btn.onclick = () => openAuthModal(parseInt(btn.dataset.idx));
@@ -113,17 +123,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  async function testAuthConfig(index) {
-    const auth = config.authConfigs[index];
-    showToast(`${auth.name} の接続テスト中...`);
-
+  async function testAuthConfig(auth) {
     // Request host permission if not already granted (e.g., GHE domains)
     if (auth.baseUrl !== DEFAULT_API_URL) {
-      const origin = new URL(auth.baseUrl).origin + '/*';
-      const granted = await chrome.permissions.request({ origins: [origin] });
-      if (!granted) {
-        showToast('APIへのアクセス権限が拒否されました。接続テストを中止します。');
-        return;
+      try {
+        const origin = new URL(auth.baseUrl).origin + '/*';
+        const granted = await chrome.permissions.request({ origins: [origin] });
+        if (!granted) {
+          return { success: false, message: 'APIへのアクセス権限が拒否されました。' };
+        }
+      } catch {
+        return { success: false, message: '無効な API ベース URL です。' };
       }
     }
 
@@ -137,19 +147,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (response.ok) {
         const user = await response.json();
-        showToast(`接続成功: ${user.login} として認証されました。`);
+        return { success: true, login: user.login };
       } else {
-        const err = await response.json();
-        showToast(`接続失敗: ${err?.message || err}`);
+        let errMsg = `${response.status} ${response.statusText}`;
+        try {
+          const err = await response.json();
+          errMsg = err.message || errMsg;
+        } catch {
+          /* ignore */
+        }
+        return { success: false, message: `接続失敗: ${errMsg}` };
       }
     } catch (err) {
-      showToast(`エラー: ${err?.message || err}`);
+      return { success: false, message: `エラー: ${err?.message || err}` };
     }
   }
 
   function openAuthModal(index = -1) {
     const isEdit = index !== -1;
-    elements.modalTitle.textContent = isEdit ? '認証設定編集' : '新規認証設定追加';
+    elements.modalTitle.textContent = isEdit ? 'アカウント編集' : 'アカウント追加';
+    elements.errorMsg.style.display = 'none';
+    elements.modalSave.textContent = 'テスト&保存';
+
     const auth = isEdit
       ? config.authConfigs[index]
       : { name: '', pat: '', baseUrl: DEFAULT_API_URL };
@@ -195,28 +214,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     elements.modalSave.onclick = async () => {
+      elements.errorMsg.style.display = 'none';
       const name = document.getElementById('m-auth-name').value.trim();
       const pat = document.getElementById('m-auth-pat').value.trim();
       const baseUrl = document.getElementById('m-auth-url').value.trim() || DEFAULT_API_URL;
 
       if (!name || !pat) {
-        showToast('設定名とPATを入力してください。');
+        elements.errorMsg.textContent = '設定名とPATを入力してください。';
+        elements.errorMsg.style.display = 'block';
         return;
       }
 
-      // Request host permission for custom GHE domains on save
-      if (baseUrl !== DEFAULT_API_URL) {
-        try {
-          const origin = new URL(baseUrl).origin + '/*';
-          const granted = await chrome.permissions.request({ origins: [origin] });
-          if (!granted) {
-            showToast('APIへのアクセス権限が必要です。保存を中止しました。');
-            return;
-          }
-        } catch {
-          showToast('無効な URL 形式です。');
-          return;
-        }
+      elements.modalSave.disabled = true;
+      elements.modalSave.textContent = 'テスト中...';
+
+      const testResult = await testAuthConfig({ name, pat, baseUrl });
+
+      if (!testResult.success) {
+        elements.errorMsg.textContent = testResult.message;
+        elements.errorMsg.style.display = 'block';
+        elements.modalSave.disabled = false;
+        elements.modalSave.textContent = 'テスト&保存';
+        return;
       }
 
       if (isEdit) {
@@ -226,9 +245,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       await chrome.storage.local.set({ authConfigs: config.authConfigs, currentUser: null });
+      chrome.runtime.sendMessage({ action: 'poll' });
       renderAuthConfigs();
       elements.modal.close();
-      showToast('認証設定を保存しました。');
+      showToast(`${testResult.login} として保存しました。`);
+      elements.modalSave.disabled = false;
     };
 
     elements.modal.showModal();
@@ -326,7 +347,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openWorkspaceModal(index = -1) {
     const isEdit = index !== -1;
-    elements.modalTitle.textContent = isEdit ? 'ワークスペース編集' : '新規ワークスペース追加';
+    elements.modalTitle.textContent = isEdit ? 'ワークスペース編集' : 'ワークスペース追加';
+    elements.errorMsg.style.display = 'none';
+    elements.modalSave.textContent = '保存';
     const ws = isEdit
       ? config.workspaces[index]
       : { name: '', authConfigId: config.authConfigs[0]?.id || '' };
@@ -359,7 +382,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const name = document.getElementById('modal-ws-name').value.trim();
       const authConfigId = document.getElementById('modal-ws-auth').value;
       if (!name || !authConfigId) {
-        showToast('必須項目を入力してください。');
+        elements.errorMsg.textContent = '必須項目を入力してください。';
+        elements.errorMsg.style.display = 'block';
         return;
       }
 
@@ -380,6 +404,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openItemModal(wsIdx, itemIdx = -1) {
     const isEdit = itemIdx !== -1;
     elements.modalTitle.textContent = isEdit ? '監視項目の編集' : '監視項目の追加';
+    elements.errorMsg.style.display = 'none';
+    elements.modalSave.textContent = '保存';
     const item = isEdit
       ? config.workspaces[wsIdx].items[itemIdx]
       : { owner: '', repo: '', workflowFile: '', alias: '', isFavorite: false };
@@ -445,9 +471,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (urlVal) {
         const parsed = parseGitHubUrl(urlVal);
         if (parsed && !validateUrlWithAuth(parsed, authConfig)) {
-          showToast(
-            `URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`,
-          );
+          elements.errorMsg.textContent = `URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`;
+          elements.errorMsg.style.display = 'block';
           return;
         }
       }
@@ -461,7 +486,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
 
       if (!newItem.owner || !newItem.repo || !newItem.workflowFile) {
-        showToast('必須項目を入力してください。');
+        elements.errorMsg.textContent = '必須項目を入力してください。';
+        elements.errorMsg.style.display = 'block';
         return;
       }
 
@@ -494,6 +520,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function saveWorkspaces() {
     await chrome.storage.local.set({ workspaces: config.workspaces });
+    chrome.runtime.sendMessage({ action: 'poll' });
     renderWorkspaces();
   }
 
@@ -503,6 +530,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openRepoWorkspaceModal() {
     elements.modalTitle.textContent = 'リポジトリから新規ワークスペースを追加';
+    elements.errorMsg.style.display = 'none';
+    elements.modalSave.textContent = '保存';
 
     let authOptions = config.authConfigs
       .map((auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`)
@@ -523,11 +552,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
 
     elements.modalSave.onclick = async () => {
+      elements.errorMsg.style.display = 'none';
       const inputVal = document.getElementById('modal-repo-path').value.trim();
       const authConfigId = document.getElementById('modal-repo-auth').value;
 
       if (!inputVal || !authConfigId) {
-        showToast('必須項目を入力してください。');
+        elements.errorMsg.textContent = '必須項目を入力してください。';
+        elements.errorMsg.style.display = 'block';
         return;
       }
 
@@ -536,7 +567,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (parsed) {
         if (!validateUrlWithAuth(parsed, authConfig)) {
-          showToast(`URLのドメインが選択した認証設定 (${authConfig.name}) と一致しません。`);
+          elements.errorMsg.textContent = `URLのドメインが選択した認証設定 (${authConfig.name}) と一致しません。`;
+          elements.errorMsg.style.display = 'block';
           return;
         }
       }
@@ -548,7 +580,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else if (inputVal.includes('/')) {
         [owner, repo] = inputVal.split('/');
       } else {
-        showToast('正確なURLまたは Owner/Repo 形式で入力してください。');
+        elements.errorMsg.textContent = '正確なURLまたは Owner/Repo 形式で入力してください。';
+        elements.errorMsg.style.display = 'block';
         return;
       }
 
@@ -605,7 +638,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.modal.close();
         showToast(`ワークスペース「${repo}」を追加しました。`);
       } catch (err) {
-        showToast(`エラー: ${err?.message || err}`);
+        elements.errorMsg.textContent = `エラー: ${err?.message || err}`;
+        elements.errorMsg.style.display = 'block';
       } finally {
         elements.modalSave.disabled = false;
         elements.modalSave.textContent = '保存';

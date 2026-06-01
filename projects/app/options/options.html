@@ -115,6 +115,17 @@
         color: var(--md-sys-color-on-error-container);
       }
 
+      /* Auth Config List Styles */
+      .auth-card {
+        background-color: var(--md-sys-color-surface-container);
+        padding: var(--md-sys-spacing-2);
+        border-radius: var(--md-sys-shape-medium);
+        margin-bottom: var(--md-sys-spacing-2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
       /* Workspace List Styles */
       .workspace-card {
         background-color: var(--md-sys-color-surface-container);
@@ -172,20 +183,19 @@
       <main>
         <!-- API Settings -->
         <section id="api-settings">
-          <h2 class="md-sys-typescale-title-large">GitHub 認証設定</h2>
-          <div class="field">
-            <label for="pat">個人アクセストークン (PAT)</label>
-            <input type="password" id="pat" placeholder="ghp_..." />
-            <div class="hint">`repo`, `workflow`, `notifications` 権限が必要です。</div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: var(--md-sys-spacing-2);
+            "
+          >
+            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">GitHub 認証設定</h2>
+            <button id="add-auth" class="btn-secondary">新規認証設定追加</button>
           </div>
-          <div class="field">
-            <label for="baseUrl">API ベース URL</label>
-            <input type="text" id="baseUrl" value="https://api.github.com" />
-            <div class="hint">GHE の場合は `https://{hostname}/api/v3` を入力してください。</div>
-          </div>
-          <div class="button-row">
-            <button id="save-api" class="btn-primary">認証情報を保存</button>
-            <button id="test-api" class="btn-outline">接続テスト</button>
+          <div id="auth-list">
+            <!-- Auth configs will be rendered here -->
           </div>
         </section>
 

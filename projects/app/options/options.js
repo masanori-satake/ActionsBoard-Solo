@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast(`接続失敗: ${err.message}`);
       }
     } catch (err) {
-      showToast(`エラー: ${err.message}`);
+      showToast(`エラー: ${err?.message || err}`);
     }
   }
 

@@ -212,8 +212,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (run?.conclusion === 'failure' && auth) {
       const logToggle = card.querySelector('.log-toggle');
       const logArea = card.querySelector('.log-area');
-      logToggle.onclick = (e) => {
-        e.stopPropagation();
+      logToggle.onclick = (event) => {
+        event.stopPropagation();
         if (logArea.style.display === 'block') logArea.style.display = 'none';
         else fetchAndShowLogs(run, logArea, auth);
       };
@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         logArea.textContent = '失敗ジョブの詳細が見つかりませんでした。';
       }
-    } catch (e) {
+    } catch {
       logArea.textContent = 'ログの取得に失敗しました。';
     }
   }
@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { Authorization: `token ${settings.pat}` },
       });
       if (res.ok) return (await res.json()).login;
-    } catch (e) {
+    } catch {
       // Ignore authentication errors during initialization
     }
     return null;

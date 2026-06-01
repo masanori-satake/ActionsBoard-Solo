@@ -142,8 +142,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const err = await response.json();
         showToast(`接続失敗: ${err.message}`);
       }
-    } catch (e) {
-      showToast(`エラー: ${e.message}`);
+    } catch (err) {
+      showToast(`エラー: ${err.message}`);
     }
   }
 
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast('APIへのアクセス権限が必要です。保存を中止しました。');
             return;
           }
-        } catch (e) {
+        } catch {
           showToast('無効な URL 形式です。');
           return;
         }
@@ -571,7 +571,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           try {
             const err = await response.json();
             errMsg = err.message || errMsg;
-          } catch (e) {
+          } catch {
             errMsg = `${response.status} ${response.statusText}`;
           }
           throw new Error(errMsg);
@@ -604,8 +604,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         await saveWorkspaces();
         elements.modal.close();
         showToast(`ワークスペース「${repo}」を追加しました。`);
-      } catch (e) {
-        showToast(`エラー: ${e.message}`);
+      } catch (err) {
+        showToast(`エラー: ${err.message}`);
       } finally {
         elements.modalSave.disabled = false;
         elements.modalSave.textContent = '保存';
@@ -646,8 +646,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
-    input.onchange = (e) => {
-      const file = e.target.files[0];
+    input.onchange = (event) => {
+      const file = event.target.files[0];
       const reader = new FileReader();
       reader.onload = async (re) => {
         try {
@@ -691,7 +691,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           } else {
             alert('無効な設定ファイルです。');
           }
-        } catch (_e) {
+        } catch {
           alert('ファイルの読み込みに失敗しました。');
         }
       };
@@ -727,7 +727,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       return { hostname: url.hostname, owner, repo, workflowFile };
-    } catch (e) {
+    } catch {
       return null;
     }
   }

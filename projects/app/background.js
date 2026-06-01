@@ -233,7 +233,7 @@ async function fetchPagesStatus(settings, owner, repo) {
       updated_at: latest.updated_at,
       page_url: latest.page_url,
     };
-  } catch (_e) {
+  } catch {
     return null;
   }
 }

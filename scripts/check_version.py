@@ -1,6 +1,7 @@
 import json
 import sys
 import os
+import re
 
 
 def check_version_consistency():
@@ -31,10 +32,24 @@ def check_version_consistency():
             package_lock_json = json.load(f)
             lock_version = package_lock_json.get("version")
 
+        # 4. README.md (Badge version)
+        readme_path = "README.md"
+        readme_version = None
+        if not os.path.exists(readme_path):
+            print(f"Error: {readme_path} not found", file=sys.stderr)
+            return False
+        with open(readme_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            # Regex to match version in shields.io badge (supports SemVer including pre-release)
+            match = re.search(r"img\.shields\.io/badge/version-([v\d\.\-]+)-", content)
+            if match:
+                readme_version = match.group(1)
+
         versions = {
             "projects/app/manifest.json": manifest_version,
             "package.json": package_version,
             "package-lock.json": lock_version,
+            "README.md": readme_version,
         }
 
         print("Checking version consistency:")

@@ -16,7 +16,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentUser = null;
 
   async function init() {
-    chrome.runtime.connect({ name: 'popup' });
+    if (!init.initialized) {
+      chrome.runtime.connect({ name: 'popup' });
+
+      chrome.storage.onChanged.addListener((changes) => {
+        // Refresh if config or cache changes
+        if (changes.authConfigs || changes.workspaces || changes.cache || changes.currentUser) {
+          chrome.storage.local
+            .get(['authConfigs', 'workspaces', 'cache', 'currentUser'])
+            .then((data) => {
+              config.authConfigs = data.authConfigs;
+              config.workspaces = data.workspaces;
+              cache = data.cache || { runs: {}, pages: {}, history: {} };
+              currentUser = data.currentUser || {};
+              render();
+            });
+        }
+      });
+      init.initialized = true;
+    }
+
     const data = await chrome.storage.local.get([
       'authConfigs',
       'settings',
@@ -158,13 +177,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   function createActionCard(item, ws, run, pages, history, auth) {
     const card = document.createElement('div');
     card.className = 'card';
-    const statusClass = run
-      ? run.status === 'completed'
-        ? run.conclusion === 'success'
-          ? 'status-success'
-          : 'status-failure'
-        : 'status-progress'
-      : '';
+    const statusClass =
+      run && run.status !== 'none' && run.status !== 'error'
+        ? run.status === 'completed'
+          ? run.conclusion === 'success'
+            ? 'status-success'
+            : 'status-failure'
+          : 'status-progress'
+        : '';
+
+    let runInfoHtml = '<div class="run-info">取得中...</div>';
+    if (run) {
+      if (run.status === 'none') {
+        runInfoHtml = '<div class="run-info">実行履歴がありません</div>';
+      } else if (run.status === 'error') {
+        runInfoHtml = `<div class="run-info" style="color: var(--md-sys-color-error)">エラー: ${escapeHtml(
+          run.error || '取得失敗',
+        )}</div>`;
+      } else {
+        runInfoHtml = `<div class="run-info"><strong>${escapeHtml(
+          run.display_title || '',
+        )}</strong><br/><span style="opacity: 0.8">${escapeHtml(run.actor)} | ${relativeTime(
+          run.updated_at,
+        )}</span></div>`;
+      }
+    }
 
     card.innerHTML = `
       <div class="card-header">
@@ -172,21 +209,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="card-body">
           <div class="workflow-name">${escapeHtml(item.alias || item.workflowFile)}</div>
           <div class="repo-info">${escapeHtml(item.owner)}/${escapeHtml(item.repo)}</div>
-          ${
-            run
-              ? `<div class="run-info"><strong>${escapeHtml(
-                  run.display_title || '',
-                )}</strong><br/><span style="opacity: 0.8">${run.actor} | ${relativeTime(
-                  run.updated_at,
-                )}</span></div>`
-              : '<div class="run-info">取得中...</div>'
-          }
+          ${runInfoHtml}
         </div>
         ${run?.conclusion === 'failure' ? '<button class="icon-btn log-toggle">📜</button>' : ''}
       </div>
       <div class="log-area"></div>
       <div class="card-footer">
-        <div class="history-dots">${(history || [])
+        <div class="history-dots">${[...(history || [])]
           .reverse()
           .map(
             (h) =>

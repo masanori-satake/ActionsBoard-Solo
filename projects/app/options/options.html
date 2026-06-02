@@ -37,6 +37,12 @@
         margin-top: 0;
         margin-bottom: var(--md-sys-spacing-2);
         color: var(--md-sys-color-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--md-sys-spacing-1);
+      }
+      h2 .material-symbols-outlined {
+        font-size: 28px;
       }
       .field {
         margin-bottom: var(--md-sys-spacing-3);
@@ -152,6 +158,14 @@
         padding: var(--md-sys-spacing-2);
         border-radius: var(--md-sys-shape-medium);
         margin-bottom: var(--md-sys-spacing-2);
+        border: 2px solid transparent;
+      }
+      .workspace-card.dragging {
+        opacity: 0.5;
+        border: 2px dashed var(--md-sys-color-outline);
+      }
+      .workspace-card.drag-over {
+        border-top: 4px solid var(--md-sys-color-primary);
       }
       .workspace-header {
         display: flex;
@@ -161,6 +175,12 @@
       .item-list {
         margin-top: var(--md-sys-spacing-2);
         padding-left: var(--md-sys-spacing-4);
+        min-height: 16px;
+        border-radius: var(--md-sys-shape-small);
+      }
+      .item-list.drag-over {
+        background-color: var(--md-sys-color-surface-container-high);
+        outline: 2px dashed var(--md-sys-color-primary);
       }
       .item-row {
         display: flex;
@@ -168,6 +188,24 @@
         align-items: center;
         margin-bottom: var(--md-sys-spacing-1);
         font-size: var(--md-sys-typescale-body-large-size);
+        padding: 4px;
+        border-radius: var(--md-sys-shape-small);
+        border: 1px solid transparent;
+      }
+      .item-row.dragging {
+        opacity: 0.5;
+        background-color: var(--md-sys-color-surface-variant);
+      }
+      .item-row.drag-over {
+        border-top: 2px solid var(--md-sys-color-primary);
+      }
+      .drag-handle {
+        cursor: grab;
+        color: var(--md-sys-color-on-surface-variant);
+        user-select: none;
+      }
+      .drag-handle:active {
+        cursor: grabbing;
       }
       .item-name,
       .item-repo {
@@ -221,7 +259,10 @@
               margin-bottom: var(--md-sys-spacing-2);
             "
           >
-            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">アカウント</h2>
+            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
+              <span class="material-symbols-outlined">account_circle</span>
+              アカウント
+            </h2>
             <button id="add-auth" class="btn-icon-m3 btn-secondary" data-tooltip="追加">
               <span class="material-symbols-outlined">add</span>
             </button>
@@ -241,7 +282,10 @@
               margin-bottom: var(--md-sys-spacing-2);
             "
           >
-            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">ワークスペース</h2>
+            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
+              <span class="material-symbols-outlined">view_quilt</span>
+              ワークスペース
+            </h2>
             <div class="button-row" style="margin-top: 0; align-items: center">
               <button
                 id="add-workspace-repo"
@@ -267,7 +311,10 @@
 
         <!-- Advanced Settings (Optional) -->
         <section id="other-settings">
-          <h2 class="md-sys-typescale-title-large">設定</h2>
+          <h2 class="md-sys-typescale-title-large">
+            <span class="material-symbols-outlined">settings</span>
+            設定
+          </h2>
           <div class="button-row">
             <button id="export-config" class="btn-outline">エクスポート</button>
             <button id="import-config" class="btn-outline">インポート</button>

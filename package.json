@@ -1,6 +1,6 @@
 {
   "name": "actionsboard-solo",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "GitHub Actions の実行状態と Pages のデプロイを追跡するコンテキスト指向型ダッシュボード。",
   "scripts": {
     "build": "python3 scripts/build.py",

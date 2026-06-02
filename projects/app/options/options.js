@@ -286,11 +286,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     config.workspaces.forEach((ws, wsIdx) => {
       const card = document.createElement('div');
       card.className = 'workspace-card';
+      card.draggable = true;
+      card.dataset.wsIdx = wsIdx;
 
       const header = document.createElement('div');
       header.className = 'workspace-header';
       header.innerHTML = `
-        <h3 class="md-sys-typescale-title-medium">${escapeHtml(ws.name)}</h3>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined drag-handle ws-drag-handle">drag_indicator</span>
+          <h3 class="md-sys-typescale-title-medium" style="margin: 0;">${escapeHtml(ws.name)}</h3>
+        </div>
         <div class="button-row" style="margin-top: 0">
           <button class="btn-icon-m3 add-item-btn" data-ws-idx="${wsIdx}" data-tooltip="追加"><span class="material-symbols-outlined">add</span></button>
           <button class="btn-icon-m3 edit-ws-btn" data-ws-idx="${wsIdx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
@@ -301,11 +306,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const itemList = document.createElement('div');
       itemList.className = 'item-list';
+      itemList.dataset.wsIdx = wsIdx;
 
       (ws.items || []).forEach((item, itemIdx) => {
         const row = document.createElement('div');
         row.className = 'item-row';
+        row.draggable = true;
+        row.dataset.wsIdx = wsIdx;
+        row.dataset.itemIdx = itemIdx;
         row.innerHTML = `
+          <span class="material-symbols-outlined drag-handle item-drag-handle" style="font-size: 20px;">drag_indicator</span>
           <span class="badge-fav">${item.isFavorite ? '★' : '☆'}</span>
           <div style="flex-grow: 1; min-width: 0;">
             <div class="item-name">${escapeHtml(item.alias || item.workflowFile)}</div>
@@ -326,6 +336,151 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function attachDynamicEvents() {
+    // Drag and Drop for Workspaces
+    const workspaceCards = document.querySelectorAll('.workspace-card');
+    workspaceCards.forEach((card) => {
+      card.addEventListener('dragstart', (e) => {
+        e.stopPropagation();
+        e.dataTransfer.setData('text/plain', `ws:${card.dataset.wsIdx}`);
+        card.classList.add('dragging');
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        workspaceCards.forEach((c) => c.classList.remove('drag-over'));
+      });
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.classList.add('drag-over');
+      });
+      card.addEventListener('dragleave', () => {
+        card.classList.remove('drag-over');
+      });
+      card.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.classList.remove('drag-over');
+        const data = e.dataTransfer.getData('text/plain');
+        if (data.startsWith('ws:')) {
+          const fromIdx = parseInt(data.split(':')[1], 10);
+          const toIdx = parseInt(card.dataset.wsIdx, 10);
+          if (
+            !isNaN(fromIdx) &&
+            !isNaN(toIdx) &&
+            fromIdx !== toIdx &&
+            fromIdx >= 0 &&
+            fromIdx < config.workspaces.length &&
+            toIdx >= 0 &&
+            toIdx < config.workspaces.length
+          ) {
+            const moved = config.workspaces.splice(fromIdx, 1)[0];
+            config.workspaces.splice(toIdx, 0, moved);
+            await saveWorkspaces();
+          }
+        }
+      });
+    });
+
+    // Drag and Drop for Items
+    const itemRows = document.querySelectorAll('.item-row');
+    itemRows.forEach((row) => {
+      row.addEventListener('dragstart', (e) => {
+        e.stopPropagation();
+        e.dataTransfer.setData('text/plain', `item:${row.dataset.wsIdx}:${row.dataset.itemIdx}`);
+        row.classList.add('dragging');
+      });
+      row.addEventListener('dragend', () => {
+        row.classList.remove('dragging');
+        itemRows.forEach((r) => r.classList.remove('drag-over'));
+      });
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        row.classList.add('drag-over');
+      });
+      row.addEventListener('dragleave', () => {
+        row.classList.remove('drag-over');
+      });
+      row.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        row.classList.remove('drag-over');
+        const data = e.dataTransfer.getData('text/plain');
+        if (data.startsWith('item:')) {
+          const parts = data.split(':');
+          const fromWsIdx = parseInt(parts[1], 10);
+          const fromItemIdx = parseInt(parts[2], 10);
+          const toWsIdx = parseInt(row.dataset.wsIdx, 10);
+          const toItemIdx = parseInt(row.dataset.itemIdx, 10);
+
+          if (isNaN(fromWsIdx) || isNaN(fromItemIdx) || isNaN(toWsIdx) || isNaN(toItemIdx)) return;
+
+          const fromWs = config.workspaces[fromWsIdx];
+          const toWs = config.workspaces[toWsIdx];
+          if (!fromWs || !toWs || !fromWs.items || !toWs.items) return;
+          if (
+            fromItemIdx < 0 ||
+            fromItemIdx >= fromWs.items.length ||
+            toItemIdx < 0 ||
+            toItemIdx >= toWs.items.length
+          )
+            return;
+
+          if (fromWsIdx === toWsIdx && fromItemIdx !== toItemIdx) {
+            const moved = fromWs.items.splice(fromItemIdx, 1)[0];
+            toWs.items.splice(toItemIdx, 0, moved);
+            await saveWorkspaces();
+          } else if (fromWsIdx !== toWsIdx) {
+            const moved = fromWs.items.splice(fromItemIdx, 1)[0];
+            toWs.items.splice(toItemIdx, 0, moved);
+            await saveWorkspaces();
+          }
+        }
+      });
+    });
+
+    // Support dropping items into empty workspaces or end of list
+    const itemLists = document.querySelectorAll('.item-list');
+    itemLists.forEach((list) => {
+      list.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        list.classList.add('drag-over');
+      });
+      list.addEventListener('dragleave', () => {
+        list.classList.remove('drag-over');
+      });
+      list.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        list.classList.remove('drag-over');
+        const data = e.dataTransfer.getData('text/plain');
+        if (data.startsWith('item:')) {
+          if (e.target.closest('.item-row')) return;
+
+          const parts = data.split(':');
+          const fromWsIdx = parseInt(parts[1], 10);
+          const fromItemIdx = parseInt(parts[2], 10);
+          const toWsIdx = parseInt(list.dataset.wsIdx, 10);
+
+          if (isNaN(fromWsIdx) || isNaN(fromItemIdx) || isNaN(toWsIdx)) return;
+
+          const fromWs = config.workspaces[fromWsIdx];
+          const toWs = config.workspaces[toWsIdx];
+          if (!fromWs || !toWs || !fromWs.items) return;
+          if (fromItemIdx < 0 || fromItemIdx >= fromWs.items.length) return;
+
+          if (!toWs.items) {
+            toWs.items = [];
+          }
+
+          const moved = fromWs.items.splice(fromItemIdx, 1)[0];
+          toWs.items.push(moved);
+          await saveWorkspaces();
+        }
+      });
+    });
+
     document.querySelectorAll('.edit-ws-btn').forEach((btn) => {
       btn.onclick = () => openWorkspaceModal(parseInt(btn.dataset.wsIdx));
     });

@@ -269,7 +269,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       header.innerHTML = `
         <div class="status-icon ${statusClass}"></div>
         <div class="group-title">${group.title} ${
-          groupItems.length === 0 ? '<span style="font-weight: normal; opacity: 0.6; font-size: 0.9em;">(空)</span>' : ''
+          groupItems.length === 0
+            ? '<span style="font-weight: normal; opacity: 0.6; font-size: 0.9em;">(空)</span>'
+            : ''
         }</div>
         ${groupItems.length > 0 ? '<span class="material-symbols-outlined expand-icon">expand_more</span>' : ''}
       `;

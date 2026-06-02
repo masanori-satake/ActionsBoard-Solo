@@ -307,10 +307,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         row.className = 'item-row';
         row.innerHTML = `
           <span class="badge-fav">${item.isFavorite ? '★' : '☆'}</span>
-          <span style="flex-grow: 1; min-width: 0;">
+          <div style="flex-grow: 1; min-width: 0;">
             <div class="item-name">${escapeHtml(item.alias || item.workflowFile)}</div>
             <div class="item-repo">${escapeHtml(item.owner)}/${escapeHtml(item.repo)}</div>
-          </span>
+          </div>
           <button class="btn-icon-m3 edit-item-btn" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
           <button class="btn-icon-m3 del-item-btn btn-error" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="削除" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
         `;

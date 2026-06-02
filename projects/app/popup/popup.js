@@ -200,11 +200,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           run.error || '取得失敗',
         )}</div>`;
       } else {
-        runInfoHtml = `<div class="run-info"><strong>${escapeHtml(
-          run.display_title || '',
-        )}</strong> <span style="opacity: 0.8">| ${escapeHtml(run.actor)} | ${relativeTime(
-          run.updated_at,
-        )}</span></div>`;
+        const displayTitle = run.display_title
+          ? `<strong>${escapeHtml(run.display_title)}</strong> `
+          : '';
+        const separator = run.display_title ? '| ' : '';
+        runInfoHtml = `<div class="run-info">${displayTitle}<span style="opacity: 0.8">${separator}${escapeHtml(
+          run.actor,
+        )} | ${relativeTime(run.updated_at)}</span></div>`;
       }
     }
 

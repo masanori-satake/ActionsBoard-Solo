@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const header = document.createElement('div');
       header.className = 'accordion-header';
-      if (group.open) header.classList.add('open');
+      if (group.open && groupItems.length > 0) header.classList.add('open');
 
       let statusClass = '';
       if (groupItems.length === 0) {
@@ -269,11 +269,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       header.innerHTML = `
         <div class="status-icon ${statusClass}"></div>
         <div class="group-title">${group.title} ${
-          groupItems.length === 0
-            ? '<span style="font-weight: normal; opacity: 0.6; font-size: 0.9em;">(空)</span>'
-            : ''
+          groupItems.length === 0 ? '<span style="font-weight: normal; opacity: 0.6; font-size: 0.9em;">(空)</span>' : ''
         }</div>
-        <span class="material-symbols-outlined expand-icon">expand_more</span>
+        ${groupItems.length > 0 ? '<span class="material-symbols-outlined expand-icon">expand_more</span>' : ''}
       `;
 
       const content = document.createElement('div');
@@ -311,7 +309,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       header.onclick = () => {
-        header.classList.toggle('open');
+        if (groupItems.length > 0) {
+          header.classList.toggle('open');
+        }
       };
 
       section.appendChild(header);

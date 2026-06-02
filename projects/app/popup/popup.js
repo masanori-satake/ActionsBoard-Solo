@@ -116,6 +116,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('go-to-settings').onclick = () => chrome.runtime.openOptionsPage();
   }
 
+  function getWorkflowStatus(run) {
+    if (!run || run.status === 'none') return 'neutral';
+    if (run.status === 'error' || run.conclusion === 'failure') return 'failure';
+    if (run.status === 'queued' || run.status === 'in_progress') return 'progress';
+    if (run.conclusion === 'success' || run.conclusion === 'cancelled') return 'success';
+    return 'neutral';
+  }
+
   function renderDeveloperMode() {
     const allItems = getAllItems();
     const myActivity = allItems.filter((item) => {
@@ -130,53 +138,184 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!ws) return false;
       return run.actor === currentUser[ws.authConfigId];
     });
-    const favorites = allItems.filter((item) => item.isFavorite);
-    if (favorites.length) renderSection('お気に入り / ピン留め', favorites);
-    if (myActivity.length) renderSection('マイ・アクティビティ', myActivity);
-    else if (!favorites.length)
-      elements.main.innerHTML +=
-        '<p class="empty-state">アクティビティが見つかりませんでした。</p>';
+
+    if (myActivity.length === 0) {
+      elements.main.innerHTML = '<p class="empty-state">アクティビティが見つかりませんでした。</p>';
+      return;
+    }
+
+    renderGroupedItems(myActivity);
   }
 
   function renderTeamMode() {
-    config.workspaces.forEach((ws) => ws.items?.length && renderSection(ws.name, ws.items));
+    config.workspaces.forEach((ws) => {
+      if (!ws.items?.length) return;
+
+      let successCount = 0;
+      let failureCount = 0;
+      let progressCount = 0;
+      let wsStatus = 'success';
+
+      ws.items.forEach((item) => {
+        const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+        const status = getWorkflowStatus(run);
+        if (status === 'failure') {
+          failureCount++;
+          wsStatus = 'failure';
+        } else if (status === 'progress') {
+          progressCount++;
+          if (wsStatus !== 'failure') wsStatus = 'progress';
+        } else if (status === 'success') {
+          if (run.conclusion === 'success') successCount++;
+        }
+      });
+
+      const section = document.createElement('div');
+      section.className = 'workspace-section';
+
+      const header = document.createElement('div');
+      header.className = 'workspace-header';
+      const statusClass =
+        wsStatus === 'failure'
+          ? 'status-failure'
+          : wsStatus === 'progress'
+            ? 'status-progress'
+            : 'status-success';
+
+      header.innerHTML = `
+        <div class="workspace-header-top">
+          <div class="status-icon ${statusClass}"></div>
+          <div class="ws-name">${escapeHtml(ws.name)}</div>
+          <span class="material-symbols-outlined expand-icon">expand_more</span>
+        </div>
+        <div class="workspace-stats">
+          成功: ${successCount}, 失敗: ${failureCount}, 実行中: ${progressCount}
+        </div>
+      `;
+
+      const content = document.createElement('div');
+      content.className = 'workspace-content';
+      const card = document.createElement('div');
+      card.className = 'workspace-card';
+
+      ws.items.forEach((item) => {
+        const runKey = `${item.owner}/${item.repo}/${item.workflowFile}`;
+        const auth = config.authConfigs.find((a) => a.id === ws.authConfigId);
+        card.appendChild(
+          createActionRow(
+            item,
+            ws,
+            cache.runs[runKey],
+            cache.pages[`${item.owner}/${item.repo}`],
+            cache.history[runKey],
+            auth,
+          ),
+        );
+      });
+
+      content.appendChild(card);
+      header.onclick = () => {
+        header.classList.toggle('open');
+      };
+
+      section.appendChild(header);
+      section.appendChild(content);
+      elements.main.appendChild(section);
+    });
   }
 
   function renderOperationsMode() {
-    renderSection('全リポジトリ監視 (Pages同期)', getAllItems());
+    const items = getAllItems();
+    // Sort by updated_at descending
+    items.sort((a, b) => {
+      const runA = cache.runs[`${a.owner}/${a.repo}/${a.workflowFile}`];
+      const runB = cache.runs[`${b.owner}/${b.repo}/${b.workflowFile}`];
+      const dateA = runA?.updated_at ? new Date(runA.updated_at) : new Date(0);
+      const dateB = runB?.updated_at ? new Date(runB.updated_at) : new Date(0);
+      return dateB - dateA;
+    });
+    renderGroupedItems(items);
   }
 
-  function renderSection(title, items) {
-    const section = document.createElement('div');
-    section.className = 'workspace-section';
-    section.innerHTML = `<div class="workspace-title">${escapeHtml(title)}</div>`;
+  function renderGroupedItems(items) {
+    const groups = [
+      { id: 'failure', title: '失敗及びエラー', statuses: ['failure'], open: true },
+      { id: 'progress', title: '実行中', statuses: ['progress'], open: true },
+      { id: 'success', title: '成功及びキャンセル', statuses: ['success', 'neutral'], open: false },
+    ];
 
-    const wsCard = document.createElement('div');
-    wsCard.className = 'workspace-card';
+    groups.forEach((group) => {
+      const groupItems = items.filter((item) => {
+        const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+        return group.statuses.includes(getWorkflowStatus(run));
+      });
 
-    items.forEach((item) => {
-      const runKey = `${item.owner}/${item.repo}/${item.workflowFile}`;
-      const ws = config.workspaces.find((w) =>
-        w.items?.some(
-          (i) =>
-            i.owner === item.owner && i.repo === item.repo && i.workflowFile === item.workflowFile,
-        ),
-      );
-      const auth = config.authConfigs.find((a) => a.id === ws?.authConfigId);
+      const section = document.createElement('div');
+      section.className = 'workspace-section';
 
-      wsCard.appendChild(
-        createActionRow(
-          item,
-          ws,
-          cache.runs[runKey],
-          cache.pages[`${item.owner}/${item.repo}`],
-          cache.history[runKey],
-          auth,
-        ),
-      );
+      const header = document.createElement('div');
+      header.className = 'accordion-header';
+      if (group.open) header.classList.add('open');
+
+      let statusClass = '';
+      if (groupItems.length === 0) {
+        statusClass = 'status-empty';
+      } else {
+        if (group.id === 'failure') statusClass = 'status-failure';
+        else if (group.id === 'progress') statusClass = 'status-progress';
+        else statusClass = 'status-success';
+      }
+
+      header.innerHTML = `
+        <div class="status-icon ${statusClass}"></div>
+        <div class="group-title">${group.title} ${
+          groupItems.length === 0 ? '<span style="font-weight: normal; opacity: 0.6; font-size: 0.9em;">(空)</span>' : ''
+        }</div>
+        <span class="material-symbols-outlined expand-icon">expand_more</span>
+      `;
+
+      const content = document.createElement('div');
+      content.className = 'accordion-content';
+      const card = document.createElement('div');
+      card.className = 'workspace-card';
+
+      if (groupItems.length !== 0) {
+        groupItems.forEach((item) => {
+          const runKey = `${item.owner}/${item.repo}/${item.workflowFile}`;
+          const ws = config.workspaces.find((w) =>
+            w.items?.some(
+              (i) =>
+                i.owner === item.owner &&
+                i.repo === item.repo &&
+                i.workflowFile === item.workflowFile,
+            ),
+          );
+          const auth = config.authConfigs.find((a) => a.id === ws?.authConfigId);
+          card.appendChild(
+            createActionRow(
+              item,
+              ws,
+              cache.runs[runKey],
+              cache.pages[`${item.owner}/${item.repo}`],
+              cache.history[runKey],
+              auth,
+            ),
+          );
+        });
+      }
+
+      if (card.childNodes.length > 0) {
+        content.appendChild(card);
+      }
+
+      header.onclick = () => {
+        header.classList.toggle('open');
+      };
+
+      section.appendChild(header);
+      section.appendChild(content);
+      elements.main.appendChild(section);
     });
-    section.appendChild(wsCard);
-    elements.main.appendChild(section);
   }
 
   function createActionRow(item, ws, run, pages, history, auth) {

@@ -69,6 +69,116 @@
         margin-bottom: var(--md-sys-spacing-1);
         text-transform: uppercase;
         letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: var(--md-sys-spacing-1);
+      }
+
+      /* Accordion */
+      .accordion-header {
+        display: flex;
+        align-items: center;
+        padding: var(--md-sys-spacing-1) var(--md-sys-spacing-2);
+        cursor: pointer;
+        user-select: none;
+        background-color: var(--md-sys-color-surface-container-low);
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        transition: background-color 0.2s;
+      }
+      .accordion-header:hover {
+        background-color: var(--md-sys-color-surface-container);
+      }
+      .accordion-header .status-icon {
+        margin-top: 0;
+        margin-right: var(--md-sys-spacing-1);
+      }
+      .accordion-header .group-title {
+        flex-grow: 1;
+        font-weight: 500;
+        font-size: var(--md-sys-typescale-label-large-size);
+      }
+      .accordion-header .expand-icon {
+        font-size: 18px;
+        transition: transform 0.2s;
+        color: var(--md-sys-color-outline);
+      }
+      .accordion-header.open .expand-icon {
+        transform: rotate(180deg);
+      }
+      .accordion-content {
+        display: none;
+      }
+      .accordion-header.open + .accordion-content {
+        display: block;
+      }
+      .accordion-content .workspace-card {
+        border-radius: 0;
+        border-top: none;
+        margin-bottom: 0;
+      }
+
+      .status-empty {
+        background-color: transparent;
+        border: 2px solid var(--md-sys-color-outline-variant);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        box-sizing: content-box;
+      }
+
+      .workspace-header {
+        display: flex;
+        flex-direction: column;
+        padding: var(--md-sys-spacing-1) var(--md-sys-spacing-2);
+        cursor: pointer;
+        user-select: none;
+        background-color: var(--md-sys-color-surface-container-low);
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        transition: background-color 0.2s;
+      }
+      .workspace-header:hover {
+        background-color: var(--md-sys-color-surface-container);
+      }
+      .workspace-header-top {
+        display: flex;
+        align-items: center;
+        gap: var(--md-sys-spacing-1);
+      }
+      .workspace-header-top .status-icon {
+        margin-top: 0;
+      }
+      .workspace-header-top .ws-name {
+        flex-grow: 1;
+        font-weight: 500;
+        font-size: var(--md-sys-typescale-label-large-size);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .workspace-header-top .expand-icon {
+        font-size: 18px;
+        transition: transform 0.2s;
+        color: var(--md-sys-color-outline);
+      }
+      .workspace-header.open .expand-icon {
+        transform: rotate(180deg);
+      }
+      .workspace-stats {
+        font-size: var(--md-sys-typescale-label-small-size);
+        color: var(--md-sys-color-on-surface-variant);
+        padding-left: 20px; /* status-icon (12px) + gap (8px) */
+      }
+      .workspace-header.open + .workspace-content {
+        display: block;
+      }
+      .workspace-content {
+        display: none;
+      }
+      .workspace-content .workspace-card {
+        border-radius: 0;
+        border-top: none;
+        margin-bottom: 0;
       }
 
       /* Action Card */
@@ -118,6 +228,10 @@
       }
       .status-progress {
         background-color: #fbc02d;
+        animation: pulse 1.5s infinite;
+      }
+      .workspace-header .status-progress,
+      .accordion-header .status-progress {
         animation: pulse 1.5s infinite;
       }
       @keyframes pulse {
@@ -249,8 +363,8 @@
         </div>
       </div>
       <div class="tabs">
-        <div class="tab active" data-mode="developer">開発者</div>
-        <div class="tab" data-mode="team">チームリード</div>
+        <div class="tab active" data-mode="developer">My Activity</div>
+        <div class="tab" data-mode="team">ワークスペース</div>
         <div class="tab" data-mode="operations">運用保守</div>
       </div>
     </header>

@@ -82,7 +82,16 @@ async function poll() {
       settings, // legacy
       workspaces,
       cache: storageCache,
-    } = await chrome.storage.local.get(['authConfigs', 'settings', 'workspaces', 'cache']);
+      notificationSettings,
+      currentUser,
+    } = await chrome.storage.local.get([
+      'authConfigs',
+      'settings',
+      'workspaces',
+      'cache',
+      'notificationSettings',
+      'currentUser',
+    ]);
 
     let migrated = false;
     // Migration logic
@@ -103,6 +112,25 @@ async function poll() {
     }
 
     if (!authConfigs.length || !workspaces?.length) return;
+
+    if (!notificationSettings) {
+      notificationSettings = { scope: 'all', workspaces: [], events: ['failure'] };
+    }
+
+    if (!currentUser) currentUser = {};
+    let currentUserUpdated = false;
+    for (const authConfig of authConfigs) {
+      if (!currentUser[authConfig.id]) {
+        const login = await fetchCurrentUser(authConfig);
+        if (login) {
+          currentUser[authConfig.id] = login;
+          currentUserUpdated = true;
+        }
+      }
+    }
+    if (currentUserUpdated) {
+      await chrome.storage.local.set({ currentUser });
+    }
 
     // Ensure all workspaces have an authConfigId (for migration)
     workspaces.forEach((ws) => {
@@ -158,7 +186,16 @@ async function poll() {
               id: r.id,
             }));
 
-            checkFailureNotification(key, latestRun, currentCache.runs[key]);
+            const context = {
+              notificationSettings,
+              currentUser: currentUser?.[authConfigId],
+              itemWorkspaces: workspaces.filter((ws) =>
+                ws.items?.some((i) => `${i.owner}/${i.repo}/${i.workflowFile}` === key),
+              ),
+              latestRun,
+            };
+
+            checkFailureNotification(key, latestRun, currentCache.runs[key], context);
 
             if (latestRun.conclusion === 'success') {
               const pagesStatus = await fetchPagesStatus(authConfig, item.owner, item.repo);
@@ -168,6 +205,7 @@ async function poll() {
                   item,
                   pagesStatus,
                   currentCache.pages[`${item.owner}/${item.repo}`],
+                  context,
                 );
               }
             }
@@ -228,6 +266,24 @@ async function fetchWorkflowRuns(settings, item, count) {
   }));
 }
 
+async function fetchCurrentUser(authConfig) {
+  try {
+    const res = await fetch(`${authConfig.baseUrl}/user`, {
+      headers: {
+        Authorization: `token ${authConfig.pat}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.login;
+    }
+  } catch (err) {
+    console.error(`[ActionsBoard-Solo] Error fetching current user for ${authConfig.name}:`, err);
+  }
+  return null;
+}
+
 async function fetchPagesStatus(settings, owner, repo) {
   const baseUrl = settings.baseUrl || DEFAULT_API_URL;
   const url = `${baseUrl}/repos/${owner}/${repo}/pages/deployments`;
@@ -257,26 +313,56 @@ async function fetchPagesStatus(settings, owner, repo) {
 
 // --- Notification & UI Helpers ---
 
-function checkFailureNotification(key, current, previous) {
+function shouldNotify(type, run, context) {
+  const { notificationSettings, currentUser, itemWorkspaces } = context;
+
+  // 1. Event type check
+  if (!notificationSettings.events.includes(type)) return false;
+
+  // 2. Scope check
+  if (notificationSettings.scope === 'all') return true;
+
+  if (notificationSettings.scope === 'my-activity') {
+    return run.actor === currentUser;
+  }
+
+  if (notificationSettings.scope === 'workspaces') {
+    return itemWorkspaces.some((ws) => notificationSettings.workspaces.includes(ws.id));
+  }
+
+  return false;
+}
+
+function checkFailureNotification(key, current, previous, context) {
   if (current.status === 'completed' && current.conclusion === 'failure') {
     if (!previous || previous.id !== current.id) {
-      showNotification(
-        `❌ Build Failure: ${key}`,
-        `${current.display_title} by ${current.actor}`,
-        current.html_url,
-      );
+      if (shouldNotify('failure', current, context)) {
+        showNotification(
+          `❌ Build Failure: ${key}`,
+          `${current.display_title} by ${current.actor}`,
+          current.html_url,
+        );
+      }
     }
   }
 }
 
-function checkPagesNotification(item, current, previous) {
+function checkPagesNotification(item, current, previous, context) {
   if (current.status === 'deliverable') {
     if (!previous || (previous.id !== current.id && previous.status !== 'deliverable')) {
-      showNotification(
-        `🟢 Pages Deployed: ${item.alias || item.repo}`,
-        `Your changes are now live on GitHub Pages.`,
-        current.page_url,
-      );
+      // For pages notification, the 'run' object used in shouldNotify is just the latest run
+      // but actor might not be easily available from pages deployment.
+      // However, checkPagesNotification is called only if latestRun.conclusion === 'success'.
+      // In this case, we can pass the latestRun as context for actor-based filtering.
+      // Wait, shouldNotify expects 'run' for actor check.
+      // We'll use the latest run that triggered this check.
+      if (shouldNotify('pages', context.latestRun || {}, context)) {
+        showNotification(
+          `🟢 Pages Deployed: ${item.alias || item.repo}`,
+          `Your changes are now live on GitHub Pages.`,
+          current.page_url,
+        );
+      }
     }
   }
 }

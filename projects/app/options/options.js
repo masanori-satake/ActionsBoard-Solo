@@ -16,11 +16,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     modalContent: document.getElementById('modal-content'),
     modalSave: document.getElementById('modal-save'),
     modalCancel: document.getElementById('modal-cancel'),
+    notifScope: document.getElementById('notif-scope'),
+    notifWorkspacesContainer: document.getElementById('notif-workspaces-container'),
+    notifWorkspacesList: document.getElementById('notif-workspaces-list'),
+    notifEventFailure: document.getElementById('notif-event-failure'),
+    notifEventPages: document.getElementById('notif-event-pages'),
   };
 
   let config = {
     authConfigs: [],
     workspaces: [],
+    notificationSettings: {
+      scope: 'all', // all, my-activity, workspaces
+      workspaces: [], // list of workspace IDs
+      events: ['failure'], // failure, pages
+    },
   };
 
   const DEFAULT_API_URL = 'https://api.github.com';
@@ -28,7 +38,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- Initialization ---
 
   async function loadConfig() {
-    const data = await chrome.storage.local.get(['authConfigs', 'settings', 'workspaces']);
+    const data = await chrome.storage.local.get([
+      'authConfigs',
+      'settings',
+      'workspaces',
+      'notificationSettings',
+    ]);
 
     // Migration
     if (data.authConfigs) {
@@ -60,8 +75,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
+    if (data.notificationSettings) {
+      config.notificationSettings = {
+        ...config.notificationSettings,
+        ...data.notificationSettings,
+      };
+    }
+
     renderAuthConfigs();
     renderWorkspaces();
+    renderNotificationSettings();
   }
 
   await loadConfig();
@@ -686,6 +709,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await chrome.storage.local.set({ workspaces: config.workspaces });
     chrome.runtime.sendMessage({ action: 'poll' });
     renderWorkspaces();
+    renderNotificationSettings(); // Refresh workspace list in notification settings
   }
 
   elements.addWorkspaceBtn.onclick = () => openWorkspaceModal();
@@ -898,6 +922,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     input.click();
   };
+
+  // --- Notification Settings Logic ---
+
+  function renderNotificationSettings() {
+    const ns = config.notificationSettings;
+    elements.notifScope.value = ns.scope;
+    elements.notifEventFailure.checked = ns.events.includes('failure');
+    elements.notifEventPages.checked = ns.events.includes('pages');
+
+    if (ns.scope === 'workspaces') {
+      // Clean up deleted workspaces from settings
+      const validWsIds = config.workspaces.map((ws) => ws.id);
+      config.notificationSettings.workspaces = ns.workspaces.filter((id) =>
+        validWsIds.includes(id),
+      );
+
+      elements.notifWorkspacesContainer.style.display = 'block';
+      elements.notifWorkspacesList.innerHTML = '';
+      if (config.workspaces.length === 0) {
+        elements.notifWorkspacesList.innerHTML =
+          '<div class="hint">ワークスペースがありません</div>';
+      } else {
+        config.workspaces.forEach((ws) => {
+          const div = document.createElement('div');
+          div.style.display = 'flex';
+          div.style.alignItems = 'center';
+          div.style.gap = '8px';
+          const escapedId = escapeHtml(ws.id);
+          const checked = ns.workspaces.includes(ws.id);
+          div.innerHTML = `
+            <input type="checkbox" id="ns-ws-${escapedId}" ${checked ? 'checked' : ''} data-id="${escapedId}" style="width: 16px; height: 16px;">
+            <label for="ns-ws-${escapedId}" style="margin-bottom: 0; font-weight: normal;">${escapeHtml(ws.name)}</label>
+          `;
+          div.querySelector('input').onchange = (e) => {
+            if (e.target.checked) {
+              if (!ns.workspaces.includes(ws.id)) ns.workspaces.push(ws.id);
+            } else {
+              config.notificationSettings.workspaces = ns.workspaces.filter((id) => id !== ws.id);
+            }
+            saveNotificationSettings();
+          };
+          elements.notifWorkspacesList.appendChild(div);
+        });
+      }
+    } else {
+      elements.notifWorkspacesContainer.style.display = 'none';
+    }
+  }
+
+  async function saveNotificationSettings() {
+    await chrome.storage.local.set({ notificationSettings: config.notificationSettings });
+  }
+
+  elements.notifScope.onchange = () => {
+    config.notificationSettings.scope = elements.notifScope.value;
+    renderNotificationSettings();
+    saveNotificationSettings();
+  };
+
+  const onEventChange = () => {
+    const events = [];
+    if (elements.notifEventFailure.checked) events.push('failure');
+    if (elements.notifEventPages.checked) events.push('pages');
+    config.notificationSettings.events = events;
+    saveNotificationSettings();
+  };
+
+  elements.notifEventFailure.onchange = onEventChange;
+  elements.notifEventPages.onchange = onEventChange;
 
   // --- Utils ---
 

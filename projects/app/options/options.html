@@ -309,6 +309,64 @@
           </div>
         </section>
 
+        <!-- Notification Settings -->
+        <section id="notification-settings">
+          <h2 class="md-sys-typescale-title-large">
+            <span class="material-symbols-outlined">notifications</span>
+            通知設定
+          </h2>
+
+          <div class="field">
+            <label>通知対象の範囲</label>
+            <select id="notif-scope">
+              <option value="all">すべて</option>
+              <option value="my-activity">My Activityのみ</option>
+              <option value="workspaces">特定のワークスペース</option>
+            </select>
+          </div>
+
+          <div
+            id="notif-workspaces-container"
+            style="
+              display: none;
+              margin-left: var(--md-sys-spacing-2);
+              margin-bottom: var(--md-sys-spacing-2);
+            "
+          >
+            <label class="md-sys-typescale-label-large">通知するワークスペースを選択:</label>
+            <div
+              id="notif-workspaces-list"
+              style="
+                margin-top: var(--md-sys-spacing-1);
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+              "
+            >
+              <!-- Workspace checkboxes will be rendered here -->
+            </div>
+          </div>
+
+          <div class="field">
+            <label>通知するイベント</label>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input
+                  type="checkbox"
+                  id="notif-event-failure"
+                  checked
+                  style="width: 18px; height: 18px"
+                />
+                <label for="notif-event-failure" style="margin-bottom: 0">ビルド失敗</label>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="notif-event-pages" style="width: 18px; height: 18px" />
+                <label for="notif-event-pages" style="margin-bottom: 0">Pagesデプロイ</label>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Advanced Settings (Optional) -->
         <section id="other-settings">
           <h2 class="md-sys-typescale-title-large">

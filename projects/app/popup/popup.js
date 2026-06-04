@@ -455,18 +455,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return items;
   }
 
-  async function getCurrentUser(settings) {
-    try {
-      const res = await fetchWithTimeout(`${settings.baseUrl}/user`, {
-        headers: { Authorization: `token ${settings.pat}` },
-      });
-      if (res.ok) return (await res.json()).login;
-    } catch {
-      // Ignore authentication errors during initialization
-    }
-    return null;
-  }
-
   function relativeTime(dateStr) {
     if (!dateStr) return '';
     const diff = Math.round((new Date() - new Date(dateStr)) / 1000);

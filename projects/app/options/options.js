@@ -941,7 +941,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.notifWorkspacesContainer.style.display = 'block';
       elements.notifWorkspacesList.innerHTML = '';
       if (config.workspaces.length === 0) {
-        elements.notifWorkspacesList.innerHTML = '<div class="hint">ワークスペースがありません</div>';
+        elements.notifWorkspacesList.innerHTML =
+          '<div class="hint">ワークスペースがありません</div>';
       } else {
         config.workspaces.forEach((ws) => {
           const div = document.createElement('div');

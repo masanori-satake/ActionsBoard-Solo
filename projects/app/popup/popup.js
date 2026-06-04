@@ -59,15 +59,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (config.authConfigs?.length) {
       let changed = false;
-      for (const auth of config.authConfigs) {
-        if (!currentUser[auth.id]) {
-          const login = await getCurrentUser(auth);
-          if (login) {
-            currentUser[auth.id] = login;
-            changed = true;
+      await Promise.all(
+        config.authConfigs.map(async (auth) => {
+          if (!currentUser[auth.id]) {
+            const login = await getCurrentUser(auth);
+            if (login) {
+              currentUser[auth.id] = login;
+              changed = true;
+            }
           }
-        }
-      }
+        }),
+      );
       if (changed) {
         await chrome.storage.local.set({ currentUser });
       }
@@ -399,11 +401,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     return card;
   }
 
+  async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 10000 } = options;
+
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+
+    return response;
+  }
+
   async function fetchAndShowLogs(run, logArea, auth) {
     logArea.textContent = 'ログを取得中...';
     logArea.style.display = 'block';
     try {
-      const res = await fetch(`${run.jobs_url}`, {
+      const res = await fetchWithTimeout(`${run.jobs_url}`, {
         headers: { Authorization: `token ${auth.pat}` },
       });
       if (!res.ok) throw new Error();
@@ -435,7 +452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function getCurrentUser(settings) {
     try {
-      const res = await fetch(`${settings.baseUrl}/user`, {
+      const res = await fetchWithTimeout(`${settings.baseUrl}/user`, {
         headers: { Authorization: `token ${settings.pat}` },
       });
       if (res.ok) return (await res.json()).login;

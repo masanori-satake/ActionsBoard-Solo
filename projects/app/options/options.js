@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-      const response = await fetch(`${auth.baseUrl}/user`, {
+      const response = await fetchWithTimeout(`${auth.baseUrl}/user`, {
         headers: {
           Authorization: `token ${auth.pat}`,
           Accept: 'application/vnd.github.v3+json',
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.modalSave.textContent = '取得中...';
 
       try {
-        const response = await fetch(
+        const response = await fetchWithTimeout(
           `${authConfig.baseUrl}/repos/${owner}/${repo}/actions/workflows`,
           {
             headers: {
@@ -1000,6 +1000,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   elements.notifEventPages.onchange = onEventChange;
 
   // --- Utils ---
+
+  async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 10000 } = options;
+
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+
+    return response;
+  }
 
   /**
    * Parse GitHub browse URL to extract owner, repo, and workflow file.

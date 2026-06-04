@@ -174,6 +174,8 @@ async function poll() {
     });
 
     const pollPromises = [];
+    const pagesPromises = new Map();
+    const processedPages = new Set();
 
     for (const [authConfigId, itemsMap] of fetchGroups) {
       const authConfig = authConfigs.find((c) => c.id === authConfigId);
@@ -210,13 +212,21 @@ async function poll() {
                 checkFailureNotification(key, latestRun, currentCache.runs[key], context);
 
                 if (latestRun.conclusion === 'success') {
-                  const pagesStatus = await fetchPagesStatus(authConfig, item.owner, item.repo);
-                  if (pagesStatus) {
-                    results.pages[`${item.owner}/${item.repo}`] = pagesStatus;
+                  const pagesKey = `${item.owner}/${item.repo}`;
+                  if (!pagesPromises.has(pagesKey)) {
+                    pagesPromises.set(
+                      pagesKey,
+                      fetchPagesStatus(authConfig, item.owner, item.repo),
+                    );
+                  }
+                  const pagesStatus = await pagesPromises.get(pagesKey);
+                  if (pagesStatus && !processedPages.has(pagesKey)) {
+                    processedPages.add(pagesKey);
+                    results.pages[pagesKey] = pagesStatus;
                     checkPagesNotification(
                       item,
                       pagesStatus,
-                      currentCache.pages[`${item.owner}/${item.repo}`],
+                      currentCache.pages[pagesKey],
                       context,
                     );
                   }

@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Support for multiple current users (one per auth config)
     // Mapping: { authConfigId: login }
+    // Fetching currentUser is centrally managed by background.js.
     currentUser = data.currentUser || {};
 
     cache = data.cache || { runs: {}, pages: {}, history: {} };
@@ -61,26 +62,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       tab.classList.toggle('active', tab.dataset.mode === currentMode),
     );
 
-    if (config.authConfigs?.length) {
-      let changed = false;
-      const userMap = {};
-      await Promise.all(
-        config.authConfigs.map(async (auth) => {
-          if (!currentUser[auth.id]) {
-            const login = await getCurrentUser(auth);
-            if (login) {
-              userMap[auth.id] = login;
-              changed = true;
-            }
-          }
-        }),
-      );
-      if (changed) {
-        const data = await chrome.storage.local.get('currentUser');
-        currentUser = { ...(data.currentUser || {}), ...userMap };
-        await chrome.storage.local.set({ currentUser });
-      }
-    }
     render();
   }
 

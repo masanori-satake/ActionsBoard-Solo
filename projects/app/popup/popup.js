@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="row-main">
         <div class="status-icon ${statusClass}"></div>
         <div class="workflow-name">${escapeHtml(item.alias || item.workflowFile)} <span class="repo-info">(${escapeHtml(item.owner)}/${escapeHtml(item.repo)})</span></div>
-        ${run?.conclusion === 'failure' ? '<button class="icon-btn log-toggle">📜</button>' : ''}
+        ${run?.conclusion === 'failure' ? '<button class="icon-btn log-toggle"><span class="material-symbols-outlined" style="font-size: 18px;">terminal</span></button>' : ''}
       </div>
       <div class="log-area"></div>
       <div class="row-sub">

@@ -941,18 +941,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.notifWorkspacesContainer.style.display = 'block';
       elements.notifWorkspacesList.innerHTML = '';
       if (config.workspaces.length === 0) {
-        elements.notifWorkspacesList.innerHTML =
-          '<div class="hint">ワークスペースがありません</div>';
+        elements.notifWorkspacesList.innerHTML = '<div class="hint">ワークスペースがありません</div>';
       } else {
         config.workspaces.forEach((ws) => {
           const div = document.createElement('div');
           div.style.display = 'flex';
           div.style.alignItems = 'center';
           div.style.gap = '8px';
+          const escapedId = escapeHtml(ws.id);
           const checked = ns.workspaces.includes(ws.id);
           div.innerHTML = `
-            <input type="checkbox" id="ns-ws-${ws.id}" ${checked ? 'checked' : ''} data-id="${ws.id}" style="width: 16px; height: 16px;">
-            <label for="ns-ws-${ws.id}" style="margin-bottom: 0; font-weight: normal;">${escapeHtml(ws.name)}</label>
+            <input type="checkbox" id="ns-ws-${escapedId}" ${checked ? 'checked' : ''} data-id="${escapedId}" style="width: 16px; height: 16px;">
+            <label for="ns-ws-${escapedId}" style="margin-bottom: 0; font-weight: normal;">${escapeHtml(ws.name)}</label>
           `;
           div.querySelector('input').onchange = (e) => {
             if (e.target.checked) {

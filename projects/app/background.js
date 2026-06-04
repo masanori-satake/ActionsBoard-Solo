@@ -120,12 +120,10 @@ async function poll() {
     if (!currentUser) currentUser = {};
     let currentUserUpdated = false;
     for (const authConfig of authConfigs) {
-      if (!currentUser[authConfig.id]) {
+      if (!(authConfig.id in currentUser)) {
         const login = await fetchCurrentUser(authConfig);
-        if (login) {
-          currentUser[authConfig.id] = login;
-          currentUserUpdated = true;
-        }
+        currentUser[authConfig.id] = login;
+        currentUserUpdated = true;
       }
     }
     if (currentUserUpdated) {
@@ -317,17 +315,17 @@ function shouldNotify(type, run, context) {
   const { notificationSettings, currentUser, itemWorkspaces } = context;
 
   // 1. Event type check
-  if (!notificationSettings.events.includes(type)) return false;
+  if (!notificationSettings?.events?.includes(type)) return false;
 
   // 2. Scope check
   if (notificationSettings.scope === 'all') return true;
 
   if (notificationSettings.scope === 'my-activity') {
-    return run.actor === currentUser;
+    return !!currentUser && !!run?.actor && run.actor === currentUser;
   }
 
   if (notificationSettings.scope === 'workspaces') {
-    return itemWorkspaces.some((ws) => notificationSettings.workspaces.includes(ws.id));
+    return itemWorkspaces.some((ws) => notificationSettings.workspaces?.includes(ws.id));
   }
 
   return false;

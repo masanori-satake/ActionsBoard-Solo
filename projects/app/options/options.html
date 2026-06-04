@@ -244,8 +244,10 @@
   <body>
     <div class="container">
       <header>
-        <h1 class="md-sys-typescale-headline-large">ActionsBoard-Solo 設定</h1>
-        <p class="md-sys-typescale-body-large">GitHub Actions 監視のための設定を行います。</p>
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h1 class="md-sys-typescale-headline-large">ActionsBoard-Solo 設定</h1>
+          <span id="version-display" class="md-sys-typescale-body-large" style="color: var(--md-sys-color-on-surface-variant);"></span>
+        </div>
       </header>
 
       <main>
@@ -269,43 +271,6 @@
           </div>
           <div id="auth-list">
             <!-- Auth configs will be rendered here -->
-          </div>
-        </section>
-
-        <!-- Workspace Settings -->
-        <section id="workspace-settings">
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: var(--md-sys-spacing-2);
-            "
-          >
-            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
-              <span class="material-symbols-outlined">view_quilt</span>
-              ワークスペース
-            </h2>
-            <div class="button-row" style="margin-top: 0; align-items: center">
-              <button
-                id="add-workspace-repo"
-                class="btn-icon-m3 btn-outline"
-                data-tooltip="リポジトリから追加"
-              >
-                <span class="material-symbols-outlined">account_tree</span>
-                <span
-                  class="material-symbols-outlined"
-                  style="font-size: 18px; margin-left: -8px; margin-top: 8px"
-                  >add</span
-                >
-              </button>
-              <button id="add-workspace" class="btn-icon-m3 btn-secondary" data-tooltip="追加">
-                <span class="material-symbols-outlined">add</span>
-              </button>
-            </div>
-          </div>
-          <div id="workspace-list">
-            <!-- Workspaces will be rendered here -->
           </div>
         </section>
 
@@ -364,6 +329,43 @@
                 <label for="notif-event-pages" style="margin-bottom: 0">Pagesデプロイ</label>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- Workspace Settings -->
+        <section id="workspace-settings">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: var(--md-sys-spacing-2);
+            "
+          >
+            <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
+              <span class="material-symbols-outlined">view_quilt</span>
+              ワークスペース
+            </h2>
+            <div class="button-row" style="margin-top: 0; align-items: center">
+              <button
+                id="add-workspace-repo"
+                class="btn-icon-m3 btn-outline"
+                data-tooltip="リポジトリから追加"
+              >
+                <span class="material-symbols-outlined">account_tree</span>
+                <span
+                  class="material-symbols-outlined"
+                  style="font-size: 18px; margin-left: -8px; margin-top: 8px"
+                  >add</span
+                >
+              </button>
+              <button id="add-workspace" class="btn-icon-m3 btn-secondary" data-tooltip="追加">
+                <span class="material-symbols-outlined">add</span>
+              </button>
+            </div>
+          </div>
+          <div id="workspace-list">
+            <!-- Workspaces will be rendered here -->
           </div>
         </section>
 

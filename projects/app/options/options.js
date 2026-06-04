@@ -21,7 +21,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     notifWorkspacesList: document.getElementById('notif-workspaces-list'),
     notifEventFailure: document.getElementById('notif-event-failure'),
     notifEventPages: document.getElementById('notif-event-pages'),
+    versionDisplay: document.getElementById('version-display'),
   };
+
+  // Display version from manifest
+  const manifest = chrome.runtime.getManifest();
+  elements.versionDisplay.textContent = `v${manifest.version}`;
 
   let config = {
     authConfigs: [],

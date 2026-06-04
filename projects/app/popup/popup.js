@@ -59,18 +59,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (config.authConfigs?.length) {
       let changed = false;
+      const userMap = {};
       await Promise.all(
         config.authConfigs.map(async (auth) => {
           if (!currentUser[auth.id]) {
             const login = await getCurrentUser(auth);
             if (login) {
-              currentUser[auth.id] = login;
+              userMap[auth.id] = login;
               changed = true;
             }
           }
         }),
       );
       if (changed) {
+        const data = await chrome.storage.local.get('currentUser');
+        currentUser = { ...(data.currentUser || {}), ...userMap };
         await chrome.storage.local.set({ currentUser });
       }
     }
@@ -407,13 +410,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
 
-    const response = await fetch(resource, {
-      ...options,
-      signal: controller.signal,
-    });
-    clearTimeout(id);
-
-    return response;
+    try {
+      const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal,
+      });
+      return response;
+    } finally {
+      clearTimeout(id);
+    }
   }
 
   async function fetchAndShowLogs(run, logArea, auth) {

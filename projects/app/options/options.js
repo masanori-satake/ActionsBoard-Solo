@@ -1007,13 +1007,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
 
-    const response = await fetch(resource, {
-      ...options,
-      signal: controller.signal,
-    });
-    clearTimeout(id);
-
-    return response;
+    try {
+      const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal,
+      });
+      return response;
+    } finally {
+      clearTimeout(id);
+    }
   }
 
   /**

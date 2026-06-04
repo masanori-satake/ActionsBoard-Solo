@@ -119,6 +119,7 @@ async function poll() {
 
     if (!currentUser) currentUser = {};
     let currentUserUpdated = false;
+    const userMap = {};
 
     // Fetch current user for each auth config in parallel if missing
     await Promise.all(
@@ -126,7 +127,7 @@ async function poll() {
         if (!currentUser[authConfig.id]) {
           const login = await fetchCurrentUser(authConfig);
           if (login) {
-            currentUser[authConfig.id] = login;
+            userMap[authConfig.id] = login;
             currentUserUpdated = true;
           }
         }
@@ -134,6 +135,8 @@ async function poll() {
     );
 
     if (currentUserUpdated) {
+      const data = await chrome.storage.local.get('currentUser');
+      currentUser = { ...(data.currentUser || {}), ...userMap };
       await chrome.storage.local.set({ currentUser });
     }
 
@@ -259,13 +262,15 @@ async function fetchWithTimeout(resource, options = {}) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
-  const response = await fetch(resource, {
-    ...options,
-    signal: controller.signal,
-  });
-  clearTimeout(id);
-
-  return response;
+  try {
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
 }
 
 async function fetchWorkflowRuns(settings, item, count) {

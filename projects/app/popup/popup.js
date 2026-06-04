@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cache = {};
   let currentUser = null;
 
+  // Track manually toggled accordion states to persist across re-renders
+  // Mapping: { 'ws:wsId': boolean, 'group:groupId': boolean }
+  const accordionStates = {};
+
   async function init() {
     if (!init.initialized) {
       chrome.runtime.connect({ name: 'popup' });
@@ -180,6 +184,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const header = document.createElement('div');
       header.className = 'workspace-header';
+      const wsKey = `ws:${ws.id}`;
+      // Workspaces are closed by default unless manually opened
+      if (accordionStates[wsKey]) {
+        header.classList.add('open');
+      }
+
       const statusClass =
         wsStatus === 'failure'
           ? 'status-failure'
@@ -220,7 +230,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       content.appendChild(card);
       header.onclick = () => {
-        header.classList.toggle('open');
+        const isOpen = header.classList.toggle('open');
+        accordionStates[wsKey] = isOpen;
       };
 
       section.appendChild(header);
@@ -260,7 +271,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const header = document.createElement('div');
       header.className = 'accordion-header';
-      if (group.open && groupItems.length > 0) header.classList.add('open');
+      const groupKey = `group:${group.id}`;
+      // Groups use initial open logic if not manually toggled
+      const isOpen =
+        accordionStates[groupKey] !== undefined
+          ? accordionStates[groupKey]
+          : group.open && groupItems.length > 0;
+
+      if (isOpen) header.classList.add('open');
 
       let statusClass = '';
       if (groupItems.length === 0) {
@@ -317,7 +335,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       header.onclick = () => {
         if (groupItems.length > 0) {
-          header.classList.toggle('open');
+          const newState = header.classList.toggle('open');
+          accordionStates[groupKey] = newState;
         }
       };
 

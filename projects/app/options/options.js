@@ -26,7 +26,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Display version from manifest
   const manifest = chrome.runtime.getManifest();
-  elements.versionDisplay.textContent = `v${manifest.version}`;
+  if (elements.versionDisplay) {
+    elements.versionDisplay.textContent = `v${manifest.version}`;
+  }
 
   let config = {
     authConfigs: [],

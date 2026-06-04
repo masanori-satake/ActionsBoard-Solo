@@ -212,7 +212,7 @@ async function poll() {
             results.runs[key] = {
               status: 'error',
               conclusion: 'error',
-              error: '情報を取得しています...',
+              error: 'APIエラーが発生しました',
             };
           } else {
             // No runs found

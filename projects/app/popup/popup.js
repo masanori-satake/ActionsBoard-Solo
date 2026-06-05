@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cache = {};
   let currentUser = null;
 
+  // Track manually toggled accordion states to persist across re-renders
+  // Mapping: { 'ws:wsId': boolean, 'group:groupId': boolean }
+  const accordionStates = {};
+
   async function init() {
     if (!init.initialized) {
       chrome.runtime.connect({ name: 'popup' });
@@ -48,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Support for multiple current users (one per auth config)
     // Mapping: { authConfigId: login }
+    // Fetching currentUser is centrally managed by background.js.
     currentUser = data.currentUser || {};
 
     cache = data.cache || { runs: {}, pages: {}, history: {} };
@@ -57,21 +62,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       tab.classList.toggle('active', tab.dataset.mode === currentMode),
     );
 
-    if (config.authConfigs?.length) {
-      let changed = false;
-      for (const auth of config.authConfigs) {
-        if (!currentUser[auth.id]) {
-          const login = await getCurrentUser(auth);
-          if (login) {
-            currentUser[auth.id] = login;
-            changed = true;
-          }
-        }
-      }
-      if (changed) {
-        await chrome.storage.local.set({ currentUser });
-      }
-    }
     render();
   }
 
@@ -175,6 +165,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const header = document.createElement('div');
       header.className = 'workspace-header';
+      const wsKey = `ws:${ws.id}`;
+      // Workspaces are closed by default unless manually opened
+      if (accordionStates[wsKey]) {
+        header.classList.add('open');
+      }
+
       const statusClass =
         wsStatus === 'failure'
           ? 'status-failure'
@@ -215,7 +211,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       content.appendChild(card);
       header.onclick = () => {
-        header.classList.toggle('open');
+        const isOpen = header.classList.toggle('open');
+        accordionStates[wsKey] = isOpen;
       };
 
       section.appendChild(header);
@@ -255,7 +252,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const header = document.createElement('div');
       header.className = 'accordion-header';
-      if (group.open && groupItems.length > 0) header.classList.add('open');
+      const groupKey = `group:${group.id}`;
+      // Groups use initial open logic if not manually toggled
+      const isOpen =
+        accordionStates[groupKey] !== undefined
+          ? accordionStates[groupKey]
+          : group.open && groupItems.length > 0;
+
+      if (isOpen) header.classList.add('open');
 
       let statusClass = '';
       if (groupItems.length === 0) {
@@ -312,7 +316,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       header.onclick = () => {
         if (groupItems.length > 0) {
-          header.classList.toggle('open');
+          const newState = header.classList.toggle('open');
+          accordionStates[groupKey] = newState;
         }
       };
 
@@ -399,11 +404,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     return card;
   }
 
+  async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 10000 } = options;
+
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal,
+      });
+      return response;
+    } finally {
+      clearTimeout(id);
+    }
+  }
+
   async function fetchAndShowLogs(run, logArea, auth) {
     logArea.textContent = 'ログを取得中...';
     logArea.style.display = 'block';
     try {
-      const res = await fetch(`${run.jobs_url}`, {
+      const res = await fetchWithTimeout(`${run.jobs_url}`, {
         headers: { Authorization: `token ${auth.pat}` },
       });
       if (!res.ok) throw new Error();
@@ -431,18 +453,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }),
     );
     return items;
-  }
-
-  async function getCurrentUser(settings) {
-    try {
-      const res = await fetch(`${settings.baseUrl}/user`, {
-        headers: { Authorization: `token ${settings.pat}` },
-      });
-      if (res.ok) return (await res.json()).login;
-    } catch {
-      // Ignore authentication errors during initialization
-    }
-    return null;
   }
 
   function relativeTime(dateStr) {

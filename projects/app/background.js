@@ -119,14 +119,24 @@ async function poll() {
 
     if (!currentUser) currentUser = {};
     let currentUserUpdated = false;
-    for (const authConfig of authConfigs) {
-      if (!(authConfig.id in currentUser)) {
-        const login = await fetchCurrentUser(authConfig);
-        currentUser[authConfig.id] = login;
-        currentUserUpdated = true;
-      }
-    }
+    const userMap = {};
+
+    // Fetch current user for each auth config in parallel if missing
+    await Promise.all(
+      authConfigs.map(async (authConfig) => {
+        if (!currentUser[authConfig.id]) {
+          const login = await fetchCurrentUser(authConfig);
+          if (login) {
+            userMap[authConfig.id] = login;
+            currentUserUpdated = true;
+          }
+        }
+      }),
+    );
+
     if (currentUserUpdated) {
+      const data = await chrome.storage.local.get('currentUser');
+      currentUser = { ...(data.currentUser || {}), ...userMap };
       await chrome.storage.local.set({ currentUser });
     }
 
@@ -163,68 +173,89 @@ async function poll() {
       });
     });
 
+    const pollPromises = [];
+    const pagesPromises = new Map();
+    const processedPages = new Set();
+
     for (const [authConfigId, itemsMap] of fetchGroups) {
       const authConfig = authConfigs.find((c) => c.id === authConfigId);
       if (!authConfig) continue;
 
       for (const [key, item] of itemsMap) {
-        // Initialize with null if not present, to avoid "取得中..." forever if fetch fails silently
-        if (!results.runs[key]) results.runs[key] = currentCache.runs[key] || null;
-        if (!results.history[key]) results.history[key] = currentCache.history[key] || [];
+        // Initialize with current cache if not present
+        results.runs[key] = currentCache.runs[key] || null;
+        results.history[key] = currentCache.history[key] || [];
 
-        try {
-          // Fetch multiple runs for history
-          const runs = await fetchWorkflowRuns(authConfig, item, HISTORY_COUNT);
-          if (runs && runs.length > 0) {
-            const latestRun = runs[0];
-            results.runs[key] = latestRun;
-            results.history[key] = runs.map((r) => ({
-              status: r.status,
-              conclusion: r.conclusion,
-              id: r.id,
-            }));
+        pollPromises.push(
+          (async () => {
+            try {
+              // Fetch multiple runs for history
+              const runs = await fetchWorkflowRuns(authConfig, item, HISTORY_COUNT);
+              if (runs && runs.length > 0) {
+                const latestRun = runs[0];
+                results.runs[key] = latestRun;
+                results.history[key] = runs.map((r) => ({
+                  status: r.status,
+                  conclusion: r.conclusion,
+                  id: r.id,
+                }));
 
-            const context = {
-              notificationSettings,
-              currentUser: currentUser?.[authConfigId],
-              itemWorkspaces: workspaces.filter((ws) =>
-                ws.items?.some((i) => `${i.owner}/${i.repo}/${i.workflowFile}` === key),
-              ),
-              latestRun,
-            };
+                const context = {
+                  notificationSettings,
+                  currentUser: currentUser?.[authConfigId],
+                  itemWorkspaces: workspaces.filter((ws) =>
+                    ws.items?.some((i) => `${i.owner}/${i.repo}/${i.workflowFile}` === key),
+                  ),
+                  latestRun,
+                };
 
-            checkFailureNotification(key, latestRun, currentCache.runs[key], context);
+                checkFailureNotification(key, latestRun, currentCache.runs[key], context);
 
-            if (latestRun.conclusion === 'success') {
-              const pagesStatus = await fetchPagesStatus(authConfig, item.owner, item.repo);
-              if (pagesStatus) {
-                results.pages[`${item.owner}/${item.repo}`] = pagesStatus;
-                checkPagesNotification(
-                  item,
-                  pagesStatus,
-                  currentCache.pages[`${item.owner}/${item.repo}`],
-                  context,
-                );
+                if (latestRun.conclusion === 'success') {
+                  const pagesKey = `${item.owner}/${item.repo}`;
+                  if (!pagesPromises.has(pagesKey)) {
+                    pagesPromises.set(
+                      pagesKey,
+                      fetchPagesStatus(authConfig, item.owner, item.repo),
+                    );
+                  }
+                  const pagesStatus = await pagesPromises.get(pagesKey);
+                  if (pagesStatus && !processedPages.has(pagesKey)) {
+                    processedPages.add(pagesKey);
+                    results.pages[pagesKey] = pagesStatus;
+                    checkPagesNotification(
+                      item,
+                      pagesStatus,
+                      currentCache.pages[pagesKey],
+                      context,
+                    );
+                  }
+                }
+              } else if (runs === null) {
+                // API Error
+                results.runs[key] = {
+                  status: 'error',
+                  conclusion: 'error',
+                  error: '取得失敗 (APIエラー)',
+                };
+              } else {
+                // No runs found
+                results.runs[key] = { status: 'none', conclusion: 'none' };
+                results.history[key] = [];
               }
+            } catch (err) {
+              console.error(
+                `[ActionsBoard-Solo] Error polling ${key} with ${authConfig.name}:`,
+                err,
+              );
+              results.runs[key] = { status: 'error', conclusion: 'error', error: err.message };
             }
-          } else if (runs === null) {
-            // API Error
-            results.runs[key] = {
-              status: 'error',
-              conclusion: 'error',
-              error: '情報を取得しています...',
-            };
-          } else {
-            // No runs found
-            results.runs[key] = { status: 'none', conclusion: 'none' };
-            results.history[key] = [];
-          }
-        } catch (err) {
-          console.error(`[ActionsBoard-Solo] Error polling ${key} with ${authConfig.name}:`, err);
-          results.runs[key] = { status: 'error', conclusion: 'error', error: err.message };
-        }
+          })(),
+        );
       }
     }
+
+    await Promise.allSettled(pollPromises);
 
     await chrome.storage.local.set({ cache: results });
     updateBadge(results.runs);
@@ -235,38 +266,60 @@ async function poll() {
 
 // --- API Helpers ---
 
+async function fetchWithTimeout(resource, options = {}) {
+  const { timeout = 10000 } = options;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 async function fetchWorkflowRuns(settings, item, count) {
   const baseUrl = settings.baseUrl || DEFAULT_API_URL;
   const workflowSelector = item.workflowId || item.workflowFile;
   const url = `${baseUrl}/repos/${item.owner}/${item.repo}/actions/workflows/${workflowSelector}/runs?per_page=${count}`;
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `token ${settings.pat}`,
-      Accept: 'application/vnd.github.v3+json',
-    },
-  });
+  try {
+    const response = await fetchWithTimeout(url, {
+      headers: {
+        Authorization: `token ${settings.pat}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
 
-  if (!response.ok) return null;
-  const data = await response.json();
-  if (!data?.workflow_runs) return [];
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!data?.workflow_runs) return [];
 
-  return data.workflow_runs.map((run) => ({
-    id: run.id,
-    status: run.status,
-    conclusion: run.conclusion,
-    event: run.event,
-    actor: run.actor ? run.actor.login : 'system',
-    html_url: run.html_url,
-    updated_at: run.updated_at,
-    display_title: run.display_title,
-    jobs_url: run.jobs_url,
-  }));
+    return data.workflow_runs.map((run) => ({
+      id: run.id,
+      status: run.status,
+      conclusion: run.conclusion,
+      event: run.event,
+      actor: run.actor ? run.actor.login : 'system',
+      html_url: run.html_url,
+      updated_at: run.updated_at,
+      display_title: run.display_title,
+      jobs_url: run.jobs_url,
+    }));
+  } catch (err) {
+    console.error(`[ActionsBoard-Solo] fetchWorkflowRuns error:`, err);
+    return null;
+  }
 }
 
 async function fetchCurrentUser(authConfig) {
   try {
-    const res = await fetch(`${authConfig.baseUrl}/user`, {
+    const res = await fetchWithTimeout(`${authConfig.baseUrl}/user`, {
       headers: {
         Authorization: `token ${authConfig.pat}`,
         Accept: 'application/vnd.github.v3+json',
@@ -287,7 +340,7 @@ async function fetchPagesStatus(settings, owner, repo) {
   const url = `${baseUrl}/repos/${owner}/${repo}/pages/deployments`;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       headers: {
         Authorization: `token ${settings.pat}`,
         Accept: 'application/vnd.github.v3+json',

@@ -121,11 +121,8 @@ MOCK_CONFIG = {
             },
         },
         "history": {
-            "owner1/repo1/ci.yml": [{"status": "completed", "conclusion": "success"}]
-            * 10,
-            "owner1/repo1/deploy.yml": [
-                {"status": "completed", "conclusion": "success"}
-            ]
+            "owner1/repo1/ci.yml": [{"status": "completed", "conclusion": "success"}] * 10,
+            "owner1/repo1/deploy.yml": [{"status": "completed", "conclusion": "success"}]
             * 9
             + [{"status": "in_progress", "conclusion": None}],
             "owner1/repo2/test.yml": [{"status": "completed", "conclusion": "success"}]
@@ -133,8 +130,7 @@ MOCK_CONFIG = {
             + [{"status": "completed", "conclusion": "failure"}] * 5,
             "ops/infra/backup.yml": [{"status": "completed", "conclusion": "success"}]
             * 10,
-            "ops/infra/audit.yml": [{"status": "completed", "conclusion": "success"}]
-            * 8
+            "ops/infra/audit.yml": [{"status": "completed", "conclusion": "success"}] * 8
             + [{"status": "completed", "conclusion": "failure"}] * 2,
         },
         "pages": {"owner1/repo1": {"status": "deliverable", "page_url": "#"}},
@@ -150,59 +146,63 @@ def get_mock_script(mode=None):
     if mode:
         config["activeMode"] = mode
 
-    return f"""
-    window.chrome = {{
-        runtime: {{
-            onConnect: {{ addListener: () => {{}} }},
-            onMessage: {{ addListener: () => {{}} }},
-            connect: () => ({{ onDisconnect: {{ addListener: () => {{}} }} }}),
-            sendMessage: (msg, cb) => cb && cb({{status: 'ok'}}),
-            getManifest: () => ({{ version: '1.0.2' }}),
-            openOptionsPage: () => {{ console.log('Open options page'); }}
-        }},
-        storage: {{
-            local: {{
-                get: (keys) => Promise.resolve({json.dumps(config)}),
-    filepath = os.path.join(ASSETS_DIR, filename)
-    screenshot_bytes = await page.screenshot(animations="disabled")
-
-    # Post-process to ensure 24-bit (remove alpha) and exact size
-    with Image.open(io.BytesIO(screenshot_bytes)) as img:
-        img = img.convert("RGB")
-        if img.size != (width, height):
-            new_img = Image.new("RGB", (width, height), M3_BG_COLOR)
-            new_img.paste(img, ((width - img.width) // 2, (height - img.height) // 2))
-            img = new_img
-        img.save(filepath, "PNG")
+    js_config = json.dumps(config)
+    script = """
+    window.chrome = {
+        runtime: {
+            onConnect: { addListener: () => {} },
+            onMessage: { addListener: () => {} },
+            connect: () => ({ onDisconnect: { addListener: () => {} } }),
+            sendMessage: (msg, cb) => cb && cb({status: 'ok'}),
+            getManifest: () => ({ version: '1.0.2' }),
+            openOptionsPage: () => { console.log('Open options page'); }
+        },
+        storage: {
+            local: {
+                get: (keys) => Promise.resolve(@@CONFIG@@),
+                set: (data) => {
+                    console.log('Storage set:', data);
+                    return Promise.resolve();
+                }
+            },
+            onChanged: { addListener: () => {} }
+        },
+        tabs: {
+            create: (data) => console.log('Create tab:', data)
+        },
+        sidePanel: {
             setPanelBehavior: () => Promise.resolve()
-        }},
-        permissions: {{
+        },
+        permissions: {
             request: () => Promise.resolve(true)
-        }}
-    }};
+        }
+    };
 
     // Mock fetch for logs
     const originalFetch = window.fetch;
-    window.fetch = async (url, options) => {{
-        if (url === '#') {{
-            return {{
+    window.fetch = async (url, options) => {
+        if (url === '#') {
+            return {
                 ok: true,
-        await page.set_viewport_size({"width": SIDE_PANEL_WIDTH, "height": HEIGHT})
-        screenshot_bytes = await page.screenshot()
+                json: async () => ({
+                    jobs: [
+                        {
+                            name: 'test-job',
+                            conclusion: 'failure',
+                            html_url: 'https://github.com/owner/repo/actions/runs/123/jobs/456',
+                            steps: [
+                                { name: 'Run tests', conclusion: 'failure' }
+                            ]
+                        }
+                    ]
+                })
+            };
+        }
+        return originalFetch(url, options);
+    };
+    """
+    return script.replace("@@CONFIG@@", js_config)
 
-        full_view = Image.new("RGB", (WIDTH, HEIGHT), "#f0f0f0")
-        draw = ImageDraw.Draw(full_view)
-        draw.rectangle([0, 0, WIDTH - SIDE_PANEL_WIDTH, HEIGHT], fill="#ffffff")
-        draw.rectangle([0, 0, WIDTH, 40], fill="#e0e0e0")
-        draw.ellipse([20, 10, 35, 25], fill="#ff5f56")
-        draw.ellipse([45, 10, 60, 25], fill="#ffbd2e")
-        draw.ellipse([70, 10, 85, 25], fill="#27c93f")
-        draw.rectangle([100, 10, WIDTH - 150, 30], fill="#ffffff", outline="#cccccc")
-        draw.text((110, 15), "https://github.com/owner1/repo1", fill="#666666")
-
-        with Image.open(io.BytesIO(screenshot_bytes)) as sp:
-            full_view.paste(sp, (WIDTH - SIDE_PANEL_WIDTH, 40))
-        full_view.save(os.path.join(ASSETS_DIR, "screenshot1_full_view.png"), "PNG")
 
 async def capture_screenshot(page, filename, width=WIDTH, height=HEIGHT):
     os.makedirs(ASSETS_DIR, exist_ok=True)
@@ -222,9 +222,11 @@ async def capture_screenshot(page, filename, width=WIDTH, height=HEIGHT):
 
 async def main():
     async with async_playwright() as p:
-            screenshot_bytes = await mode_page.screenshot()
-            with Image.open(io.BytesIO(screenshot_bytes)) as img:
-                composite.paste(img, (i * col_width, 0))
+        browser = await p.chromium.launch()
+        context = await browser.new_context(viewport={"width": WIDTH, "height": HEIGHT})
+        page = await context.new_page()
+
+        # 1. Full View (Side Panel in Browser)
         await page.add_init_script(get_mock_script(mode="developer"))
         await page.goto(f"file://{os.path.join(APP_DIR, 'popup/popup.html')}")
         await page.wait_for_timeout(1000)
@@ -237,12 +239,14 @@ async def main():
         draw = ImageDraw.Draw(full_view)
         draw.rectangle([0, 0, WIDTH - SIDE_PANEL_WIDTH, HEIGHT], fill="#ffffff")
         draw.rectangle([0, 0, WIDTH, 40], fill="#e0e0e0")
-        screenshot_bytes = await page_dev.screenshot()
+        draw.ellipse([20, 10, 35, 25], fill="#ff5f56")
+        draw.ellipse([45, 10, 60, 25], fill="#ffbd2e")
+        draw.ellipse([70, 10, 85, 25], fill="#27c93f")
+        draw.rectangle([100, 10, WIDTH - 150, 30], fill="#ffffff", outline="#cccccc")
+        draw.text((110, 15), "https://github.com/owner1/repo1", fill="#666666")
 
-        dev_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
-        with Image.open(io.BytesIO(screenshot_bytes)) as img:
-            dev_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
-        dev_focused.save(os.path.join(ASSETS_DIR, "screenshot3_developer_mode.png"), "PNG")
+        with Image.open(side_panel_path) as sp:
+            full_view.paste(sp, (WIDTH - SIDE_PANEL_WIDTH, 40))
         full_view.save(os.path.join(ASSETS_DIR, "screenshot1_full_view.png"), "PNG")
         os.remove(side_panel_path)
         print("Saved screenshot1_full_view.png")
@@ -256,12 +260,14 @@ async def main():
             mode_page = await context.new_page()
             await mode_page.set_viewport_size({"width": col_width, "height": HEIGHT})
             await mode_page.add_init_script(get_mock_script(mode=mode))
-        screenshot_bytes = await page_ops.screenshot()
+            await mode_page.goto(f"file://{os.path.join(APP_DIR, 'popup/popup.html')}")
+            await mode_page.wait_for_timeout(1000)
 
-        ops_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
-        with Image.open(io.BytesIO(screenshot_bytes)) as img:
-            ops_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
-        ops_focused.save(os.path.join(ASSETS_DIR, "screenshot4_operations_mode.png"), "PNG")
+            if mode == "team":
+                await mode_page.wait_for_selector(".workspace-header")
+                await mode_page.click(".workspace-header")
+                await mode_page.wait_for_timeout(200)
+
             mode_path = os.path.join(ASSETS_DIR, f"temp_{mode}.png")
             await mode_page.screenshot(path=mode_path)
             with Image.open(mode_path) as img:
@@ -269,9 +275,7 @@ async def main():
             os.remove(mode_path)
             await mode_page.close()
 
-        composite.save(
-            os.path.join(ASSETS_DIR, "screenshot2_modes_composite.png"), "PNG"
-        )
+        composite.save(os.path.join(ASSETS_DIR, "screenshot2_modes_composite.png"), "PNG")
         print("Saved screenshot2_modes_composite.png")
 
         # 3. Developer Mode (Focused)
@@ -287,9 +291,7 @@ async def main():
         dev_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
         with Image.open(dev_panel_path) as img:
             dev_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
-        dev_focused.save(
-            os.path.join(ASSETS_DIR, "screenshot3_developer_mode.png"), "PNG"
-        )
+        dev_focused.save(os.path.join(ASSETS_DIR, "screenshot3_developer_mode.png"), "PNG")
         os.remove(dev_panel_path)
         print("Saved screenshot3_developer_mode.png")
         await page_dev.close()
@@ -310,9 +312,7 @@ async def main():
         ops_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
         with Image.open(ops_panel_path) as img:
             ops_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
-        ops_focused.save(
-            os.path.join(ASSETS_DIR, "screenshot4_operations_mode.png"), "PNG"
-        )
+        ops_focused.save(os.path.join(ASSETS_DIR, "screenshot4_operations_mode.png"), "PNG")
         os.remove(ops_panel_path)
         print("Saved screenshot4_operations_mode.png")
         await page_ops.close()

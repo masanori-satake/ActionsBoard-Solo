@@ -597,6 +597,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
 
     if (ws.repoContext) {
+      const originalItems = ws.items ? [...ws.items] : [];
+
+      elements.modalCancel.onclick = () => {
+        ws.items = originalItems;
+        elements.modal.close();
+      };
+
+      elements.modal.oncancel = () => {
+        ws.items = originalItems;
+      };
+
       document.getElementById('modal-ws-reload').onclick = async () => {
         const authConfigId = document.getElementById('modal-ws-auth').value;
         const authConfig = config.authConfigs.find((c) => c.id === authConfigId);
@@ -618,7 +629,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             },
           );
 
-          if (!response.ok) throw new Error('ワークフローの取得に失敗しました。');
+          if (!response.ok) {
+            let errMsg = 'ワークフローの取得に失敗しました。';
+            try {
+              const err = await response.json();
+              errMsg = err.message || errMsg;
+            } catch {
+              errMsg = `${response.status} ${response.statusText}`;
+            }
+            throw new Error(errMsg);
+          }
           const data = await response.json();
           if (!data.workflows) throw new Error('ワークフローが見つかりませんでした。');
 
@@ -639,9 +659,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           ws.items = [...manualItems, ...newRepoItems];
           showToast('ワークフローを更新しました。');
-          // Update the options page UI if needed, but since we are in modal,
-          // we might just wait for 'Save' to persist.
-          // Actually, let's keep it in memory and let Save handle persistence.
         } catch (err) {
           alert(`エラー: ${err.message}`);
         } finally {

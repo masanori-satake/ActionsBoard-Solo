@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderDeveloperMode() {
     const allItems = getAllItems();
     const myActivity = allItems.filter((item) => {
-      const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+      const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
       if (!run) return false;
       const ws = config.workspaces.find((w) =>
         w.items?.some(
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       let wsStatus = 'success';
 
       ws.items.forEach((item) => {
-        const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+        const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
         const status = getWorkflowStatus(run);
         if (status === 'failure') {
           failureCount++;
@@ -208,9 +208,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           createActionRow(
             item,
             ws,
-            cache.runs[runKey],
-            cache.pages[`${item.owner}/${item.repo}`],
-            cache.history[runKey],
+            cache.runs?.[runKey],
+            cache.pages?.[`${item.owner}/${item.repo}`],
+            cache.history?.[runKey],
             auth,
           ),
         );
@@ -232,8 +232,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const items = getAllItems();
     // Sort by updated_at descending
     items.sort((a, b) => {
-      const runA = cache.runs[`${a.owner}/${a.repo}/${a.workflowFile}`];
-      const runB = cache.runs[`${b.owner}/${b.repo}/${b.workflowFile}`];
+      const runA = cache.runs?.[`${a.owner}/${a.repo}/${a.workflowFile}`];
+      const runB = cache.runs?.[`${b.owner}/${b.repo}/${b.workflowFile}`];
       const dateA = runA?.updated_at ? new Date(runA.updated_at) : new Date(0);
       const dateB = runB?.updated_at ? new Date(runB.updated_at) : new Date(0);
       return dateB - dateA;
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     groups.forEach((group) => {
       const groupItems = items.filter((item) => {
-        const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+        const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
         return group.statuses.includes(getWorkflowStatus(run));
       });
 
@@ -310,9 +310,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             createActionRow(
               item,
               ws,
-              cache.runs[runKey],
-              cache.pages[`${item.owner}/${item.repo}`],
-              cache.history[runKey],
+              cache.runs?.[runKey],
+              cache.pages?.[`${item.owner}/${item.repo}`],
+              cache.history?.[runKey],
               auth,
             ),
           );
@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
         const activeGroups = groups.filter((group) =>
           items.some((item) => {
-            const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+            const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
             return group.statuses.includes(getWorkflowStatus(run));
           }),
         );

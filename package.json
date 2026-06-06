@@ -4,7 +4,8 @@
   "description": "GitHub Actions の実行状態と Pages のデプロイを追跡するコンテキスト指向型ダッシュボード。",
   "scripts": {
     "build": "python3 scripts/build.py",
-    "version:check": "python3 scripts/check_version.py"
+    "version:check": "python3 scripts/check_version.py",
+    "screenshots": "python3 scripts/generate_screenshots.py"
   },
   "author": "Masanori SATAKE",
   "license": "MIT",

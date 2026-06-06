@@ -1,6 +1,7 @@
 import asyncio
 import os
 import json
+import io
 from playwright.async_api import async_playwright
 from PIL import Image, ImageDraw
 

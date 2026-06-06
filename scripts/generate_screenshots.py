@@ -256,14 +256,12 @@ async def main():
             mode_page = await context.new_page()
             await mode_page.set_viewport_size({"width": col_width, "height": HEIGHT})
             await mode_page.add_init_script(get_mock_script(mode=mode))
-            await mode_page.goto(f"file://{os.path.join(APP_DIR, 'popup/popup.html')}")
-            await mode_page.wait_for_timeout(1000)
+        screenshot_bytes = await page_ops.screenshot()
 
-            if mode == "team":
-                await mode_page.wait_for_selector(".workspace-header")
-                await mode_page.click(".workspace-header")
-                await mode_page.wait_for_timeout(200)
-
+        ops_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
+        with Image.open(io.BytesIO(screenshot_bytes)) as img:
+            ops_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
+        ops_focused.save(os.path.join(ASSETS_DIR, "screenshot4_operations_mode.png"), "PNG")
             mode_path = os.path.join(ASSETS_DIR, f"temp_{mode}.png")
             await mode_page.screenshot(path=mode_path)
             with Image.open(mode_path) as img:

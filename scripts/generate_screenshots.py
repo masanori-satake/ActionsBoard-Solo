@@ -121,8 +121,11 @@ MOCK_CONFIG = {
             },
         },
         "history": {
-            "owner1/repo1/ci.yml": [{"status": "completed", "conclusion": "success"}] * 10,
-            "owner1/repo1/deploy.yml": [{"status": "completed", "conclusion": "success"}]
+            "owner1/repo1/ci.yml": [{"status": "completed", "conclusion": "success"}]
+            * 10,
+            "owner1/repo1/deploy.yml": [
+                {"status": "completed", "conclusion": "success"}
+            ]
             * 9
             + [{"status": "in_progress", "conclusion": None}],
             "owner1/repo2/test.yml": [{"status": "completed", "conclusion": "success"}]
@@ -130,7 +133,8 @@ MOCK_CONFIG = {
             + [{"status": "completed", "conclusion": "failure"}] * 5,
             "ops/infra/backup.yml": [{"status": "completed", "conclusion": "success"}]
             * 10,
-            "ops/infra/audit.yml": [{"status": "completed", "conclusion": "success"}] * 8
+            "ops/infra/audit.yml": [{"status": "completed", "conclusion": "success"}]
+            * 8
             + [{"status": "completed", "conclusion": "failure"}] * 2,
         },
         "pages": {"owner1/repo1": {"status": "deliverable", "page_url": "#"}},
@@ -275,7 +279,9 @@ async def main():
             os.remove(mode_path)
             await mode_page.close()
 
-        composite.save(os.path.join(ASSETS_DIR, "screenshot2_modes_composite.png"), "PNG")
+        composite.save(
+            os.path.join(ASSETS_DIR, "screenshot2_modes_composite.png"), "PNG"
+        )
         print("Saved screenshot2_modes_composite.png")
 
         # 3. Developer Mode (Focused)
@@ -291,7 +297,9 @@ async def main():
         dev_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
         with Image.open(dev_panel_path) as img:
             dev_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
-        dev_focused.save(os.path.join(ASSETS_DIR, "screenshot3_developer_mode.png"), "PNG")
+        dev_focused.save(
+            os.path.join(ASSETS_DIR, "screenshot3_developer_mode.png"), "PNG"
+        )
         os.remove(dev_panel_path)
         print("Saved screenshot3_developer_mode.png")
         await page_dev.close()
@@ -312,7 +320,9 @@ async def main():
         ops_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
         with Image.open(ops_panel_path) as img:
             ops_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
-        ops_focused.save(os.path.join(ASSETS_DIR, "screenshot4_operations_mode.png"), "PNG")
+        ops_focused.save(
+            os.path.join(ASSETS_DIR, "screenshot4_operations_mode.png"), "PNG"
+        )
         os.remove(ops_panel_path)
         print("Saved screenshot4_operations_mode.png")
         await page_ops.close()

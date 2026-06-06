@@ -89,6 +89,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
     }
 
+    // Cleanup isFavorite from all items
+    let hasFavorite = false;
+    config.workspaces.forEach((ws) => {
+      if (ws.items) {
+        ws.items.forEach((item) => {
+          if (Object.prototype.hasOwnProperty.call(item, 'isFavorite')) {
+            delete item.isFavorite;
+            hasFavorite = true;
+          }
+        });
+      }
+    });
+    if (hasFavorite) {
+      await chrome.storage.local.set({ workspaces: config.workspaces });
+    }
+
     renderAuthConfigs();
     renderWorkspaces();
     renderNotificationSettings();
@@ -346,7 +362,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         row.dataset.itemIdx = itemIdx;
         row.innerHTML = `
           <span class="material-symbols-outlined drag-handle item-drag-handle" style="font-size: 20px;">drag_indicator</span>
-          <span class="badge-fav">${item.isFavorite ? '★' : '☆'}</span>
           <div style="flex-grow: 1; min-width: 0;">
             <div class="item-name">${escapeHtml(item.alias || item.workflowFile)}</div>
             <div class="item-repo">${escapeHtml(item.owner)}/${escapeHtml(item.repo)}</div>
@@ -548,6 +563,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       )
       .join('');
 
+    let repoContextHtml = '';
+    if (ws.repoContext) {
+      repoContextHtml = `
+        <div class="field">
+          <label>ソースリポジトリ</label>
+          <input type="text" value="${escapeHtml(ws.repoContext.owner)}/${escapeHtml(ws.repoContext.repo)}" disabled />
+          <div class="hint">このワークスペースはリポジトリから自動作成されました。</div>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <button id="modal-ws-reload" class="btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span class="material-symbols-outlined">sync</span>
+            リポジトリからワークフローを再読み込み
+          </button>
+        </div>
+      `;
+    }
+
     elements.modalContent.innerHTML = `
       <div class="field">
         <label>ワークスペース名</label>
@@ -555,6 +587,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           ws.name,
         )}" placeholder="例: 認証サブシステム" />
       </div>
+      ${repoContextHtml}
       <div class="field">
         <label>使用する認証設定</label>
         <select id="modal-ws-auth">
@@ -562,6 +595,81 @@ document.addEventListener('DOMContentLoaded', async () => {
         </select>
       </div>
     `;
+
+    if (ws.repoContext) {
+      const originalItems = ws.items ? [...ws.items] : [];
+
+      elements.modalCancel.onclick = () => {
+        ws.items = originalItems;
+        elements.modal.close();
+      };
+
+      elements.modal.oncancel = () => {
+        ws.items = originalItems;
+      };
+
+      document.getElementById('modal-ws-reload').onclick = async () => {
+        const authConfigId = document.getElementById('modal-ws-auth').value;
+        const authConfig = config.authConfigs.find((c) => c.id === authConfigId);
+        if (!authConfig) return;
+
+        const reloadBtn = document.getElementById('modal-ws-reload');
+        reloadBtn.disabled = true;
+        reloadBtn.textContent = '読み込み中...';
+
+        try {
+          const { owner, repo } = ws.repoContext;
+          const response = await fetchWithTimeout(
+            `${authConfig.baseUrl}/repos/${owner}/${repo}/actions/workflows`,
+            {
+              headers: {
+                Authorization: `token ${authConfig.pat}`,
+                Accept: 'application/vnd.github.v3+json',
+              },
+            },
+          );
+
+          if (!response.ok) {
+            let errMsg = 'ワークフローの取得に失敗しました。';
+            try {
+              const err = await response.json();
+              errMsg = err.message || errMsg;
+            } catch {
+              errMsg = `${response.status} ${response.statusText}`;
+            }
+            throw new Error(errMsg);
+          }
+          const data = await response.json();
+          if (!data.workflows) throw new Error('ワークフローが見つかりませんでした。');
+
+          const newRepoItems = data.workflows.map((wf) => {
+            const workflowFile = (wf.path && wf.path.split('/').pop()) || wf.id.toString();
+            return {
+              owner,
+              repo,
+              workflowId: wf.id,
+              workflowFile,
+              alias: wf.name,
+              fromRepo: true,
+            };
+          });
+
+          // Keep manually added items (those without fromRepo: true)
+          const manualItems = (ws.items || []).filter((item) => !item.fromRepo);
+
+          ws.items = [...manualItems, ...newRepoItems];
+          showToast('ワークフローを更新しました。');
+        } catch (err) {
+          alert(`エラー: ${err.message}`);
+        } finally {
+          reloadBtn.disabled = false;
+          reloadBtn.innerHTML = `
+            <span class="material-symbols-outlined">sync</span>
+            リポジトリからワークフローを再読み込み
+          `;
+        }
+      };
+    }
 
     elements.modalSave.onclick = async () => {
       const name = document.getElementById('modal-ws-name').value.trim();
@@ -593,7 +701,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.modalSave.textContent = '保存';
     const item = isEdit
       ? config.workspaces[wsIdx].items[itemIdx]
-      : { owner: '', repo: '', workflowFile: '', alias: '', isFavorite: false };
+      : { owner: '', repo: '', workflowFile: '', alias: '' };
 
     elements.modalContent.innerHTML = `
       <div class="field">
@@ -623,12 +731,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         <input type="text" id="m-alias" value="${escapeHtml(
           item.alias,
         )}" placeholder="例: 【本番】CIチェック" />
-      </div>
-      <div class="field" style="flex-direction: row; align-items: center; gap: 10px;">
-        <input type="checkbox" id="m-fav" ${
-          item.isFavorite ? 'checked' : ''
-        } style="width: 20px; height: 20px;" />
-        <label for="m-fav" style="margin-bottom: 0;">お気に入り (☆) に設定</label>
       </div>
     `;
 
@@ -676,7 +778,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           workflowInput.value.trim() === item.workflowFile ? item.workflowId || null : null,
         workflowFile: workflowInput.value.trim(),
         alias: document.getElementById('m-alias').value.trim(),
-        isFavorite: document.getElementById('m-fav').checked,
       };
 
       if (!newItem.owner || !newItem.repo || !newItem.workflowFile) {
@@ -819,7 +920,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             workflowId: wf.id,
             workflowFile,
             alias: wf.name,
-            isFavorite: false,
+            fromRepo: true,
           };
         });
 
@@ -827,6 +928,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           id: Date.now().toString(),
           name: repo,
           authConfigId: authConfig.id,
+          repoContext: { owner, repo },
           items,
         });
 

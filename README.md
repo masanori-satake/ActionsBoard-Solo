@@ -1,7 +1,7 @@
 # ActionsBoard-Solo
 
-[![version](https://img.shields.io/badge/version-1.0.0-blue)](projects/app/manifest.json)
-[![Chrome Web Store Version](https://img.shields.io/badge/Chrome%20Web%20Store-v1.0.0-blue)](https://chromewebstore.google.com/detail/actionsboard-solo/)
+[![version](https://img.shields.io/badge/version-1.0.2-blue)](projects/app/manifest.json)
+[![Chrome Web Store Version](https://img.shields.io/badge/Chrome%20Web%20Store-v1.0.2-blue)](https://chromewebstore.google.com/detail/actionsboard-solo/)
 [![License-MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](#%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%81%A8%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3)
 [![Manifest-V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
@@ -20,7 +20,7 @@
 
 - **コンテキスト指向型ダッシュボード:** 自分のアクティビティ、チーム全体の健全性、あるいは運用バッチの監視など、目的に合わせた表示モードの切り替えが可能です。
 - **2段階デプロイ追跡:** Actions の完了だけでなく、その後の GitHub Pages への反映（デプロイ完了）までを一気通貫で監視。
-- **ノイズレス通知:** 自分に関連する重要な変更や、お気に入りに登録したワークフローの状態変化のみを通知し、認知負荷を軽減します。
+- **ノイズレス通知:** 自分に関連する重要な変更の状態変化のみを通知し、認知負荷を軽減します。
 - **アダプティブ・ポーリング:** ダッシュボード利用時は30秒間隔、バックグラウンド時は数分間隔と、状況に応じて API 通信頻度を最適化。
 - **Material Design 3:** モダンで直感的なユーザーインターフェースを採用。
 
@@ -44,7 +44,6 @@
 1. 拡張機能のオプション画面から、GitHub の Personal Access Token (PAT) を設定します。
 2. 監視したいリポジトリをワークスペースとして登録します。
 3. ポップアップまたはサイドパネルで、各ワークフローの稼働状況がリアルタイムに表示されます。
-4. 「☆」アイコンをクリックして、特に重要なワークフローをお気に入りに登録できます。
 
 ## プライバシーとセキュリティ
 

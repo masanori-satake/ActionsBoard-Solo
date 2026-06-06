@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Mapping: { 'ws:wsId': boolean, 'group:groupId': boolean }
   const accordionStates = {};
 
+  // Track expand/collapse all toggle state per tab ('expand' or 'collapse')
+  const expandCollapseStates = { developer: 'expand', team: 'expand', operations: 'expand' };
+
   async function init() {
     if (!init.initialized) {
       chrome.runtime.connect({ name: 'popup' });
@@ -129,8 +132,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       return run.actor === currentUser[ws.authConfigId];
     });
 
+    elements.main.appendChild(createExpandCollapseButton('developer', myActivity.length));
+
     if (myActivity.length === 0) {
-      elements.main.innerHTML = '<p class="empty-state">アクティビティが見つかりませんでした。</p>';
+      const p = document.createElement('p');
+      p.className = 'empty-state';
+      p.textContent = 'アクティビティが見つかりませんでした。';
+      elements.main.appendChild(p);
       return;
     }
 
@@ -138,6 +146,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderTeamMode() {
+    const hasItems = config.workspaces.some((ws) => ws.items?.length > 0);
+    elements.main.appendChild(createExpandCollapseButton('team', hasItems ? 1 : 0));
+
     config.workspaces.forEach((ws) => {
       if (!ws.items?.length) return;
 
@@ -231,6 +242,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const dateB = runB?.updated_at ? new Date(runB.updated_at) : new Date(0);
       return dateB - dateA;
     });
+
+    elements.main.appendChild(createExpandCollapseButton('operations', items.length));
     renderGroupedItems(items);
   }
 
@@ -453,6 +466,43 @@ document.addEventListener('DOMContentLoaded', async () => {
       }),
     );
     return items;
+  }
+
+  function createExpandCollapseButton(mode, itemsCount) {
+    const currentState = expandCollapseStates[mode] || 'expand';
+    const container = document.createElement('div');
+    container.className = 'controls-row';
+
+    const btn = document.createElement('button');
+    btn.className = 'icon-btn';
+    const isExpandAction = currentState === 'expand';
+    btn.dataset.tooltip = isExpandAction ? '全て展開' : '全て折りたたむ';
+    btn.dataset.tooltipPosition = 'bottom';
+    btn.dataset.tooltipAlign = 'right';
+    btn.disabled = itemsCount === 0;
+
+    btn.innerHTML = `<span class="material-symbols-outlined">${isExpandAction ? 'expand_all' : 'collapse_all'}</span>`;
+
+    btn.onclick = () => {
+      const nextState = isExpandAction ? 'collapse' : 'expand';
+      expandCollapseStates[mode] = nextState;
+
+      // Update all relevant accordionStates
+      if (mode === 'team') {
+        config.workspaces.forEach((ws) => {
+          accordionStates[`ws:${ws.id}`] = isExpandAction;
+        });
+      } else {
+        // developer or operations
+        ['failure', 'progress', 'success'].forEach((groupId) => {
+          accordionStates[`group:${groupId}`] = isExpandAction;
+        });
+      }
+      render();
+    };
+
+    container.appendChild(btn);
+    return container;
   }
 
   function relativeTime(dateStr) {

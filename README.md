@@ -28,7 +28,7 @@
 
 ### 🚀 Chrome ウェブストアからインストール（推奨）
 
-[![Available in the Chrome Web Store](projects/web/assets/chrome-web-store-badge.png)](https://chrome.google.com/webstore/detail/oofegjdjnldkikigimkadlleaiolionm)
+[![Available in the Chrome Web Store](projects/web/assets/chrome-web-store-badge.png)](https://chromewebstore.google.com/detail/oofegjdjnldkikigimkadlleaiolionm)
 
 ### 🛠️ ソースコードからインストール
 

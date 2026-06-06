@@ -29,7 +29,6 @@
 ### 🚀 Chrome ウェブストアからインストール（推奨）
 
 <!-- 現時点ではリンクなしの画像のみ表示。申請後に正しいリンクを設定してください。 -->
-
 ![Available in the Chrome Web Store](projects/web/assets/chrome-web-store-badge.png)
 
 ### 🛠️ ソースコードからインストール

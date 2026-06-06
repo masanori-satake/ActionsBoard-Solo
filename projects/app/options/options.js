@@ -865,13 +865,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const now = new Date();
     const pad = (num) => String(num).padStart(2, '0');
-    const timestamp =
-      `${String(now.getFullYear()).slice(-2)}` +
-      `${pad(now.getMonth() + 1)}` +
-      `${pad(now.getDate())}_` +
-      `${pad(now.getHours())}` +
-      `${pad(now.getMinutes())}` +
-      `${pad(now.getSeconds())}`;
+    const timestamp = `${String(now.getFullYear()).slice(-2)}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
 
     const blob = new Blob([JSON.stringify(exportConfig, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);

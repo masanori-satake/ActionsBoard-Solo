@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderDeveloperMode() {
     const allItems = getAllItems();
     const myActivity = allItems.filter((item) => {
-      const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+      const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
       if (!run) return false;
       const ws = config.workspaces.find((w) =>
         w.items?.some(
@@ -129,8 +129,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       return run.actor === currentUser[ws.authConfigId];
     });
 
+    elements.main.appendChild(createExpandCollapseButton('developer', myActivity));
+
     if (myActivity.length === 0) {
-      elements.main.innerHTML = '<p class="empty-state">アクティビティが見つかりませんでした。</p>';
+      const p = document.createElement('p');
+      p.className = 'empty-state';
+      p.textContent = 'アクティビティが見つかりませんでした。';
+      elements.main.appendChild(p);
       return;
     }
 
@@ -138,6 +143,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderTeamMode() {
+    elements.main.appendChild(createExpandCollapseButton('team', config.workspaces));
+
     config.workspaces.forEach((ws) => {
       if (!ws.items?.length) return;
 
@@ -147,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       let wsStatus = 'success';
 
       ws.items.forEach((item) => {
-        const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+        const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
         const status = getWorkflowStatus(run);
         if (status === 'failure') {
           failureCount++;
@@ -201,9 +208,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           createActionRow(
             item,
             ws,
-            cache.runs[runKey],
-            cache.pages[`${item.owner}/${item.repo}`],
-            cache.history[runKey],
+            cache.runs?.[runKey],
+            cache.pages?.[`${item.owner}/${item.repo}`],
+            cache.history?.[runKey],
             auth,
           ),
         );
@@ -225,12 +232,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const items = getAllItems();
     // Sort by updated_at descending
     items.sort((a, b) => {
-      const runA = cache.runs[`${a.owner}/${a.repo}/${a.workflowFile}`];
-      const runB = cache.runs[`${b.owner}/${b.repo}/${b.workflowFile}`];
+      const runA = cache.runs?.[`${a.owner}/${a.repo}/${a.workflowFile}`];
+      const runB = cache.runs?.[`${b.owner}/${b.repo}/${b.workflowFile}`];
       const dateA = runA?.updated_at ? new Date(runA.updated_at) : new Date(0);
       const dateB = runB?.updated_at ? new Date(runB.updated_at) : new Date(0);
       return dateB - dateA;
     });
+
+    elements.main.appendChild(createExpandCollapseButton('operations', items));
     renderGroupedItems(items);
   }
 
@@ -243,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     groups.forEach((group) => {
       const groupItems = items.filter((item) => {
-        const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+        const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
         return group.statuses.includes(getWorkflowStatus(run));
       });
 
@@ -301,9 +310,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             createActionRow(
               item,
               ws,
-              cache.runs[runKey],
-              cache.pages[`${item.owner}/${item.repo}`],
-              cache.history[runKey],
+              cache.runs?.[runKey],
+              cache.pages?.[`${item.owner}/${item.repo}`],
+              cache.history?.[runKey],
               auth,
             ),
           );
@@ -453,6 +462,71 @@ document.addEventListener('DOMContentLoaded', async () => {
       }),
     );
     return items;
+  }
+
+  function createExpandCollapseButton(mode, itemsOrWorkspaces) {
+    let isExpandAction = true;
+    let isDisabled = true;
+
+    if (mode === 'team') {
+      const activeWorkspaces = (itemsOrWorkspaces || []).filter((ws) => ws.items?.length > 0);
+      isDisabled = activeWorkspaces.length === 0;
+      if (!isDisabled) {
+        const allOpen = activeWorkspaces.every((ws) => !!accordionStates[`ws:${ws.id}`]);
+        isExpandAction = !allOpen;
+      }
+    } else {
+      const items = itemsOrWorkspaces || [];
+      isDisabled = items.length === 0;
+      if (!isDisabled) {
+        const groups = [
+          { id: 'failure', statuses: ['failure'], open: true },
+          { id: 'progress', statuses: ['progress'], open: true },
+          { id: 'success', statuses: ['success', 'neutral'], open: false },
+        ];
+        const activeGroups = groups.filter((group) =>
+          items.some((item) => {
+            const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
+            return group.statuses.includes(getWorkflowStatus(run));
+          }),
+        );
+        const allOpen =
+          activeGroups.length > 0 &&
+          activeGroups.every((group) => {
+            const groupKey = `group:${group.id}`;
+            return accordionStates[groupKey] !== undefined ? accordionStates[groupKey] : group.open;
+          });
+        isExpandAction = !allOpen;
+      }
+    }
+
+    const container = document.createElement('div');
+    container.className = 'controls-row';
+
+    const btn = document.createElement('button');
+    btn.className = 'icon-btn';
+    btn.dataset.tooltip = isExpandAction ? '全て展開' : '全て折りたたむ';
+    btn.dataset.tooltipPosition = 'bottom';
+    btn.dataset.tooltipAlign = 'right';
+    btn.disabled = isDisabled;
+
+    btn.innerHTML = `<span class="material-symbols-outlined">${isExpandAction ? 'expand_all' : 'collapse_all'}</span>`;
+
+    btn.onclick = () => {
+      if (mode === 'team') {
+        config.workspaces.forEach((ws) => {
+          accordionStates[`ws:${ws.id}`] = isExpandAction;
+        });
+      } else {
+        ['failure', 'progress', 'success'].forEach((groupId) => {
+          accordionStates[`group:${groupId}`] = isExpandAction;
+        });
+      }
+      render();
+    };
+
+    container.appendChild(btn);
+    return container;
   }
 
   function relativeTime(dateStr) {

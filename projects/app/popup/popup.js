@@ -19,9 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Mapping: { 'ws:wsId': boolean, 'group:groupId': boolean }
   const accordionStates = {};
 
-  // Track expand/collapse all toggle state per tab ('expand' or 'collapse')
-  const expandCollapseStates = { developer: 'expand', team: 'expand', operations: 'expand' };
-
   async function init() {
     if (!init.initialized) {
       chrome.runtime.connect({ name: 'popup' });
@@ -132,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return run.actor === currentUser[ws.authConfigId];
     });
 
-    elements.main.appendChild(createExpandCollapseButton('developer', myActivity.length));
+    elements.main.appendChild(createExpandCollapseButton('developer', myActivity));
 
     if (myActivity.length === 0) {
       const p = document.createElement('p');
@@ -146,8 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderTeamMode() {
-    const hasItems = config.workspaces.some((ws) => ws.items?.length > 0);
-    elements.main.appendChild(createExpandCollapseButton('team', hasItems ? 1 : 0));
+    elements.main.appendChild(createExpandCollapseButton('team', config.workspaces));
 
     config.workspaces.forEach((ws) => {
       if (!ws.items?.length) return;
@@ -243,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return dateB - dateA;
     });
 
-    elements.main.appendChild(createExpandCollapseButton('operations', items.length));
+    elements.main.appendChild(createExpandCollapseButton('operations', items));
     renderGroupedItems(items);
   }
 
@@ -468,32 +464,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     return items;
   }
 
-  function createExpandCollapseButton(mode, itemsCount) {
-    const currentState = expandCollapseStates[mode] || 'expand';
+  function createExpandCollapseButton(mode, itemsOrWorkspaces) {
+    let isExpandAction = true;
+    let isDisabled = true;
+
+    if (mode === 'team') {
+      const activeWorkspaces = (itemsOrWorkspaces || []).filter((ws) => ws.items?.length > 0);
+      isDisabled = activeWorkspaces.length === 0;
+      if (!isDisabled) {
+        const allOpen = activeWorkspaces.every((ws) => !!accordionStates[`ws:${ws.id}`]);
+        isExpandAction = !allOpen;
+      }
+    } else {
+      const items = itemsOrWorkspaces || [];
+      isDisabled = items.length === 0;
+      if (!isDisabled) {
+        const groups = [
+          { id: 'failure', statuses: ['failure'], open: true },
+          { id: 'progress', statuses: ['progress'], open: true },
+          { id: 'success', statuses: ['success', 'neutral'], open: false },
+        ];
+        const activeGroups = groups.filter((group) =>
+          items.some((item) => {
+            const run = cache.runs[`${item.owner}/${item.repo}/${item.workflowFile}`];
+            return group.statuses.includes(getWorkflowStatus(run));
+          }),
+        );
+        const allOpen =
+          activeGroups.length > 0 &&
+          activeGroups.every((group) => {
+            const groupKey = `group:${group.id}`;
+            return accordionStates[groupKey] !== undefined ? accordionStates[groupKey] : group.open;
+          });
+        isExpandAction = !allOpen;
+      }
+    }
+
     const container = document.createElement('div');
     container.className = 'controls-row';
 
     const btn = document.createElement('button');
     btn.className = 'icon-btn';
-    const isExpandAction = currentState === 'expand';
     btn.dataset.tooltip = isExpandAction ? '全て展開' : '全て折りたたむ';
     btn.dataset.tooltipPosition = 'bottom';
     btn.dataset.tooltipAlign = 'right';
-    btn.disabled = itemsCount === 0;
+    btn.disabled = isDisabled;
 
     btn.innerHTML = `<span class="material-symbols-outlined">${isExpandAction ? 'expand_all' : 'collapse_all'}</span>`;
 
     btn.onclick = () => {
-      const nextState = isExpandAction ? 'collapse' : 'expand';
-      expandCollapseStates[mode] = nextState;
-
-      // Update all relevant accordionStates
       if (mode === 'team') {
         config.workspaces.forEach((ws) => {
           accordionStates[`ws:${ws.id}`] = isExpandAction;
         });
       } else {
-        // developer or operations
         ['failure', 'progress', 'success'].forEach((groupId) => {
           accordionStates[`group:${groupId}`] = isExpandAction;
         });

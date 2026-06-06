@@ -187,24 +187,22 @@ def get_mock_script(mode=None):
         if (url === '#') {{
             return {{
                 ok: true,
-                json: async () => ({{
-                    jobs: [
-                        {{
-                            name: 'test-job',
-                            conclusion: 'failure',
-                            html_url: 'https://github.com/owner/repo/actions/runs/123/jobs/456',
-                            steps: [
-                                {{ name: 'Run tests', conclusion: 'failure' }}
-                            ]
-                        }}
-                    ]
-                }})
-            }};
-        }}
-        return originalFetch(url, options);
-    }};
-    """
+        await page.set_viewport_size({"width": SIDE_PANEL_WIDTH, "height": HEIGHT})
+        screenshot_bytes = await page.screenshot()
 
+        full_view = Image.new("RGB", (WIDTH, HEIGHT), "#f0f0f0")
+        draw = ImageDraw.Draw(full_view)
+        draw.rectangle([0, 0, WIDTH - SIDE_PANEL_WIDTH, HEIGHT], fill="#ffffff")
+        draw.rectangle([0, 0, WIDTH, 40], fill="#e0e0e0")
+        draw.ellipse([20, 10, 35, 25], fill="#ff5f56")
+        draw.ellipse([45, 10, 60, 25], fill="#ffbd2e")
+        draw.ellipse([70, 10, 85, 25], fill="#27c93f")
+        draw.rectangle([100, 10, WIDTH - 150, 30], fill="#ffffff", outline="#cccccc")
+        draw.text((110, 15), "https://github.com/owner1/repo1", fill="#666666")
+
+        with Image.open(io.BytesIO(screenshot_bytes)) as sp:
+            full_view.paste(sp, (WIDTH - SIDE_PANEL_WIDTH, 40))
+        full_view.save(os.path.join(ASSETS_DIR, "screenshot1_full_view.png"), "PNG")
 
 async def capture_screenshot(page, filename, width=WIDTH, height=HEIGHT):
     os.makedirs(ASSETS_DIR, exist_ok=True)

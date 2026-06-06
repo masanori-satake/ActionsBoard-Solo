@@ -3,9 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title data-i18n="title">
-      ActionsBoard-Solo - GitHub Actions ダッシュボード
-    </title>
+    <title data-i18n="title">ActionsBoard-Solo - GitHub Actions ダッシュボード</title>
     <style>
       :root {
         --md-sys-color-primary: #006493;
@@ -20,13 +18,13 @@
       }
 
       @font-face {
-        font-family: "Material Symbols Outlined";
+        font-family: 'Material Symbols Outlined';
         font-style: normal;
-        src: url(assets/fonts/material-symbols-outlined.woff2) format("woff2");
+        src: url(assets/fonts/material-symbols-outlined.woff2) format('woff2');
       }
 
       .material-symbols-outlined {
-        font-family: "Material Symbols Outlined";
+        font-family: 'Material Symbols Outlined';
         font-weight: normal;
         font-style: normal;
         font-size: 24px;
@@ -42,7 +40,7 @@
 
       body {
         margin: 0;
-        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         background-color: var(--md-sys-color-surface);
         color: var(--md-sys-color-on-surface);
         line-height: 1.6;
@@ -168,14 +166,8 @@
             src="https://img.shields.io/badge/version-1.0.0-white?color=white&labelColor=006493&label=version"
             alt="version"
           />
-          <img
-            src="https://img.shields.io/badge/Privacy-Local%20Only-white"
-            alt="privacy"
-          />
-          <img
-            src="https://img.shields.io/badge/Manifest-V3-white"
-            alt="manifest"
-          />
+          <img src="https://img.shields.io/badge/Privacy-Local%20Only-white" alt="privacy" />
+          <img src="https://img.shields.io/badge/Manifest-V3-white" alt="manifest" />
         </div>
       </div>
     </header>
@@ -184,10 +176,13 @@
       <section id="about">
         <h2 data-i18n="about_title">プロジェクト概要</h2>
         <p data-i18n="about_p1">
-          ActionsBoard-Solo は、GitHub Actions の実行状態と GitHub Pages のデプロイステータスをリアルタイムで追跡し、開発者の「待ち時間」を最小化するための Chrome 拡張機能です。
+          ActionsBoard-Solo は、GitHub Actions の実行状態と GitHub Pages
+          のデプロイステータスをリアルタイムで追跡し、開発者の「待ち時間」を最小化するための Chrome
+          拡張機能です。
         </p>
         <p data-i18n="about_p2">
-          複数リポジトリを跨ぐプロジェクトにおいて、情報が分散しがちな GitHub Actions の状態を、ユーザーの役割（開発者、チームリード、運用保守）に合わせた「コンテキスト指向」の視点で集約します。
+          複数リポジトリを跨ぐプロジェクトにおいて、情報が分散しがちな GitHub Actions
+          の状態を、ユーザーの役割（開発者、チームリード、運用保守）に合わせた「コンテキスト指向」の視点で集約します。
         </p>
       </section>
 
@@ -196,36 +191,29 @@
         <div class="feature-grid">
           <div class="feature-card">
             <span class="material-symbols-outlined feature-icon">dashboard</span>
-            <div class="feature-title" data-i18n="feature1_title">
-              コンテキスト指向型
-            </div>
+            <div class="feature-title" data-i18n="feature1_title">コンテキスト指向型</div>
             <p data-i18n="feature1_p">
               自分のアクティビティ、チーム全体の健全性、運用監視など、目的に合わせた表示モードの切り替えが可能です。
             </p>
           </div>
           <div class="feature-card">
             <span class="material-symbols-outlined feature-icon">verified</span>
-            <div class="feature-title" data-i18n="feature2_title">
-              2段階デプロイ追跡
-            </div>
+            <div class="feature-title" data-i18n="feature2_title">2段階デプロイ追跡</div>
             <p data-i18n="feature2_p">
-              Actions の完了だけでなく、その後の GitHub Pages への反映（デプロイ完了）までを一気通貫で監視します。
+              Actions の完了だけでなく、その後の GitHub Pages
+              への反映（デプロイ完了）までを一気通貫で監視します。
             </p>
           </div>
           <div class="feature-card">
             <span class="material-symbols-outlined feature-icon">lock</span>
-            <div class="feature-title" data-i18n="feature3_title">
-              完全ローカル・プライバシー
-            </div>
+            <div class="feature-title" data-i18n="feature3_title">完全ローカル・プライバシー</div>
             <p data-i18n="feature3_p">
               GitHub PATや設定データはすべてブラウザ内に保存。外部サーバーへの送信は一切行いません。
             </p>
           </div>
           <div class="feature-card">
             <span class="material-symbols-outlined feature-icon">sync</span>
-            <div class="feature-title" data-i18n="feature4_title">
-              アダプティブ・ポーリング
-            </div>
+            <div class="feature-title" data-i18n="feature4_title">アダプティブ・ポーリング</div>
             <p data-i18n="feature4_p">
               利用状況に応じて API 通信頻度を最適化。通知も最小限の認知負荷で受け取れます。
             </p>
@@ -235,15 +223,13 @@
 
       <section class="cta-section">
         <h3 data-i18n="cta_title">今すぐ始めましょう</h3>
-        <p data-i18n="cta_p">
-          Chrome ウェブストアから無料でインストールできます。
-        </p>
+        <p data-i18n="cta_p">Chrome ウェブストアから無料でインストールできます。</p>
         <div>
           <!-- Placeholder for badge -->
           <img
             src="assets/chrome-web-store-badge.png"
             alt="Available in the Chrome Web Store"
-            style="opacity: 0.5;"
+            style="opacity: 0.5"
           />
         </div>
       </section>
@@ -255,14 +241,10 @@
             <a href="usage.html" data-i18n="link_usage">使いかたガイド</a>
           </li>
           <li>
-            <a href="privacy.html" data-i18n="link_privacy"
-              >プライバシーポリシー</a
-            >
+            <a href="privacy.html" data-i18n="link_privacy">プライバシーポリシー</a>
           </li>
           <li>
-            <a
-              href="https://github.com/masanori-satake/ActionsBoard-Solo"
-              data-i18n="link_repo"
+            <a href="https://github.com/masanori-satake/ActionsBoard-Solo" data-i18n="link_repo"
               >GitHub リポジトリ</a
             >
           </li>

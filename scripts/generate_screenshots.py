@@ -237,14 +237,12 @@ async def main():
         draw = ImageDraw.Draw(full_view)
         draw.rectangle([0, 0, WIDTH - SIDE_PANEL_WIDTH, HEIGHT], fill="#ffffff")
         draw.rectangle([0, 0, WIDTH, 40], fill="#e0e0e0")
-        draw.ellipse([20, 10, 35, 25], fill="#ff5f56")
-        draw.ellipse([45, 10, 60, 25], fill="#ffbd2e")
-        draw.ellipse([70, 10, 85, 25], fill="#27c93f")
-        draw.rectangle([100, 10, WIDTH - 150, 30], fill="#ffffff", outline="#cccccc")
-        draw.text((110, 15), "https://github.com/owner1/repo1", fill="#666666")
+        screenshot_bytes = await page_dev.screenshot()
 
-        with Image.open(side_panel_path) as sp:
-            full_view.paste(sp, (WIDTH - SIDE_PANEL_WIDTH, 40))
+        dev_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
+        with Image.open(io.BytesIO(screenshot_bytes)) as img:
+            dev_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
+        dev_focused.save(os.path.join(ASSETS_DIR, "screenshot3_developer_mode.png"), "PNG")
         full_view.save(os.path.join(ASSETS_DIR, "screenshot1_full_view.png"), "PNG")
         os.remove(side_panel_path)
         print("Saved screenshot1_full_view.png")

@@ -163,17 +163,17 @@ def get_mock_script(mode=None):
         storage: {{
             local: {{
                 get: (keys) => Promise.resolve({json.dumps(config)}),
-                set: (data) => {{
-                    console.log('Storage set:', data);
-                    return Promise.resolve();
-                }}
-            }},
-            onChanged: {{ addListener: () => {{}} }}
-        }},
-        tabs: {{
-            create: (data) => console.log('Create tab:', data)
-        }},
-        sidePanel: {{
+    filepath = os.path.join(ASSETS_DIR, filename)
+    screenshot_bytes = await page.screenshot(animations="disabled")
+
+    # Post-process to ensure 24-bit (remove alpha) and exact size
+    with Image.open(io.BytesIO(screenshot_bytes)) as img:
+        img = img.convert("RGB")
+        if img.size != (width, height):
+            new_img = Image.new("RGB", (width, height), M3_BG_COLOR)
+            new_img.paste(img, ((width - img.width) // 2, (height - img.height) // 2))
+            img = new_img
+        img.save(filepath, "PNG")
             setPanelBehavior: () => Promise.resolve()
         }},
         permissions: {{

@@ -863,11 +863,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Also remove legacy settings if any
     delete exportConfig.settings;
 
+    const now = new Date();
+    const pad = (num) => String(num).padStart(2, '0');
+    const timestamp =
+      `${String(now.getFullYear()).slice(-2)}` +
+      `${pad(now.getMonth() + 1)}` +
+      `${pad(now.getDate())}_` +
+      `${pad(now.getHours())}` +
+      `${pad(now.getMinutes())}` +
+      `${pad(now.getSeconds())}`;
+
     const blob = new Blob([JSON.stringify(exportConfig, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `actionsboard-solo-config-${Date.now()}.json`;
+    a.download = `actionsboard-solo-config-${timestamp}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };

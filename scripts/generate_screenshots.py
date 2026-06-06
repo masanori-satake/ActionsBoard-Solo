@@ -222,11 +222,9 @@ async def capture_screenshot(page, filename, width=WIDTH, height=HEIGHT):
 
 async def main():
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        context = await browser.new_context(viewport={"width": WIDTH, "height": HEIGHT})
-        page = await context.new_page()
-
-        # 1. Full View (Side Panel in Browser)
+            screenshot_bytes = await mode_page.screenshot()
+            with Image.open(io.BytesIO(screenshot_bytes)) as img:
+                composite.paste(img, (i * col_width, 0))
         await page.add_init_script(get_mock_script(mode="developer"))
         await page.goto(f"file://{os.path.join(APP_DIR, 'popup/popup.html')}")
         await page.wait_for_timeout(1000)

@@ -10,14 +10,24 @@ HEIGHT = 800
 SIDE_PANEL_WIDTH = 320
 ASSETS_DIR = "projects/web/assets"
 APP_DIR = os.path.abspath("projects/app")
-M3_BG_COLOR = "#fdfbff" # Material 3 background color (light)
-M3_DARK_BG_COLOR = "#1b1b1f" # Material 3 background color (dark)
+M3_BG_COLOR = "#fdfbff"  # Material 3 background color (light)
+M3_DARK_BG_COLOR = "#1b1b1f"  # Material 3 background color (dark)
 
 # Mock Data
 MOCK_CONFIG = {
     "authConfigs": [
-        {"id": "auth1", "name": "Personal GitHub", "pat": "********", "baseUrl": "https://api.github.com"},
-        {"id": "auth2", "name": "Enterprise GitHub", "pat": "********", "baseUrl": "https://github.example.com/api/v3"}
+        {
+            "id": "auth1",
+            "name": "Personal GitHub",
+            "pat": "********",
+            "baseUrl": "https://api.github.com",
+        },
+        {
+            "id": "auth2",
+            "name": "Enterprise GitHub",
+            "pat": "********",
+            "baseUrl": "https://github.example.com/api/v3",
+        },
     ],
     "workspaces": [
         {
@@ -25,20 +35,45 @@ MOCK_CONFIG = {
             "name": "Main Project",
             "authConfigId": "auth1",
             "items": [
-                {"owner": "owner1", "repo": "repo1", "workflowFile": "ci.yml", "alias": "CI Build"},
-                {"owner": "owner1", "repo": "repo1", "workflowFile": "deploy.yml", "alias": "Production Deploy"},
-                {"owner": "owner1", "repo": "repo2", "workflowFile": "test.yml", "alias": "Unit Tests"}
-            ]
+                {
+                    "owner": "owner1",
+                    "repo": "repo1",
+                    "workflowFile": "ci.yml",
+                    "alias": "CI Build",
+                },
+                {
+                    "owner": "owner1",
+                    "repo": "repo1",
+                    "workflowFile": "deploy.yml",
+                    "alias": "Production Deploy",
+                },
+                {
+                    "owner": "owner1",
+                    "repo": "repo2",
+                    "workflowFile": "test.yml",
+                    "alias": "Unit Tests",
+                },
+            ],
         },
         {
             "id": "ws2",
             "name": "Operations Dashboard",
             "authConfigId": "auth2",
             "items": [
-                {"owner": "ops", "repo": "infra", "workflowFile": "backup.yml", "alias": "Nightly Backup"},
-                {"owner": "ops", "repo": "infra", "workflowFile": "audit.yml", "alias": "Security Audit"}
-            ]
-        }
+                {
+                    "owner": "ops",
+                    "repo": "infra",
+                    "workflowFile": "backup.yml",
+                    "alias": "Nightly Backup",
+                },
+                {
+                    "owner": "ops",
+                    "repo": "infra",
+                    "workflowFile": "audit.yml",
+                    "alias": "Security Audit",
+                },
+            ],
+        },
     ],
     "cache": {
         "runs": {
@@ -48,7 +83,7 @@ MOCK_CONFIG = {
                 "actor": "user1",
                 "updated_at": "2023-10-27T10:00:00Z",
                 "display_title": "feat: update layout",
-                "html_url": "#"
+                "html_url": "#",
             },
             "owner1/repo1/deploy.yml": {
                 "status": "in_progress",
@@ -56,7 +91,7 @@ MOCK_CONFIG = {
                 "actor": "user1",
                 "updated_at": "2023-10-27T10:05:00Z",
                 "display_title": "deploy to prod",
-                "html_url": "#"
+                "html_url": "#",
             },
             "owner1/repo2/test.yml": {
                 "status": "completed",
@@ -65,7 +100,7 @@ MOCK_CONFIG = {
                 "updated_at": "2023-10-27T09:50:00Z",
                 "display_title": "fix: broken tests",
                 "html_url": "#",
-                "jobs_url": "#"
+                "jobs_url": "#",
             },
             "ops/infra/backup.yml": {
                 "status": "completed",
@@ -73,7 +108,7 @@ MOCK_CONFIG = {
                 "actor": "system",
                 "updated_at": "2023-10-27T02:00:00Z",
                 "display_title": "scheduled backup",
-                "html_url": "#"
+                "html_url": "#",
             },
             "ops/infra/audit.yml": {
                 "status": "completed",
@@ -82,24 +117,33 @@ MOCK_CONFIG = {
                 "updated_at": "2023-10-27T03:00:00Z",
                 "display_title": "weekly audit",
                 "html_url": "#",
-                "jobs_url": "#"
-            }
+                "jobs_url": "#",
+            },
         },
         "history": {
-            "owner1/repo1/ci.yml": [{"status": "completed", "conclusion": "success"}] * 10,
-            "owner1/repo1/deploy.yml": [{"status": "completed", "conclusion": "success"}] * 9 + [{"status": "in_progress", "conclusion": None}],
-            "owner1/repo2/test.yml": [{"status": "completed", "conclusion": "success"}] * 5 + [{"status": "completed", "conclusion": "failure"}] * 5,
-            "ops/infra/backup.yml": [{"status": "completed", "conclusion": "success"}] * 10,
-            "ops/infra/audit.yml": [{"status": "completed", "conclusion": "success"}] * 8 + [{"status": "completed", "conclusion": "failure"}] * 2
+            "owner1/repo1/ci.yml": [{"status": "completed", "conclusion": "success"}]
+            * 10,
+            "owner1/repo1/deploy.yml": [
+                {"status": "completed", "conclusion": "success"}
+            ]
+            * 9
+            + [{"status": "in_progress", "conclusion": None}],
+            "owner1/repo2/test.yml": [{"status": "completed", "conclusion": "success"}]
+            * 5
+            + [{"status": "completed", "conclusion": "failure"}] * 5,
+            "ops/infra/backup.yml": [{"status": "completed", "conclusion": "success"}]
+            * 10,
+            "ops/infra/audit.yml": [{"status": "completed", "conclusion": "success"}]
+            * 8
+            + [{"status": "completed", "conclusion": "failure"}] * 2,
         },
-        "pages": {
-            "owner1/repo1": {"status": "deliverable", "page_url": "#"}
-        }
+        "pages": {"owner1/repo1": {"status": "deliverable", "page_url": "#"}},
     },
     "currentUser": {"auth1": "user1", "auth2": "admin"},
     "activeMode": "developer",
-    "notificationSettings": {"scope": "all", "events": ["failure", "pages"]}
+    "notificationSettings": {"scope": "all", "events": ["failure", "pages"]},
 }
+
 
 def get_mock_script(mode=None):
     config = MOCK_CONFIG.copy()
@@ -161,6 +205,7 @@ def get_mock_script(mode=None):
     }};
     """
 
+
 async def capture_screenshot(page, filename, width=WIDTH, height=HEIGHT):
     os.makedirs(ASSETS_DIR, exist_ok=True)
     filepath = os.path.join(ASSETS_DIR, filename)
@@ -175,6 +220,7 @@ async def capture_screenshot(page, filename, width=WIDTH, height=HEIGHT):
             img = new_img
         img.save(filepath, "PNG")
     print(f"Saved {filepath}")
+
 
 async def main():
     async with async_playwright() as p:
@@ -231,7 +277,9 @@ async def main():
             os.remove(mode_path)
             await mode_page.close()
 
-        composite.save(os.path.join(ASSETS_DIR, "screenshot2_modes_composite.png"), "PNG")
+        composite.save(
+            os.path.join(ASSETS_DIR, "screenshot2_modes_composite.png"), "PNG"
+        )
         print("Saved screenshot2_modes_composite.png")
 
         # 3. Developer Mode (Focused)
@@ -247,7 +295,9 @@ async def main():
         dev_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
         with Image.open(dev_panel_path) as img:
             dev_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
-        dev_focused.save(os.path.join(ASSETS_DIR, "screenshot3_developer_mode.png"), "PNG")
+        dev_focused.save(
+            os.path.join(ASSETS_DIR, "screenshot3_developer_mode.png"), "PNG"
+        )
         os.remove(dev_panel_path)
         print("Saved screenshot3_developer_mode.png")
         await page_dev.close()
@@ -268,7 +318,9 @@ async def main():
         ops_focused = Image.new("RGB", (WIDTH, HEIGHT), M3_BG_COLOR)
         with Image.open(ops_panel_path) as img:
             ops_focused.paste(img, ((WIDTH - SIDE_PANEL_WIDTH) // 2, 0))
-        ops_focused.save(os.path.join(ASSETS_DIR, "screenshot4_operations_mode.png"), "PNG")
+        ops_focused.save(
+            os.path.join(ASSETS_DIR, "screenshot4_operations_mode.png"), "PNG"
+        )
         os.remove(ops_panel_path)
         print("Saved screenshot4_operations_mode.png")
         await page_ops.close()
@@ -283,6 +335,7 @@ async def main():
         await page_opt.close()
 
         await browser.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

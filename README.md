@@ -1,6 +1,6 @@
 # ActionsBoard-Solo
 
-[![version](https://img.shields.io/badge/version-1.0.2-blue)](projects/app/manifest.json)
+[![version](https://img.shields.io/badge/version-1.0.3-blue)](projects/app/manifest.json)
 [![Chrome Web Store Version](https://img.shields.io/badge/Chrome%20Web%20Store-v1.0.2-blue)](https://chromewebstore.google.com/detail/oofegjdjnldkikigimkadlleaiolionm)
 [![License-MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](#%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%81%A8%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3)

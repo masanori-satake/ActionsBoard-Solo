@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 10000 } = options;
+    const { timeout = 15000 } = options;
 
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
@@ -442,7 +442,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         logArea.textContent = '失敗ジョブの詳細が見つかりませんでした。';
       }
-    } catch {
+    } catch (err) {
+      console.error(
+        '[ActionsBoard-Solo] fetchAndShowLogs error: ' +
+          (err?.name || 'Error') +
+          ' ' +
+          (err?.message || err),
+        err,
+      );
       logArea.textContent = 'ログの取得に失敗しました。';
     }
   }

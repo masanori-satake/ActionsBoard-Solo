@@ -126,11 +126,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderDeveloperMode() {
     const allItems = getAllItems();
-    const userLogins = Object.values(currentUser || {});
+    const userLogins = Object.values(currentUser || {}).map((login) => login.toLowerCase());
     const myActivity = allItems.filter((item) => {
       const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
       if (!run || !run.actor) return false;
-      return userLogins.includes(run.actor);
+      return userLogins.includes(run.actor.toLowerCase());
     });
 
     elements.main.appendChild(createExpandCollapseButton('developer', myActivity));
@@ -345,10 +345,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     card.className = 'workflow-row';
 
     const status = getWorkflowStatus(run);
-    const statusClass =
-      status !== 'neutral' && run?.status !== 'error' && run?.status !== 'none'
-        ? `status-${status}`
-        : '';
+    const statusClass = status !== 'neutral' ? `status-${status}` : '';
 
     let runInfoHtml = '<div class="run-info">取得中...</div>';
     if (run) {

@@ -312,7 +312,13 @@ async function fetchWorkflowRuns(settings, item, count) {
       jobs_url: run.jobs_url,
     }));
   } catch (err) {
-    console.error(`[ActionsBoard-Solo] fetchWorkflowRuns error: ${err.name} ${err.message}`, err);
+    console.error(
+      '[ActionsBoard-Solo] fetchWorkflowRuns error: ' +
+        (err?.name || 'Error') +
+        ' ' +
+        (err?.message || err),
+      err,
+    );
     return null;
   }
 }

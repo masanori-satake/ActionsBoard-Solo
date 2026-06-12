@@ -1108,7 +1108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- Utils ---
 
   async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 10000 } = options;
+    const { timeout = 15000 } = options;
 
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);

@@ -267,7 +267,7 @@ async function poll() {
 // --- API Helpers ---
 
 async function fetchWithTimeout(resource, options = {}) {
-  const { timeout = 10000 } = options;
+  const { timeout = 15000 } = options;
 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
@@ -312,7 +312,10 @@ async function fetchWorkflowRuns(settings, item, count) {
       jobs_url: run.jobs_url,
     }));
   } catch (err) {
-    console.error(`[ActionsBoard-Solo] fetchWorkflowRuns error:`, err);
+    console.error(
+      `[ActionsBoard-Solo] fetchWorkflowRuns error: ${err.name} ${err.message}`,
+      err,
+    );
     return null;
   }
 }

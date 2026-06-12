@@ -443,10 +443,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         logArea.textContent = '失敗ジョブの詳細が見つかりませんでした。';
       }
     } catch (err) {
-      console.error(
-        `[ActionsBoard-Solo] fetchAndShowLogs error: ${err.name} ${err.message}`,
-        err,
-      );
+      console.error(`[ActionsBoard-Solo] fetchAndShowLogs error: ${err.name} ${err.message}`, err);
       logArea.textContent = 'ログの取得に失敗しました。';
     }
   }

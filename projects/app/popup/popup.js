@@ -109,24 +109,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   function getWorkflowStatus(run) {
     if (!run || run.status === 'none') return 'neutral';
     if (run.status === 'error' || run.conclusion === 'failure') return 'failure';
-    if (run.status === 'queued' || run.status === 'in_progress') return 'progress';
-    if (run.conclusion === 'success' || run.conclusion === 'cancelled') return 'success';
+    if (
+      run.status === 'queued' ||
+      run.status === 'in_progress' ||
+      run.status === 'waiting' ||
+      run.status === 'pending' ||
+      run.status === 'requested' ||
+      run.conclusion === 'action_required'
+    ) {
+      return 'progress';
+    }
+    if (run.conclusion === 'success') return 'success';
+    if (run.conclusion === 'cancelled') return 'neutral';
     return 'neutral';
   }
 
   function renderDeveloperMode() {
     const allItems = getAllItems();
+    const userLogins = Object.values(currentUser || {});
     const myActivity = allItems.filter((item) => {
       const run = cache.runs?.[`${item.owner}/${item.repo}/${item.workflowFile}`];
-      if (!run) return false;
-      const ws = config.workspaces.find((w) =>
-        w.items?.some(
-          (i) =>
-            i.owner === item.owner && i.repo === item.repo && i.workflowFile === item.workflowFile,
-        ),
-      );
-      if (!ws) return false;
-      return run.actor === currentUser[ws.authConfigId];
+      if (!run || !run.actor) return false;
+      return userLogins.includes(run.actor);
     });
 
     elements.main.appendChild(createExpandCollapseButton('developer', myActivity));
@@ -339,13 +343,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   function createActionRow(item, ws, run, pages, history, auth) {
     const card = document.createElement('div');
     card.className = 'workflow-row';
+
+    const status = getWorkflowStatus(run);
     const statusClass =
-      run && run.status !== 'none' && run.status !== 'error'
-        ? run.status === 'completed'
-          ? run.conclusion === 'success'
-            ? 'status-success'
-            : 'status-failure'
-          : 'status-progress'
+      status !== 'neutral' && run?.status !== 'error' && run?.status !== 'none'
+        ? `status-${status}`
         : '';
 
     let runInfoHtml = '<div class="run-info">取得中...</div>';
@@ -378,16 +380,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div style="min-width: 0; flex-grow: 1;">${runInfoHtml}</div>
         <div class="history-dots">${[...(history || [])]
           .reverse()
-          .map(
-            (h) =>
-              `<div class="dot ${
-                h.status === 'completed'
-                  ? h.conclusion === 'success'
-                    ? 'status-success'
-                    : 'status-failure'
-                  : 'status-progress'
-              }"></div>`,
-          )
+          .map((h) => {
+            const hStatus = getWorkflowStatus(h);
+            const hStatusClass = hStatus !== 'neutral' ? `status-${hStatus}` : '';
+            return `<div class="dot ${hStatusClass}"></div>`;
+          })
           .join('')}</div>
         ${
           pages && run?.conclusion === 'success'

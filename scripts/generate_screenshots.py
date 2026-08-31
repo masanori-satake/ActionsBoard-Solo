@@ -1,8 +1,9 @@
 import asyncio
-import os
 import json
-from playwright.async_api import async_playwright
+import os
+
 from PIL import Image, ImageDraw
+from playwright.async_api import async_playwright
 
 # Constants
 WIDTH = 1280

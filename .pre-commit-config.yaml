@@ -8,14 +8,14 @@ repos:
       - id: check-added-large-files
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.16
+    rev: v0.16.5
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v10.4.1
+    rev: v10.9.1
     hooks:
       - id: eslint
         files: \.[jt]sx?$
@@ -24,7 +24,7 @@ repos:
           - eslint@8.56.0
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v17.13.0
+    rev: v17.14.1
     hooks:
       - id: stylelint
         additional_dependencies:

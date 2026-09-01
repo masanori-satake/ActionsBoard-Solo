@@ -82,16 +82,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (data.workspaces) {
       config.workspaces = data.workspaces;
-      // Ensure all workspaces have an authConfigId
+      // Ensure all workspaces reference an existing auth configuration.
       let changed = false;
       config.workspaces.forEach((ws) => {
-        if (!ws.authConfigId && config.authConfigs.length > 0) {
+        if (
+          config.authConfigs.length > 0 &&
+          !config.authConfigs.some((authConfig) => authConfig.id === ws.authConfigId)
+        ) {
           ws.authConfigId = config.authConfigs[0].id;
           changed = true;
         }
       });
       if (changed) {
-        await chrome.storage.local.set({ workspaces: config.workspaces });
+        await saveWorkspaces();
       }
     }
 

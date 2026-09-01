@@ -24,6 +24,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     versionDisplay: document.getElementById('version-display'),
   };
 
+  function applyI18n() {
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const msg = chrome.i18n.getMessage(el.dataset.i18n);
+      if (msg) el.textContent = msg;
+    });
+    document.querySelectorAll('[data-i18n-tooltip]').forEach((el) => {
+      const msg = chrome.i18n.getMessage(el.dataset.i18nTooltip);
+      if (msg) el.dataset.tooltip = msg;
+    });
+  }
+
+  applyI18n();
+
   // Display version from manifest
   const manifest = chrome.runtime.getManifest();
   if (elements.versionDisplay) {
@@ -59,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       config.authConfigs = [
         {
           id: 'default',
-          name: 'デフォルト',
+          name: chrome.i18n.getMessage('defaultAuthName'),
           pat: data.settings.pat,
           baseUrl: data.settings.baseUrl || DEFAULT_API_URL,
         },
@@ -127,23 +140,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderAuthConfigs() {
     elements.authList.innerHTML = '';
     if (config.authConfigs.length === 0) {
-      elements.authList.innerHTML =
-        '<p class="md-sys-typescale-body-large" style="text-align: center; opacity: 0.6; padding: var(--md-sys-spacing-2);">認証設定が登録されていません。</p>';
+      elements.authList.innerHTML = `<p class="md-sys-typescale-body-large" style="text-align: center; opacity: 0.6; padding: var(--md-sys-spacing-2);">${escapeHtml(chrome.i18n.getMessage('noAccountsRegistered'))}</p>`;
       return;
     }
 
     config.authConfigs.forEach((auth, idx) => {
       const card = document.createElement('div');
       card.className = 'auth-card';
+      const tooltipTest = escapeHtml(chrome.i18n.getMessage('tooltipTest'));
+      const tooltipEdit = escapeHtml(chrome.i18n.getMessage('tooltipEdit'));
+      const tooltipDelete = escapeHtml(chrome.i18n.getMessage('tooltipDelete'));
+
       card.innerHTML = `
         <div style="flex-grow: 1;">
           <div class="md-sys-typescale-title-medium">${escapeHtml(auth.name)}</div>
           <div class="hint">${escapeHtml(auth.baseUrl)}</div>
         </div>
         <div class="button-row" style="margin-top: 0">
-          <button class="btn-icon-m3 test-auth-btn" data-idx="${idx}" data-tooltip="テスト"><span class="material-symbols-outlined">sync</span></button>
-          <button class="btn-icon-m3 edit-auth-btn" data-idx="${idx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
-          <button class="btn-icon-m3 del-auth-btn btn-error" data-idx="${idx}" data-tooltip="削除" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
+          <button class="btn-icon-m3 test-auth-btn" data-idx="${idx}" data-tooltip="${tooltipTest}"><span class="material-symbols-outlined">sync</span></button>
+          <button class="btn-icon-m3 edit-auth-btn" data-idx="${idx}" data-tooltip="${tooltipEdit}"><span class="material-symbols-outlined">edit</span></button>
+          <button class="btn-icon-m3 del-auth-btn btn-error" data-idx="${idx}" data-tooltip="${tooltipDelete}" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
         </div>
       `;
       elements.authList.appendChild(card);
@@ -152,10 +168,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.test-auth-btn').forEach((btn) => {
       btn.onclick = async () => {
         const auth = config.authConfigs[parseInt(btn.dataset.idx)];
-        showToast(`${auth.name} の接続テスト中...`);
+        showToast(chrome.i18n.getMessage('testingAuth', [auth.name]));
         const result = await testAuthConfig(auth);
         if (result.success) {
-          showToast(`接続成功: ${result.login} として認証されました。`);
+          showToast(chrome.i18n.getMessage('authSuccess', [result.login]));
         } else {
           showToast(result.message);
         }
@@ -176,10 +192,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const origin = new URL(auth.baseUrl).origin + '/*';
         const granted = await chrome.permissions.request({ origins: [origin] });
         if (!granted) {
-          return { success: false, message: 'APIへのアクセス権限が拒否されました。' };
+          return {
+            success: false,
+            message: chrome.i18n.getMessage('authPermissionDenied'),
+          };
         }
       } catch {
-        return { success: false, message: '無効な API ベース URL です。' };
+        return {
+          success: false,
+          message: chrome.i18n.getMessage('authInvalidUrl'),
+        };
       }
     }
 
@@ -202,18 +224,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch {
           /* ignore */
         }
-        return { success: false, message: `接続失敗: ${errMsg}` };
+        return {
+          success: false,
+          message: chrome.i18n.getMessage('authFailedMsg', [errMsg]),
+        };
       }
     } catch (err) {
-      return { success: false, message: `エラー: ${err?.message || err}` };
+      return {
+        success: false,
+        message: chrome.i18n.getMessage('authErrorMsg', [err?.message || err]),
+      };
     }
   }
 
   function openAuthModal(index = -1) {
     const isEdit = index !== -1;
-    elements.modalTitle.textContent = isEdit ? 'アカウント編集' : 'アカウント追加';
+    elements.modalTitle.textContent = isEdit
+      ? chrome.i18n.getMessage('modalEditAccount')
+      : chrome.i18n.getMessage('modalAddAccount');
     elements.errorMsg.style.display = 'none';
-    elements.modalSave.textContent = 'テスト&保存';
+    elements.modalSave.textContent = chrome.i18n.getMessage('btnTestAndSave');
 
     const auth = isEdit
       ? config.authConfigs[index]
@@ -221,30 +251,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     elements.modalContent.innerHTML = `
       <div class="field">
-        <label>設定名</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelConfigName'))}</label>
         <input type="text" id="m-auth-name" value="${escapeHtml(
           auth.name,
-        )}" placeholder="例: パブリックGitHub" />
+        )}" placeholder="${escapeHtml(chrome.i18n.getMessage('placeholderConfigName'))}" />
       </div>
       <div class="field">
-        <label>個人アクセストークン (PAT)</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelPat'))}</label>
         <input type="password" id="m-auth-pat" value="${escapeHtml(
           auth.pat,
         )}" placeholder="ghp_..." />
-        <div class="hint">\`repo\`, \`workflow\`, \`notifications\` 権限が必要です。</div>
+        <div class="hint">${escapeHtml(chrome.i18n.getMessage('hintPat'))}</div>
       </div>
       <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 8px;">
         <input type="checkbox" id="m-auth-public" ${
           auth.baseUrl === DEFAULT_API_URL ? 'checked' : ''
         } style="width: 18px; height: 18px;" />
-        <label for="m-auth-public" style="margin-bottom: 0;">パブリックな GitHub (github.com) を使用</label>
+        <label for="m-auth-public" style="margin-bottom: 0;">${escapeHtml(chrome.i18n.getMessage('labelUsePublicGithub'))}</label>
       </div>
       <div class="field">
-        <label>API ベース URL</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelApiBaseUrl'))}</label>
         <input type="text" id="m-auth-url" value="${escapeHtml(auth.baseUrl)}" ${
           auth.baseUrl === DEFAULT_API_URL ? 'disabled' : ''
         } />
-        <div class="hint">GHE の場合は \`https://{hostname}/api/v3\` を入力してください。</div>
+        <div class="hint">${escapeHtml(chrome.i18n.getMessage('hintGheUrl'))}</div>
       </div>
     `;
 
@@ -266,13 +296,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const baseUrl = document.getElementById('m-auth-url').value.trim() || DEFAULT_API_URL;
 
       if (!name || !pat) {
-        elements.errorMsg.textContent = '設定名とPATを入力してください。';
+        elements.errorMsg.textContent = chrome.i18n.getMessage('errEnterNameAndPat');
         elements.errorMsg.style.display = 'block';
         return;
       }
 
       elements.modalSave.disabled = true;
-      elements.modalSave.textContent = 'テスト中...';
+      elements.modalSave.textContent = chrome.i18n.getMessage('btnTesting');
 
       const testResult = await testAuthConfig({ name, pat, baseUrl });
 
@@ -280,7 +310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         elements.errorMsg.textContent = testResult.message;
         elements.errorMsg.style.display = 'block';
         elements.modalSave.disabled = false;
-        elements.modalSave.textContent = 'テスト&保存';
+        elements.modalSave.textContent = chrome.i18n.getMessage('btnTestAndSave');
         return;
       }
 
@@ -294,7 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.runtime.sendMessage({ action: 'poll' });
       renderAuthConfigs();
       elements.modal.close();
-      showToast(`${testResult.login} として保存しました。`);
+      showToast(chrome.i18n.getMessage('savedAsLogin', [testResult.login]));
       elements.modalSave.disabled = false;
     };
 
@@ -305,11 +335,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const auth = config.authConfigs[index];
     const isUsed = config.workspaces.some((ws) => ws.authConfigId === auth.id);
     if (isUsed) {
-      alert('この認証設定はワークスペースで使用されているため、削除できません。');
+      alert(chrome.i18n.getMessage('deleteAuthInUseError'));
       return;
     }
 
-    if (confirm(`認証設定「${auth.name}」を削除してもよろしいですか？`)) {
+    if (confirm(chrome.i18n.getMessage('deleteAuthConfirm', [auth.name]))) {
       config.authConfigs.splice(index, 1);
       await chrome.storage.local.set({ authConfigs: config.authConfigs });
       renderAuthConfigs();
@@ -324,10 +354,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.workspaceList.innerHTML = '';
 
     if (config.workspaces.length === 0) {
-      elements.workspaceList.innerHTML =
-        '<p class="md-sys-typescale-body-large" style="text-align: center; opacity: 0.6; padding: var(--md-sys-spacing-4);">ワークスペースが登録されていません。</p>';
+      elements.workspaceList.innerHTML = `<p class="md-sys-typescale-body-large" style="text-align: center; opacity: 0.6; padding: var(--md-sys-spacing-4);">${escapeHtml(chrome.i18n.getMessage('noWorkspacesRegistered'))}</p>`;
       return;
     }
+
+    const tooltipAdd = escapeHtml(chrome.i18n.getMessage('tooltipAdd'));
+    const tooltipEdit = escapeHtml(chrome.i18n.getMessage('tooltipEdit'));
+    const tooltipDelete = escapeHtml(chrome.i18n.getMessage('tooltipDelete'));
 
     config.workspaces.forEach((ws, wsIdx) => {
       const card = document.createElement('div');
@@ -343,9 +376,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           <h3 class="md-sys-typescale-title-medium" style="margin: 0;">${escapeHtml(ws.name)}</h3>
         </div>
         <div class="button-row" style="margin-top: 0">
-          <button class="btn-icon-m3 add-item-btn" data-ws-idx="${wsIdx}" data-tooltip="追加"><span class="material-symbols-outlined">add</span></button>
-          <button class="btn-icon-m3 edit-ws-btn" data-ws-idx="${wsIdx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
-          <button class="btn-icon-m3 del-ws-btn btn-error" data-ws-idx="${wsIdx}" data-tooltip="削除" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
+          <button class="btn-icon-m3 add-item-btn" data-ws-idx="${wsIdx}" data-tooltip="${tooltipAdd}"><span class="material-symbols-outlined">add</span></button>
+          <button class="btn-icon-m3 edit-ws-btn" data-ws-idx="${wsIdx}" data-tooltip="${tooltipEdit}"><span class="material-symbols-outlined">edit</span></button>
+          <button class="btn-icon-m3 del-ws-btn btn-error" data-ws-idx="${wsIdx}" data-tooltip="${tooltipDelete}" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
         </div>
       `;
       card.appendChild(header);
@@ -366,8 +399,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="item-name">${escapeHtml(item.alias || item.workflowFile)}</div>
             <div class="item-repo">${escapeHtml(item.owner)}/${escapeHtml(item.repo)}</div>
           </div>
-          <button class="btn-icon-m3 edit-item-btn" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="編集"><span class="material-symbols-outlined">edit</span></button>
-          <button class="btn-icon-m3 del-item-btn btn-error" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="削除" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
+          <button class="btn-icon-m3 edit-item-btn" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="${tooltipEdit}"><span class="material-symbols-outlined">edit</span></button>
+          <button class="btn-icon-m3 del-item-btn btn-error" data-ws-idx="${wsIdx}" data-item-idx="${itemIdx}" data-tooltip="${tooltipDelete}" data-tooltip-align="right"><span class="material-symbols-outlined">delete_sweep</span></button>
         `;
         itemList.appendChild(row);
       });
@@ -547,9 +580,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openWorkspaceModal(index = -1) {
     const isEdit = index !== -1;
-    elements.modalTitle.textContent = isEdit ? 'ワークスペース編集' : 'ワークスペース追加';
+    elements.modalTitle.textContent = isEdit
+      ? chrome.i18n.getMessage('modalEditWorkspace')
+      : chrome.i18n.getMessage('modalAddWorkspace');
     elements.errorMsg.style.display = 'none';
-    elements.modalSave.textContent = '保存';
+    elements.modalSave.textContent = chrome.i18n.getMessage('btnSave');
     const ws = isEdit
       ? config.workspaces[index]
       : { name: '', authConfigId: config.authConfigs[0]?.id || '' };
@@ -567,14 +602,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (ws.repoContext) {
       repoContextHtml = `
         <div class="field">
-          <label>ソースリポジトリ</label>
+          <label>${escapeHtml(chrome.i18n.getMessage('labelSourceRepo'))}</label>
           <input type="text" value="${escapeHtml(ws.repoContext.owner)}/${escapeHtml(ws.repoContext.repo)}" disabled />
-          <div class="hint">このワークスペースはリポジトリから自動作成されました。</div>
+          <div class="hint">${escapeHtml(chrome.i18n.getMessage('hintRepoAutoCreated'))}</div>
         </div>
         <div style="margin-bottom: 16px;">
           <button id="modal-ws-reload" class="btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <span class="material-symbols-outlined">sync</span>
-            リポジトリからワークフローを再読み込み
+            ${escapeHtml(chrome.i18n.getMessage('btnReloadWorkflows'))}
           </button>
         </div>
       `;
@@ -582,14 +617,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     elements.modalContent.innerHTML = `
       <div class="field">
-        <label>ワークスペース名</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelWorkspaceName'))}</label>
         <input type="text" id="modal-ws-name" value="${escapeHtml(
           ws.name,
-        )}" placeholder="例: 認証サブシステム" />
+        )}" placeholder="${escapeHtml(chrome.i18n.getMessage('placeholderWorkspaceName'))}" />
       </div>
       ${repoContextHtml}
       <div class="field">
-        <label>使用する認証設定</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelAuthConfigToUse'))}</label>
         <select id="modal-ws-auth">
           ${authOptions}
         </select>
@@ -615,7 +650,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const reloadBtn = document.getElementById('modal-ws-reload');
         reloadBtn.disabled = true;
-        reloadBtn.textContent = '読み込み中...';
+        reloadBtn.textContent = chrome.i18n.getMessage('btnReloadingWorkflows');
 
         try {
           const { owner, repo } = ws.repoContext;
@@ -630,7 +665,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           );
 
           if (!response.ok) {
-            let errMsg = 'ワークフローの取得に失敗しました。';
+            let errMsg = chrome.i18n.getMessage('errFetchWorkflowsFailed');
             try {
               const err = await response.json();
               errMsg = err.message || errMsg;
@@ -640,7 +675,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error(errMsg);
           }
           const data = await response.json();
-          if (!data.workflows) throw new Error('ワークフローが見つかりませんでした。');
+          if (!data.workflows)
+            throw new Error(chrome.i18n.getMessage('errNoWorkflowsFound'));
 
           const newRepoItems = data.workflows.map((wf) => {
             const workflowFile = (wf.path && wf.path.split('/').pop()) || wf.id.toString();
@@ -658,14 +694,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           const manualItems = (ws.items || []).filter((item) => !item.fromRepo);
 
           ws.items = [...manualItems, ...newRepoItems];
-          showToast('ワークフローを更新しました。');
+          showToast(chrome.i18n.getMessage('workflowsUpdated'));
         } catch (err) {
-          alert(`エラー: ${err.message}`);
+          alert(`Error: ${err.message}`);
         } finally {
           reloadBtn.disabled = false;
           reloadBtn.innerHTML = `
             <span class="material-symbols-outlined">sync</span>
-            リポジトリからワークフローを再読み込み
+            ${escapeHtml(chrome.i18n.getMessage('btnReloadWorkflows'))}
           `;
         }
       };
@@ -675,7 +711,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const name = document.getElementById('modal-ws-name').value.trim();
       const authConfigId = document.getElementById('modal-ws-auth').value;
       if (!name || !authConfigId) {
-        elements.errorMsg.textContent = '必須項目を入力してください。';
+        elements.errorMsg.textContent = chrome.i18n.getMessage('errRequiredFields');
         elements.errorMsg.style.display = 'block';
         return;
       }
@@ -696,41 +732,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openItemModal(wsIdx, itemIdx = -1) {
     const isEdit = itemIdx !== -1;
-    elements.modalTitle.textContent = isEdit ? '監視項目の編集' : '監視項目の追加';
+    elements.modalTitle.textContent = isEdit
+      ? chrome.i18n.getMessage('modalEditItem')
+      : chrome.i18n.getMessage('modalAddItem');
     elements.errorMsg.style.display = 'none';
-    elements.modalSave.textContent = '保存';
+    elements.modalSave.textContent = chrome.i18n.getMessage('btnSave');
     const item = isEdit
       ? config.workspaces[wsIdx].items[itemIdx]
       : { owner: '', repo: '', workflowFile: '', alias: '' };
 
     elements.modalContent.innerHTML = `
       <div class="field">
-        <label>URL (一括入力)</label>
-        <input type="text" id="m-url-shortcut" placeholder="例: https://github.com/owner/repo/actions/workflows/ci.yml" />
-        <div class="hint">URLを入力すると下の項目が自動入力されます。</div>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelUrlShortcut'))}</label>
+        <input type="text" id="m-url-shortcut" placeholder="${escapeHtml(
+          chrome.i18n.getMessage('placeholderUrlShortcut'),
+        )}" />
+        <div class="hint">${escapeHtml(chrome.i18n.getMessage('hintUrlShortcut'))}</div>
       </div>
       <hr style="border: none; border-top: 1px dashed var(--md-sys-color-outline-variant); margin: 16px 0;" />
       <div class="field">
-        <label>リポジトリ所有者 (Owner)</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelOwner'))}</label>
         <input type="text" id="m-owner" value="${escapeHtml(
           item.owner,
-        )}" placeholder="例: facebook" />
+        )}" placeholder="${escapeHtml(chrome.i18n.getMessage('placeholderOwner'))}" />
       </div>
       <div class="field">
-        <label>リポジトリ名 (Repo)</label>
-        <input type="text" id="m-repo" value="${escapeHtml(item.repo)}" placeholder="例: react" />
+        <label>${escapeHtml(chrome.i18n.getMessage('labelRepo'))}</label>
+        <input type="text" id="m-repo" value="${escapeHtml(
+          item.repo,
+        )}" placeholder="${escapeHtml(chrome.i18n.getMessage('placeholderRepo'))}" />
       </div>
       <div class="field">
-        <label>ワークフロー YAML ファイル名</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelWorkflowFile'))}</label>
         <input type="text" id="m-workflow" value="${escapeHtml(
           item.workflowFile,
-        )}" placeholder="例: ci.yml" />
+        )}" placeholder="${escapeHtml(chrome.i18n.getMessage('placeholderWorkflowFile'))}" />
       </div>
       <div class="field">
-        <label>表示エイリアス (任意)</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelAlias'))}</label>
         <input type="text" id="m-alias" value="${escapeHtml(
           item.alias,
-        )}" placeholder="例: 【本番】CIチェック" />
+        )}" placeholder="${escapeHtml(chrome.i18n.getMessage('placeholderAlias'))}" />
       </div>
     `;
 
@@ -759,12 +801,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const parsed = parseGitHubUrl(urlVal);
         if (parsed) {
           if (!authConfig) {
-            elements.errorMsg.textContent = 'ワークスペースの認証設定が見つかりません。';
+            elements.errorMsg.textContent = chrome.i18n.getMessage('errAuthConfigNotFound');
             elements.errorMsg.style.display = 'block';
             return;
           }
           if (!validateUrlWithAuth(parsed, authConfig)) {
-            elements.errorMsg.textContent = `URLのドメインがワークスペースの認証設定 (${authConfig.name}) と一致しません。`;
+            elements.errorMsg.textContent = chrome.i18n.getMessage('errUrlDomainMismatch', [
+              authConfig.name,
+            ]);
             elements.errorMsg.style.display = 'block';
             return;
           }
@@ -781,7 +825,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
 
       if (!newItem.owner || !newItem.repo || !newItem.workflowFile) {
-        elements.errorMsg.textContent = '必須項目を入力してください。';
+        elements.errorMsg.textContent = chrome.i18n.getMessage('errRequiredFields');
         elements.errorMsg.style.display = 'block';
         return;
       }
@@ -800,14 +844,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function deleteWorkspace(index) {
-    if (confirm('このワークスペースを削除してもよろしいですか？')) {
+    if (confirm(chrome.i18n.getMessage('deleteWorkspaceConfirm'))) {
       config.workspaces.splice(index, 1);
       await saveWorkspaces();
     }
   }
 
   async function deleteItem(wsIdx, itemIdx) {
-    if (confirm('この監視項目を削除してもよろしいですか？')) {
+    if (confirm(chrome.i18n.getMessage('deleteItemConfirm'))) {
       config.workspaces[wsIdx].items.splice(itemIdx, 1);
       await saveWorkspaces();
     }
@@ -825,9 +869,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   elements.modalCancel.onclick = () => elements.modal.close();
 
   function openRepoWorkspaceModal() {
-    elements.modalTitle.textContent = 'リポジトリから新規ワークスペースを追加';
+    elements.modalTitle.textContent = chrome.i18n.getMessage('modalAddRepoWorkspace');
     elements.errorMsg.style.display = 'none';
-    elements.modalSave.textContent = '保存';
+    elements.modalSave.textContent = chrome.i18n.getMessage('btnSave');
 
     let authOptions = config.authConfigs
       .map((auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`)
@@ -835,12 +879,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     elements.modalContent.innerHTML = `
       <div class="field">
-        <label>リポジトリ (URL または Owner/Repo)</label>
-        <input type="text" id="modal-repo-path" placeholder="例: https://github.com/facebook/react" />
-        <div class="hint">指定されたリポジトリのワークフローを自動的に取得して登録します。</div>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelRepoOrUrl'))}</label>
+        <input type="text" id="modal-repo-path" placeholder="${escapeHtml(
+          chrome.i18n.getMessage('placeholderRepoOrUrl'),
+        )}" />
+        <div class="hint">${escapeHtml(chrome.i18n.getMessage('hintRepoOrUrl'))}</div>
       </div>
       <div class="field">
-        <label>使用する認証設定</label>
+        <label>${escapeHtml(chrome.i18n.getMessage('labelAuthConfigToUse'))}</label>
         <select id="modal-repo-auth">
           ${authOptions}
         </select>
@@ -853,7 +899,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const authConfigId = document.getElementById('modal-repo-auth').value;
 
       if (!inputVal || !authConfigId) {
-        elements.errorMsg.textContent = '必須項目を入力してください。';
+        elements.errorMsg.textContent = chrome.i18n.getMessage('errRequiredFields');
         elements.errorMsg.style.display = 'block';
         return;
       }
@@ -863,7 +909,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (parsed) {
         if (!validateUrlWithAuth(parsed, authConfig)) {
-          elements.errorMsg.textContent = `URLのドメインが選択した認証設定 (${authConfig.name}) と一致しません。`;
+          elements.errorMsg.textContent = chrome.i18n.getMessage('errUrlDomainMismatch', [
+            authConfig.name,
+          ]);
           elements.errorMsg.style.display = 'block';
           return;
         }
@@ -876,13 +924,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else if (inputVal.includes('/')) {
         [owner, repo] = inputVal.split('/');
       } else {
-        elements.errorMsg.textContent = '正確なURLまたは Owner/Repo 形式で入力してください。';
+        elements.errorMsg.textContent = chrome.i18n.getMessage('errInvalidRepoOrUrl');
         elements.errorMsg.style.display = 'block';
         return;
       }
 
       elements.modalSave.disabled = true;
-      elements.modalSave.textContent = '取得中...';
+      elements.modalSave.textContent = chrome.i18n.getMessage('labelFetching');
 
       try {
         const response = await fetchWithTimeout(
@@ -896,7 +944,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
 
         if (!response.ok) {
-          let errMsg = 'ワークフローの取得に失敗しました。';
+          let errMsg = chrome.i18n.getMessage('errFetchWorkflowsFailed');
           try {
             const err = await response.json();
             errMsg = err.message || errMsg;
@@ -908,7 +956,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const data = await response.json();
         if (!data.workflows || data.workflows.length === 0) {
-          throw new Error('ワークフローが見つかりませんでした。');
+          throw new Error(chrome.i18n.getMessage('errNoWorkflowsFound'));
         }
 
         const items = data.workflows.map((wf) => {
@@ -934,13 +982,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         await saveWorkspaces();
         elements.modal.close();
-        showToast(`ワークスペース「${repo}」を追加しました。`);
+        showToast(chrome.i18n.getMessage('workspaceAdded', [repo]));
       } catch (err) {
-        elements.errorMsg.textContent = `エラー: ${err?.message || err}`;
+        elements.errorMsg.textContent = `Error: ${err?.message || err}`;
         elements.errorMsg.style.display = 'block';
       } finally {
         elements.modalSave.disabled = false;
-        elements.modalSave.textContent = '保存';
+        elements.modalSave.textContent = chrome.i18n.getMessage('btnSave');
       }
     };
 
@@ -950,7 +998,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- Config Management ---
 
   document.getElementById('reset-config').onclick = async () => {
-    if (confirm('すべての設定を初期化します。よろしいですか？')) {
+    if (confirm(chrome.i18n.getMessage('resetConfirm'))) {
       await chrome.storage.local.clear();
       location.reload();
     }
@@ -998,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               importedAuths = [
                 {
                   id: 'default',
-                  name: 'デフォルト',
+                  name: chrome.i18n.getMessage('defaultAuthName'),
                   baseUrl: imported.settings.baseUrl || DEFAULT_API_URL,
                 },
               ];
@@ -1025,10 +1073,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             location.reload();
           } else {
-            alert('無効な設定ファイルです。');
+            alert(chrome.i18n.getMessage('errInvalidConfigFile'));
           }
         } catch {
-          alert('ファイルの読み込みに失敗しました。');
+          alert(chrome.i18n.getMessage('errFileLoadFailed'));
         }
       };
       reader.readAsText(file);
@@ -1054,8 +1102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.notifWorkspacesContainer.style.display = 'block';
       elements.notifWorkspacesList.innerHTML = '';
       if (config.workspaces.length === 0) {
-        elements.notifWorkspacesList.innerHTML =
-          '<div class="hint">ワークスペースがありません</div>';
+        elements.notifWorkspacesList.innerHTML = `<div class="hint">${escapeHtml(chrome.i18n.getMessage('noWorkspaces'))}</div>`;
       } else {
         config.workspaces.forEach((ws) => {
           const div = document.createElement('div');

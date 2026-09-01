@@ -100,7 +100,7 @@ async function poll() {
         authConfigs = [
           {
             id: 'default',
-            name: 'デフォルト',
+            name: chrome.i18n.getMessage('defaultAuthName'),
             pat: settings.pat,
             baseUrl: settings.baseUrl || DEFAULT_API_URL,
           },
@@ -236,7 +236,7 @@ async function poll() {
                 results.runs[key] = {
                   status: 'error',
                   conclusion: 'error',
-                  error: '取得失敗 (APIエラー)',
+                  error: chrome.i18n.getMessage('apiFetchError'),
                 };
               } else {
                 // No runs found
@@ -394,11 +394,12 @@ function checkFailureNotification(key, current, previous, context) {
   if (current.status === 'completed' && current.conclusion === 'failure') {
     if (!previous || previous.id !== current.id) {
       if (shouldNotify('failure', current, context)) {
-        showNotification(
-          `❌ Build Failure: ${key}`,
-          `${current.display_title} by ${current.actor}`,
-          current.html_url,
-        );
+        const title = chrome.i18n.getMessage('notifBuildFailureTitle', [key]);
+        const message = chrome.i18n.getMessage('notifBuildFailureMessage', [
+          current.display_title || '',
+          current.actor || '',
+        ]);
+        showNotification(title, message, current.html_url);
       }
     }
   }
@@ -407,18 +408,10 @@ function checkFailureNotification(key, current, previous, context) {
 function checkPagesNotification(item, current, previous, context) {
   if (current.status === 'deliverable') {
     if (!previous || (previous.id !== current.id && previous.status !== 'deliverable')) {
-      // For pages notification, the 'run' object used in shouldNotify is just the latest run
-      // but actor might not be easily available from pages deployment.
-      // However, checkPagesNotification is called only if latestRun.conclusion === 'success'.
-      // In this case, we can pass the latestRun as context for actor-based filtering.
-      // Wait, shouldNotify expects 'run' for actor check.
-      // We'll use the latest run that triggered this check.
       if (shouldNotify('pages', context.latestRun || {}, context)) {
-        showNotification(
-          `🟢 Pages Deployed: ${item.alias || item.repo}`,
-          `Your changes are now live on GitHub Pages.`,
-          current.page_url,
-        );
+        const title = chrome.i18n.getMessage('notifPagesTitle', [item.alias || item.repo]);
+        const message = chrome.i18n.getMessage('notifPagesMessage');
+        showNotification(title, message, current.page_url);
       }
     }
   }

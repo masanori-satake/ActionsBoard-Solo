@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "ActionsBoard-Solo",
-  "version": "1.0.4",
-  "description": "GitHub Actions の実行状態と Pages のデプロイを追跡するコンテキスト指向型ダッシュボード。",
+  "name": "__MSG_extName__",
+  "version": "1.1.0",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "permissions": ["storage", "alarms", "notifications", "idle", "sidePanel"],
   "host_permissions": ["https://api.github.com/*"],
   "optional_host_permissions": ["https://*/*", "http://*/*"],

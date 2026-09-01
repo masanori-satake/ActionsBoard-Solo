@@ -151,10 +151,37 @@
         margin-top: 16px;
         flex-wrap: wrap;
       }
+
+      .lang-switcher {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+      }
+
+      .lang-switcher select {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        background-color: rgba(255, 255, 255, 0.2);
+        color: var(--md-sys-color-on-primary);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      .lang-switcher select option {
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+      }
     </style>
   </head>
   <body>
-    <header>
+    <header style="position: relative;">
+      <div class="lang-switcher">
+        <select id="lang-select" aria-label="Language">
+          <option value="en" data-i18n="lang_en">English</option>
+          <option value="ja" data-i18n="lang_ja">日本語</option>
+        </select>
+      </div>
       <div class="header-content">
         <img src="assets/icon.svg" alt="ActionsBoard-Solo Logo" class="logo" />
         <h1>ActionsBoard-Solo</h1>
@@ -163,7 +190,7 @@
         </p>
         <div class="badge-list">
           <img
-            src="https://img.shields.io/badge/version-1.0.3-white?color=white&labelColor=006493&label=version"
+            src="https://img.shields.io/badge/version-1.1.0-white?color=white&labelColor=006493&label=version"
             alt="version"
           />
           <img src="https://img.shields.io/badge/Privacy-Local%20Only-white" alt="privacy" />

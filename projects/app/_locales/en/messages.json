@@ -1,0 +1,374 @@
+{
+  "extName": {
+    "message": "ActionsBoard-Solo"
+  },
+  "extDescription": {
+    "message": "Context-oriented dashboard tracking GitHub Actions execution status and Pages deployment."
+  },
+  "defaultAuthName": {
+    "message": "Default"
+  },
+  "apiFetchError": {
+    "message": "Failed to fetch (API error)"
+  },
+  "notifBuildFailureTitle": {
+    "message": "❌ Build Failure: $1"
+  },
+  "notifBuildFailureMessage": {
+    "message": "$1 by $2"
+  },
+  "notifPagesTitle": {
+    "message": "🟢 Pages Deployed: $1"
+  },
+  "notifPagesMessage": {
+    "message": "Your changes are now live on GitHub Pages."
+  },
+  "tooltipRefresh": {
+    "message": "Refresh"
+  },
+  "tooltipSettings": {
+    "message": "Settings"
+  },
+  "tabDeveloper": {
+    "message": "My Activity"
+  },
+  "tabTeam": {
+    "message": "Workspace"
+  },
+  "tabOperations": {
+    "message": "Operations"
+  },
+  "setupRequiredTitle": {
+    "message": "Setup Required"
+  },
+  "openSettings": {
+    "message": "Open Settings"
+  },
+  "noActivity": {
+    "message": "No activity found."
+  },
+  "workspaceStats": {
+    "message": "Success: $1, Failure: $2, In Progress: $3"
+  },
+  "groupFailure": {
+    "message": "Failure & Error"
+  },
+  "groupProgress": {
+    "message": "In Progress"
+  },
+  "groupSuccess": {
+    "message": "Success & Cancelled"
+  },
+  "groupEmpty": {
+    "message": "(Empty)"
+  },
+  "statusFetching": {
+    "message": "Fetching..."
+  },
+  "statusNoHistory": {
+    "message": "No execution history"
+  },
+  "statusError": {
+    "message": "Error: $1"
+  },
+  "pagesDeployed": {
+    "message": "Deployed"
+  },
+  "pagesProcessing": {
+    "message": "Processing..."
+  },
+  "logFetching": {
+    "message": "Fetching logs..."
+  },
+  "logFailedStep": {
+    "message": "Failed at: $1\n$2"
+  },
+  "logNoFailedJob": {
+    "message": "Failed job details not found."
+  },
+  "logFetchFailed": {
+    "message": "Failed to fetch logs."
+  },
+  "tooltipExpandAll": {
+    "message": "Expand All"
+  },
+  "tooltipCollapseAll": {
+    "message": "Collapse All"
+  },
+  "timeJustNow": {
+    "message": "Just now"
+  },
+  "timeMinutesAgo": {
+    "message": "$1m ago"
+  },
+  "timeHoursAgo": {
+    "message": "$1h ago"
+  },
+  "timeDaysAgo": {
+    "message": "$1d ago"
+  },
+  "pageTitle": {
+    "message": "ActionsBoard-Solo Settings"
+  },
+  "sectionAccounts": {
+    "message": "Accounts"
+  },
+  "tooltipAdd": {
+    "message": "Add"
+  },
+  "tooltipEdit": {
+    "message": "Edit"
+  },
+  "tooltipDelete": {
+    "message": "Delete"
+  },
+  "tooltipTest": {
+    "message": "Test"
+  },
+  "tooltipAddFromRepo": {
+    "message": "Add from Repository"
+  },
+  "noAccountsRegistered": {
+    "message": "No accounts registered."
+  },
+  "testingAuth": {
+    "message": "Testing connection for $1..."
+  },
+  "authSuccess": {
+    "message": "Connection successful: Authenticated as $1."
+  },
+  "authPermissionDenied": {
+    "message": "API access permission denied."
+  },
+  "authInvalidUrl": {
+    "message": "Invalid API Base URL."
+  },
+  "authFailedMsg": {
+    "message": "Connection failed: $1"
+  },
+  "authErrorMsg": {
+    "message": "Error: $1"
+  },
+  "modalAddAccount": {
+    "message": "Add Account"
+  },
+  "modalEditAccount": {
+    "message": "Edit Account"
+  },
+  "labelConfigName": {
+    "message": "Configuration Name"
+  },
+  "placeholderConfigName": {
+    "message": "e.g., Public GitHub"
+  },
+  "labelPat": {
+    "message": "Personal Access Token (PAT)"
+  },
+  "hintPat": {
+    "message": "Requires `repo`, `workflow`, and `notifications` scopes."
+  },
+  "labelUsePublicGithub": {
+    "message": "Use Public GitHub (github.com)"
+  },
+  "labelApiBaseUrl": {
+    "message": "API Base URL"
+  },
+  "hintGheUrl": {
+    "message": "For GHE, enter `https://{hostname}/api/v3`."
+  },
+  "btnTestAndSave": {
+    "message": "Test & Save"
+  },
+  "btnTesting": {
+    "message": "Testing..."
+  },
+  "errEnterNameAndPat": {
+    "message": "Please enter configuration name and PAT."
+  },
+  "savedAsLogin": {
+    "message": "Saved as $1."
+  },
+  "deleteAuthConfirm": {
+    "message": "Are you sure you want to delete account \"$1\"?"
+  },
+  "deleteAuthInUseError": {
+    "message": "This authentication config is used in workspaces and cannot be deleted."
+  },
+  "sectionNotifications": {
+    "message": "Notification Settings"
+  },
+  "labelNotifScope": {
+    "message": "Notification Scope"
+  },
+  "optionNotifAll": {
+    "message": "All"
+  },
+  "optionNotifMyActivity": {
+    "message": "My Activity only"
+  },
+  "optionNotifWorkspaces": {
+    "message": "Specific Workspaces"
+  },
+  "labelSelectNotifWorkspaces": {
+    "message": "Select Workspaces for Notifications:"
+  },
+  "noWorkspaces": {
+    "message": "No workspaces available"
+  },
+  "labelNotifEvents": {
+    "message": "Events to Notify"
+  },
+  "labelNotifBuildFailure": {
+    "message": "Build Failure"
+  },
+  "labelNotifPagesDeploy": {
+    "message": "Pages Deployment"
+  },
+  "sectionWorkspaces": {
+    "message": "Workspaces"
+  },
+  "noWorkspacesRegistered": {
+    "message": "No workspaces registered."
+  },
+  "modalAddWorkspace": {
+    "message": "Add Workspace"
+  },
+  "modalEditWorkspace": {
+    "message": "Edit Workspace"
+  },
+  "modalAddRepoWorkspace": {
+    "message": "Add Workspace from Repository"
+  },
+  "labelSourceRepo": {
+    "message": "Source Repository"
+  },
+  "hintRepoAutoCreated": {
+    "message": "This workspace was automatically created from a repository."
+  },
+  "btnReloadWorkflows": {
+    "message": "Reload workflows from repository"
+  },
+  "btnReloadingWorkflows": {
+    "message": "Reloading..."
+  },
+  "labelWorkspaceName": {
+    "message": "Workspace Name"
+  },
+  "placeholderWorkspaceName": {
+    "message": "e.g., Auth Subsystem"
+  },
+  "labelAuthConfigToUse": {
+    "message": "Account to Use"
+  },
+  "errRequiredFields": {
+    "message": "Please fill in all required fields."
+  },
+  "errFetchWorkflowsFailed": {
+    "message": "Failed to fetch workflows."
+  },
+  "errNoWorkflowsFound": {
+    "message": "No workflows found."
+  },
+  "workflowsUpdated": {
+    "message": "Workflows updated."
+  },
+  "modalAddItem": {
+    "message": "Add Monitoring Item"
+  },
+  "modalEditItem": {
+    "message": "Edit Monitoring Item"
+  },
+  "labelUrlShortcut": {
+    "message": "URL (Quick Import)"
+  },
+  "placeholderUrlShortcut": {
+    "message": "e.g., https://github.com/owner/repo/actions/workflows/ci.yml"
+  },
+  "hintUrlShortcut": {
+    "message": "Entering a URL will automatically fill in the fields below."
+  },
+  "labelOwner": {
+    "message": "Repository Owner"
+  },
+  "placeholderOwner": {
+    "message": "e.g., facebook"
+  },
+  "labelRepo": {
+    "message": "Repository Name"
+  },
+  "placeholderRepo": {
+    "message": "e.g., react"
+  },
+  "labelWorkflowFile": {
+    "message": "Workflow File Name"
+  },
+  "placeholderWorkflowFile": {
+    "message": "e.g., ci.yml"
+  },
+  "labelAlias": {
+    "message": "Display Alias (Optional)"
+  },
+  "placeholderAlias": {
+    "message": "e.g., [Prod] CI Check"
+  },
+  "errAuthConfigNotFound": {
+    "message": "Workspace authentication setting not found."
+  },
+  "errUrlDomainMismatch": {
+    "message": "URL domain does not match workspace authentication setting ($1)."
+  },
+  "deleteWorkspaceConfirm": {
+    "message": "Are you sure you want to delete this workspace?"
+  },
+  "deleteItemConfirm": {
+    "message": "Are you sure you want to delete this monitoring item?"
+  },
+  "labelRepoOrUrl": {
+    "message": "Repository (URL or Owner/Repo)"
+  },
+  "placeholderRepoOrUrl": {
+    "message": "e.g., https://github.com/facebook/react"
+  },
+  "hintRepoOrUrl": {
+    "message": "Automatically fetches and registers workflows from the specified repository."
+  },
+  "labelFetching": {
+    "message": "Fetching..."
+  },
+  "errInvalidRepoOrUrl": {
+    "message": "Please enter a valid URL or Owner/Repo format."
+  },
+  "workspaceAdded": {
+    "message": "Added workspace \"$1\"."
+  },
+  "sectionOtherSettings": {
+    "message": "Settings"
+  },
+  "btnExport": {
+    "message": "Export"
+  },
+  "btnImport": {
+    "message": "Import"
+  },
+  "btnResetAll": {
+    "message": "Reset All Settings"
+  },
+  "hintExportSecurity": {
+    "message": "* For security reasons, Personal Access Tokens (PAT) are excluded from exports."
+  },
+  "resetConfirm": {
+    "message": "Reset all settings? This cannot be undone."
+  },
+  "errInvalidConfigFile": {
+    "message": "Invalid configuration file."
+  },
+  "errFileLoadFailed": {
+    "message": "Failed to load file."
+  },
+  "btnSave": {
+    "message": "Save"
+  },
+  "btnCancel": {
+    "message": "Cancel"
+  }
+}

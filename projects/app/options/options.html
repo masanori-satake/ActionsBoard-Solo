@@ -242,7 +242,9 @@
     <div class="container">
       <header>
         <div style="display: flex; justify-content: space-between; align-items: baseline">
-          <h1 class="md-sys-typescale-headline-large" data-i18n="pageTitle">ActionsBoard-Solo Settings</h1>
+          <h1 class="md-sys-typescale-headline-large" data-i18n="pageTitle">
+            ActionsBoard-Solo Settings
+          </h1>
           <span
             id="version-display"
             class="md-sys-typescale-body-large"
@@ -266,7 +268,12 @@
               <span class="material-symbols-outlined">account_circle</span>
               <span data-i18n="sectionAccounts">Accounts</span>
             </h2>
-            <button id="add-auth" class="btn-icon-m3 btn-secondary" data-tooltip="Add" data-i18n-tooltip="tooltipAdd">
+            <button
+              id="add-auth"
+              class="btn-icon-m3 btn-secondary"
+              data-tooltip="Add"
+              data-i18n-tooltip="tooltipAdd"
+            >
               <span class="material-symbols-outlined">add</span>
             </button>
           </div>
@@ -286,8 +293,12 @@
             <label data-i18n="labelNotifScope">Notification Scope</label>
             <select id="notif-scope">
               <option value="all" data-i18n="optionNotifAll">All</option>
-              <option value="my-activity" data-i18n="optionNotifMyActivity">My Activity only</option>
-              <option value="workspaces" data-i18n="optionNotifWorkspaces">Specific Workspaces</option>
+              <option value="my-activity" data-i18n="optionNotifMyActivity">
+                My Activity only
+              </option>
+              <option value="workspaces" data-i18n="optionNotifWorkspaces">
+                Specific Workspaces
+              </option>
             </select>
           </div>
 
@@ -299,7 +310,9 @@
               margin-bottom: var(--md-sys-spacing-2);
             "
           >
-            <label class="md-sys-typescale-label-large" data-i18n="labelSelectNotifWorkspaces">Select Workspaces for Notifications:</label>
+            <label class="md-sys-typescale-label-large" data-i18n="labelSelectNotifWorkspaces"
+              >Select Workspaces for Notifications:</label
+            >
             <div
               id="notif-workspaces-list"
               style="
@@ -323,11 +336,21 @@
                   checked
                   style="width: 18px; height: 18px"
                 />
-                <label for="notif-event-failure" style="margin-bottom: 0" data-i18n="labelNotifBuildFailure">Build Failure</label>
+                <label
+                  for="notif-event-failure"
+                  style="margin-bottom: 0"
+                  data-i18n="labelNotifBuildFailure"
+                  >Build Failure</label
+                >
               </div>
               <div style="display: flex; align-items: center; gap: 8px">
                 <input type="checkbox" id="notif-event-pages" style="width: 18px; height: 18px" />
-                <label for="notif-event-pages" style="margin-bottom: 0" data-i18n="labelNotifPagesDeploy">Pages Deployment</label>
+                <label
+                  for="notif-event-pages"
+                  style="margin-bottom: 0"
+                  data-i18n="labelNotifPagesDeploy"
+                  >Pages Deployment</label
+                >
               </div>
             </div>
           </div>
@@ -361,7 +384,12 @@
                   >add</span
                 >
               </button>
-              <button id="add-workspace" class="btn-icon-m3 btn-secondary" data-tooltip="Add" data-i18n-tooltip="tooltipAdd">
+              <button
+                id="add-workspace"
+                class="btn-icon-m3 btn-secondary"
+                data-tooltip="Add"
+                data-i18n-tooltip="tooltipAdd"
+              >
                 <span class="material-symbols-outlined">add</span>
               </button>
             </div>
@@ -380,9 +408,15 @@
           <div class="button-row">
             <button id="export-config" class="btn-outline" data-i18n="btnExport">Export</button>
             <button id="import-config" class="btn-outline" data-i18n="btnImport">Import</button>
-            <button id="reset-config" class="btn-error-filled" data-i18n="btnResetAll">Reset All Settings</button>
+            <button id="reset-config" class="btn-error-filled" data-i18n="btnResetAll">
+              Reset All Settings
+            </button>
           </div>
-          <div class="hint" style="margin-top: var(--md-sys-spacing-2)" data-i18n="hintExportSecurity">
+          <div
+            class="hint"
+            style="margin-top: var(--md-sys-spacing-2)"
+            data-i18n="hintExportSecurity"
+          >
             * For security reasons, Personal Access Tokens (PAT) are excluded from exports.
           </div>
         </section>

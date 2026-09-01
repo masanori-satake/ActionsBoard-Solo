@@ -675,8 +675,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error(errMsg);
           }
           const data = await response.json();
-          if (!data.workflows)
-            throw new Error(chrome.i18n.getMessage('errNoWorkflowsFound'));
+          if (!data.workflows) throw new Error(chrome.i18n.getMessage('errNoWorkflowsFound'));
 
           const newRepoItems = data.workflows.map((wf) => {
             const workflowFile = (wf.path && wf.path.split('/').pop()) || wf.id.toString();

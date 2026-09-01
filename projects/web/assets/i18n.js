@@ -52,8 +52,7 @@ const i18n = {
     usage_step2_p:
       '監視したいリポジトリをワークスペースとして登録します。リポジトリURLを貼り付けるだけで、ワークフローを自動検出します。',
     usage_step3_t: '3. ダッシュボードの利用',
-    usage_step3_p:
-      'サイドパネルまたはポップアップで、各ワークフローの稼働状況を確認できます。',
+    usage_step3_p: 'サイドパネルまたはポップアップで、各ワークフローの稼働状況を確認できます。',
     usage_step4_t: '4. モードの切り替え',
     usage_step4_p:
       '「My Activity」「ワークスペース」「運用保守」の3つのモードを切り替えて、目的に最適な情報を表示します。',
@@ -114,8 +113,7 @@ const i18n = {
     usage_step2_p:
       'Register repositories you want to monitor as workspaces. Simply paste the repository URL to automatically detect workflows.',
     usage_step3_t: '3. Using the Dashboard',
-    usage_step3_p:
-      'Check the status of each workflow in the side panel or popup.',
+    usage_step3_p: 'Check the status of each workflow in the side panel or popup.',
     usage_step4_t: '4. Switching Modes',
     usage_step4_p:
       "Switch between 'My Activity', 'Workspace', and 'Operations' modes to display information best suited for your purpose.",

@@ -82,16 +82,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (data.workspaces) {
       config.workspaces = data.workspaces;
-      // Ensure all workspaces have an authConfigId
+      // Ensure all workspaces reference an existing auth configuration.
       let changed = false;
       config.workspaces.forEach((ws) => {
-        if (!ws.authConfigId && config.authConfigs.length > 0) {
+        if (
+          config.authConfigs.length > 0 &&
+          !config.authConfigs.some((authConfig) => authConfig.id === ws.authConfigId)
+        ) {
           ws.authConfigId = config.authConfigs[0].id;
           changed = true;
         }
       });
       if (changed) {
-        await chrome.storage.local.set({ workspaces: config.workspaces });
+        await saveWorkspaces();
       }
     }
 
@@ -579,6 +582,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- Modal Logic ---
 
   function openWorkspaceModal(index = -1) {
+    if (!config.authConfigs || config.authConfigs.length === 0) {
+      alert(chrome.i18n.getMessage('noAccountsRegistered'));
+      openAuthModal();
+      return;
+    }
+
     const isEdit = index !== -1;
     elements.modalTitle.textContent = isEdit
       ? chrome.i18n.getMessage('modalEditWorkspace')
@@ -589,10 +598,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? config.workspaces[index]
       : { name: '', authConfigId: config.authConfigs[0]?.id || '' };
 
+    const selectedAuthId =
+      ws.authConfigId && config.authConfigs.some((a) => a.id === ws.authConfigId)
+        ? ws.authConfigId
+        : config.authConfigs[0].id;
+
     let authOptions = config.authConfigs
       .map(
         (auth) =>
-          `<option value="${auth.id}" ${auth.id === ws.authConfigId ? 'selected' : ''}>${escapeHtml(
+          `<option value="${auth.id}" ${auth.id === selectedAuthId ? 'selected' : ''}>${escapeHtml(
             auth.name,
           )}</option>`,
       )
@@ -868,12 +882,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   elements.modalCancel.onclick = () => elements.modal.close();
 
   function openRepoWorkspaceModal() {
+    if (!config.authConfigs || config.authConfigs.length === 0) {
+      alert(chrome.i18n.getMessage('noAccountsRegistered'));
+      openAuthModal();
+      return;
+    }
+
     elements.modalTitle.textContent = chrome.i18n.getMessage('modalAddRepoWorkspace');
     elements.errorMsg.style.display = 'none';
     elements.modalSave.textContent = chrome.i18n.getMessage('btnSave');
 
+    const selectedAuthId = config.authConfigs[0].id;
+
     let authOptions = config.authConfigs
-      .map((auth) => `<option value="${auth.id}">${escapeHtml(auth.name)}</option>`)
+      .map(
+        (auth) =>
+          `<option value="${auth.id}" ${auth.id === selectedAuthId ? 'selected' : ''}>${escapeHtml(
+            auth.name,
+          )}</option>`,
+      )
       .join('');
 
     elements.modalContent.innerHTML = `

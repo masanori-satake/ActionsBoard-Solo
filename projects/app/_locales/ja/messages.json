@@ -72,16 +72,16 @@
     "message": "エラー: $1"
   },
   "pagesDeployed": {
-    "message": "Deployed"
+    "message": "デプロイ完了"
   },
   "pagesProcessing": {
-    "message": "Processing..."
+    "message": "処理中..."
   },
   "logFetching": {
     "message": "ログを取得中..."
   },
   "logFailedStep": {
-    "message": "Failed at: $1\n$2"
+    "message": "失敗したステップ: $1\n$2"
   },
   "logNoFailedJob": {
     "message": "失敗ジョブの詳細が見つかりませんでした。"

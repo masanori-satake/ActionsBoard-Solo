@@ -56,6 +56,7 @@ const i18n = {
     usage_step4_t: '4. モードの切り替え',
     usage_step4_p:
       '「My Activity」「ワークスペース」「運用保守」の3つのモードを切り替えて、目的に最適な情報を表示します。',
+    language_label: '言語',
     lang_ja: '日本語',
     lang_en: 'English',
   },
@@ -117,6 +118,7 @@ const i18n = {
     usage_step4_t: '4. Switching Modes',
     usage_step4_p:
       "Switch between 'My Activity', 'Workspace', and 'Operations' modes to display information best suited for your purpose.",
+    language_label: 'Language',
     lang_ja: '日本語',
     lang_en: 'English',
   },
@@ -152,6 +154,7 @@ function updateContent() {
   const select = document.getElementById('lang-select');
   if (select) {
     select.value = lang;
+    select.setAttribute('aria-label', texts.language_label);
   }
 }
 

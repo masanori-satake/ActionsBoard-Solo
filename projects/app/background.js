@@ -396,7 +396,7 @@ function checkFailureNotification(key, current, previous, context) {
       if (shouldNotify('failure', current, context)) {
         const title = chrome.i18n.getMessage('notifBuildFailureTitle', [key]);
         const message = chrome.i18n.getMessage('notifBuildFailureMessage', [
-          current.display_title || '',
+          current.display_title || key,
           current.actor || '',
         ]);
         showNotification(title, message, current.html_url);

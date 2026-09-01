@@ -242,7 +242,9 @@
     <div class="container">
       <header>
         <div style="display: flex; justify-content: space-between; align-items: baseline">
-          <h1 class="md-sys-typescale-headline-large">ActionsBoard-Solo 設定</h1>
+          <h1 class="md-sys-typescale-headline-large" data-i18n="pageTitle">
+            ActionsBoard-Solo Settings
+          </h1>
           <span
             id="version-display"
             class="md-sys-typescale-body-large"
@@ -264,9 +266,14 @@
           >
             <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
               <span class="material-symbols-outlined">account_circle</span>
-              アカウント
+              <span data-i18n="sectionAccounts">Accounts</span>
             </h2>
-            <button id="add-auth" class="btn-icon-m3 btn-secondary" data-tooltip="追加">
+            <button
+              id="add-auth"
+              class="btn-icon-m3 btn-secondary"
+              data-tooltip="Add"
+              data-i18n-tooltip="tooltipAdd"
+            >
               <span class="material-symbols-outlined">add</span>
             </button>
           </div>
@@ -279,15 +286,19 @@
         <section id="notification-settings">
           <h2 class="md-sys-typescale-title-large">
             <span class="material-symbols-outlined">notifications</span>
-            通知設定
+            <span data-i18n="sectionNotifications">Notification Settings</span>
           </h2>
 
           <div class="field">
-            <label>通知対象の範囲</label>
+            <label data-i18n="labelNotifScope">Notification Scope</label>
             <select id="notif-scope">
-              <option value="all">すべて</option>
-              <option value="my-activity">My Activityのみ</option>
-              <option value="workspaces">特定のワークスペース</option>
+              <option value="all" data-i18n="optionNotifAll">All</option>
+              <option value="my-activity" data-i18n="optionNotifMyActivity">
+                My Activity only
+              </option>
+              <option value="workspaces" data-i18n="optionNotifWorkspaces">
+                Specific Workspaces
+              </option>
             </select>
           </div>
 
@@ -299,7 +310,9 @@
               margin-bottom: var(--md-sys-spacing-2);
             "
           >
-            <label class="md-sys-typescale-label-large">通知するワークスペースを選択:</label>
+            <label class="md-sys-typescale-label-large" data-i18n="labelSelectNotifWorkspaces"
+              >Select Workspaces for Notifications:</label
+            >
             <div
               id="notif-workspaces-list"
               style="
@@ -314,7 +327,7 @@
           </div>
 
           <div class="field">
-            <label>通知するイベント</label>
+            <label data-i18n="labelNotifEvents">Events to Notify</label>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
               <div style="display: flex; align-items: center; gap: 8px">
                 <input
@@ -323,11 +336,21 @@
                   checked
                   style="width: 18px; height: 18px"
                 />
-                <label for="notif-event-failure" style="margin-bottom: 0">ビルド失敗</label>
+                <label
+                  for="notif-event-failure"
+                  style="margin-bottom: 0"
+                  data-i18n="labelNotifBuildFailure"
+                  >Build Failure</label
+                >
               </div>
               <div style="display: flex; align-items: center; gap: 8px">
                 <input type="checkbox" id="notif-event-pages" style="width: 18px; height: 18px" />
-                <label for="notif-event-pages" style="margin-bottom: 0">Pagesデプロイ</label>
+                <label
+                  for="notif-event-pages"
+                  style="margin-bottom: 0"
+                  data-i18n="labelNotifPagesDeploy"
+                  >Pages Deployment</label
+                >
               </div>
             </div>
           </div>
@@ -345,13 +368,14 @@
           >
             <h2 class="md-sys-typescale-title-large" style="margin-bottom: 0">
               <span class="material-symbols-outlined">view_quilt</span>
-              ワークスペース
+              <span data-i18n="sectionWorkspaces">Workspaces</span>
             </h2>
             <div class="button-row" style="margin-top: 0; align-items: center">
               <button
                 id="add-workspace-repo"
                 class="btn-icon-m3 btn-outline"
-                data-tooltip="リポジトリから追加"
+                data-tooltip="Add from Repository"
+                data-i18n-tooltip="tooltipAddFromRepo"
               >
                 <span class="material-symbols-outlined">account_tree</span>
                 <span
@@ -360,7 +384,12 @@
                   >add</span
                 >
               </button>
-              <button id="add-workspace" class="btn-icon-m3 btn-secondary" data-tooltip="追加">
+              <button
+                id="add-workspace"
+                class="btn-icon-m3 btn-secondary"
+                data-tooltip="Add"
+                data-i18n-tooltip="tooltipAdd"
+              >
                 <span class="material-symbols-outlined">add</span>
               </button>
             </div>
@@ -374,15 +403,21 @@
         <section id="other-settings">
           <h2 class="md-sys-typescale-title-large">
             <span class="material-symbols-outlined">settings</span>
-            設定
+            <span data-i18n="sectionOtherSettings">Settings</span>
           </h2>
           <div class="button-row">
-            <button id="export-config" class="btn-outline">エクスポート</button>
-            <button id="import-config" class="btn-outline">インポート</button>
-            <button id="reset-config" class="btn-error-filled">全設定を初期化</button>
+            <button id="export-config" class="btn-outline" data-i18n="btnExport">Export</button>
+            <button id="import-config" class="btn-outline" data-i18n="btnImport">Import</button>
+            <button id="reset-config" class="btn-error-filled" data-i18n="btnResetAll">
+              Reset All Settings
+            </button>
           </div>
-          <div class="hint" style="margin-top: var(--md-sys-spacing-2)">
-            ※ セキュリティのため、個人アクセストークン（PAT）はエクスポートに含まれません。
+          <div
+            class="hint"
+            style="margin-top: var(--md-sys-spacing-2)"
+            data-i18n="hintExportSecurity"
+          >
+            * For security reasons, Personal Access Tokens (PAT) are excluded from exports.
           </div>
         </section>
       </main>
@@ -409,8 +444,8 @@
         class="button-row"
         style="justify-content: flex-end; margin-top: var(--md-sys-spacing-4)"
       >
-        <button id="modal-cancel" class="btn-outline">キャンセル</button>
-        <button id="modal-save" class="btn-primary">保存</button>
+        <button id="modal-cancel" class="btn-outline" data-i18n="btnCancel">Cancel</button>
+        <button id="modal-save" class="btn-primary" data-i18n="btnSave">Save</button>
       </div>
     </dialog>
 

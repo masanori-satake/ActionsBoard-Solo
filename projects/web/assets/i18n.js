@@ -52,11 +52,13 @@ const i18n = {
     usage_step2_p:
       '監視したいリポジトリをワークスペースとして登録します。リポジトリURLを貼り付けるだけで、ワークフローを自動検出します。',
     usage_step3_t: '3. ダッシュボードの利用',
-    usage_step3_p:
-      'サイドパネルまたはポップアップで、各ワークフローの稼働状況を確認できます。必要に応じて「お気に入り」登録も可能です。',
+    usage_step3_p: 'サイドパネルまたはポップアップで、各ワークフローの稼働状況を確認できます。',
     usage_step4_t: '4. モードの切り替え',
     usage_step4_p:
       '「My Activity」「ワークスペース」「運用保守」の3つのモードを切り替えて、目的に最適な情報を表示します。',
+    language_label: '言語',
+    lang_ja: '日本語',
+    lang_en: 'English',
   },
   en: {
     title: 'ActionsBoard-Solo - GitHub Actions Dashboard',
@@ -69,7 +71,7 @@ const i18n = {
     features_title: 'Key Features',
     feature1_title: 'Context-Oriented',
     feature1_p:
-      'Switch between display modes based on your needs, such as My Activity, Team Health, or Operations Monitoring.',
+      'Switch between display modes based on your needs, such as My Activity, Workspace, or Operations.',
     feature2_title: 'Two-Stage Deployment Tracking',
     feature2_p:
       'Monitors everything from Actions completion to the subsequent GitHub Pages reflection (deployment complete).',
@@ -112,18 +114,35 @@ const i18n = {
     usage_step2_p:
       'Register repositories you want to monitor as workspaces. Simply paste the repository URL to automatically detect workflows.',
     usage_step3_t: '3. Using the Dashboard',
-    usage_step3_p:
-      "Check the status of each workflow in the side panel or popup. You can also 'Favorite' important workflows.",
+    usage_step3_p: 'Check the status of each workflow in the side panel or popup.',
     usage_step4_t: '4. Switching Modes',
     usage_step4_p:
       "Switch between 'My Activity', 'Workspace', and 'Operations' modes to display information best suited for your purpose.",
+    language_label: 'Language',
+    lang_ja: '日本語',
+    lang_en: 'English',
   },
 };
 
+function getLanguage() {
+  const saved = localStorage.getItem('actionsboard_lang');
+  if (saved && (saved === 'ja' || saved === 'en')) {
+    return saved;
+  }
+  return navigator.language?.startsWith('ja') ? 'ja' : 'en';
+}
+
+function setLanguage(lang) {
+  if (lang === 'ja' || lang === 'en') {
+    localStorage.setItem('actionsboard_lang', lang);
+    updateContent();
+  }
+}
+
 function updateContent() {
-  const lang = navigator.language?.startsWith('ja') ? 'ja' : 'en';
+  const lang = getLanguage();
   document.documentElement.lang = lang;
-  const texts = i18n[lang];
+  const texts = i18n[lang] || i18n.en;
 
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n');
@@ -131,6 +150,20 @@ function updateContent() {
       el.textContent = texts[key];
     }
   });
+
+  const select = document.getElementById('lang-select');
+  if (select) {
+    select.value = lang;
+    select.setAttribute('aria-label', texts.language_label);
+  }
 }
 
-document.addEventListener('DOMContentLoaded', updateContent);
+document.addEventListener('DOMContentLoaded', () => {
+  updateContent();
+  const select = document.getElementById('lang-select');
+  if (select) {
+    select.addEventListener('change', (e) => {
+      setLanguage(e.target.value);
+    });
+  }
+});

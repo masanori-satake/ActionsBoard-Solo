@@ -34,9 +34,29 @@
       a {
         color: var(--md-sys-color-primary);
       }
+      .lang-switcher {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+      }
+      .lang-switcher select {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--md-sys-color-outline);
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
     </style>
   </head>
-  <body>
+  <body style="position: relative">
+    <div class="lang-switcher">
+      <select id="lang-select" aria-label="Language">
+        <option value="en" data-i18n="lang_en">English</option>
+        <option value="ja" data-i18n="lang_ja">日本語</option>
+      </select>
+    </div>
     <main>
       <h1 data-i18n="privacy_title">プライバシーポリシー</h1>
       <p data-i18n="privacy_intro">

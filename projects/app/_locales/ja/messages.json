@@ -1,0 +1,374 @@
+{
+  "extName": {
+    "message": "ActionsBoard-Solo"
+  },
+  "extDescription": {
+    "message": "GitHub Actions の実行状態と Pages のデプロイを追跡するコンテキスト指向型ダッシュボード。"
+  },
+  "defaultAuthName": {
+    "message": "デフォルト"
+  },
+  "apiFetchError": {
+    "message": "取得失敗 (APIエラー)"
+  },
+  "notifBuildFailureTitle": {
+    "message": "❌ ビルド失敗: $1"
+  },
+  "notifBuildFailureMessage": {
+    "message": "$1 by $2"
+  },
+  "notifPagesTitle": {
+    "message": "🟢 Pages デプロイ完了: $1"
+  },
+  "notifPagesMessage": {
+    "message": "変更が GitHub Pages に反映されました。"
+  },
+  "tooltipRefresh": {
+    "message": "更新"
+  },
+  "tooltipSettings": {
+    "message": "設定"
+  },
+  "tabDeveloper": {
+    "message": "My Activity"
+  },
+  "tabTeam": {
+    "message": "ワークスペース"
+  },
+  "tabOperations": {
+    "message": "運用保守"
+  },
+  "setupRequiredTitle": {
+    "message": "セットアップが必要です"
+  },
+  "openSettings": {
+    "message": "設定を開く"
+  },
+  "noActivity": {
+    "message": "アクティビティが見つかりませんでした。"
+  },
+  "workspaceStats": {
+    "message": "成功: $1, 失敗: $2, 実行中: $3"
+  },
+  "groupFailure": {
+    "message": "失敗及びエラー"
+  },
+  "groupProgress": {
+    "message": "実行中"
+  },
+  "groupSuccess": {
+    "message": "成功及びキャンセル"
+  },
+  "groupEmpty": {
+    "message": "(空)"
+  },
+  "statusFetching": {
+    "message": "取得中..."
+  },
+  "statusNoHistory": {
+    "message": "実行履歴がありません"
+  },
+  "statusError": {
+    "message": "エラー: $1"
+  },
+  "pagesDeployed": {
+    "message": "デプロイ完了"
+  },
+  "pagesProcessing": {
+    "message": "処理中..."
+  },
+  "logFetching": {
+    "message": "ログを取得中..."
+  },
+  "logFailedStep": {
+    "message": "失敗したステップ: $1\n$2"
+  },
+  "logNoFailedJob": {
+    "message": "失敗ジョブの詳細が見つかりませんでした。"
+  },
+  "logFetchFailed": {
+    "message": "ログの取得に失敗しました。"
+  },
+  "tooltipExpandAll": {
+    "message": "全て展開"
+  },
+  "tooltipCollapseAll": {
+    "message": "全て折りたたむ"
+  },
+  "timeJustNow": {
+    "message": "たった今"
+  },
+  "timeMinutesAgo": {
+    "message": "$1分前"
+  },
+  "timeHoursAgo": {
+    "message": "$1時間前"
+  },
+  "timeDaysAgo": {
+    "message": "$1日前"
+  },
+  "pageTitle": {
+    "message": "ActionsBoard-Solo 設定"
+  },
+  "sectionAccounts": {
+    "message": "アカウント"
+  },
+  "tooltipAdd": {
+    "message": "追加"
+  },
+  "tooltipEdit": {
+    "message": "編集"
+  },
+  "tooltipDelete": {
+    "message": "削除"
+  },
+  "tooltipTest": {
+    "message": "テスト"
+  },
+  "tooltipAddFromRepo": {
+    "message": "リポジトリから追加"
+  },
+  "noAccountsRegistered": {
+    "message": "認証設定が登録されていません。"
+  },
+  "testingAuth": {
+    "message": "$1 の接続テスト中..."
+  },
+  "authSuccess": {
+    "message": "接続成功: $1 として認証されました。"
+  },
+  "authPermissionDenied": {
+    "message": "APIへのアクセス権限が拒否されました。"
+  },
+  "authInvalidUrl": {
+    "message": "無効な API ベース URL です。"
+  },
+  "authFailedMsg": {
+    "message": "接続失敗: $1"
+  },
+  "authErrorMsg": {
+    "message": "エラー: $1"
+  },
+  "modalAddAccount": {
+    "message": "アカウント追加"
+  },
+  "modalEditAccount": {
+    "message": "アカウント編集"
+  },
+  "labelConfigName": {
+    "message": "設定名"
+  },
+  "placeholderConfigName": {
+    "message": "例: パブリックGitHub"
+  },
+  "labelPat": {
+    "message": "個人アクセストークン (PAT)"
+  },
+  "hintPat": {
+    "message": "`repo`, `workflow`, `notifications` 権限が必要です。"
+  },
+  "labelUsePublicGithub": {
+    "message": "パブリックな GitHub (github.com) を使用"
+  },
+  "labelApiBaseUrl": {
+    "message": "API ベース URL"
+  },
+  "hintGheUrl": {
+    "message": "GHE の場合は `https://{hostname}/api/v3` を入力してください。"
+  },
+  "btnTestAndSave": {
+    "message": "テスト&保存"
+  },
+  "btnTesting": {
+    "message": "テスト中..."
+  },
+  "errEnterNameAndPat": {
+    "message": "設定名とPATを入力してください。"
+  },
+  "savedAsLogin": {
+    "message": "$1 として保存しました。"
+  },
+  "deleteAuthConfirm": {
+    "message": "認証設定「$1」を削除してもよろしいですか？"
+  },
+  "deleteAuthInUseError": {
+    "message": "この認証設定はワークスペースで使用されているため、削除できません。"
+  },
+  "sectionNotifications": {
+    "message": "通知設定"
+  },
+  "labelNotifScope": {
+    "message": "通知対象の範囲"
+  },
+  "optionNotifAll": {
+    "message": "すべて"
+  },
+  "optionNotifMyActivity": {
+    "message": "My Activityのみ"
+  },
+  "optionNotifWorkspaces": {
+    "message": "特定のワークスペース"
+  },
+  "labelSelectNotifWorkspaces": {
+    "message": "通知するワークスペースを選択:"
+  },
+  "noWorkspaces": {
+    "message": "ワークスペースがありません"
+  },
+  "labelNotifEvents": {
+    "message": "通知するイベント"
+  },
+  "labelNotifBuildFailure": {
+    "message": "ビルド失敗"
+  },
+  "labelNotifPagesDeploy": {
+    "message": "Pagesデプロイ"
+  },
+  "sectionWorkspaces": {
+    "message": "ワークスペース"
+  },
+  "noWorkspacesRegistered": {
+    "message": "ワークスペースが登録されていません。"
+  },
+  "modalAddWorkspace": {
+    "message": "ワークスペース追加"
+  },
+  "modalEditWorkspace": {
+    "message": "ワークスペース編集"
+  },
+  "modalAddRepoWorkspace": {
+    "message": "リポジトリから新規ワークスペースを追加"
+  },
+  "labelSourceRepo": {
+    "message": "ソースリポジトリ"
+  },
+  "hintRepoAutoCreated": {
+    "message": "このワークスペースはリポジトリから自動作成されました。"
+  },
+  "btnReloadWorkflows": {
+    "message": "リポジトリからワークフローを再読み込み"
+  },
+  "btnReloadingWorkflows": {
+    "message": "読み込み中..."
+  },
+  "labelWorkspaceName": {
+    "message": "ワークスペース名"
+  },
+  "placeholderWorkspaceName": {
+    "message": "例: 認証サブシステム"
+  },
+  "labelAuthConfigToUse": {
+    "message": "使用する認証設定"
+  },
+  "errRequiredFields": {
+    "message": "必須項目を入力してください。"
+  },
+  "errFetchWorkflowsFailed": {
+    "message": "ワークフローの取得に失敗しました。"
+  },
+  "errNoWorkflowsFound": {
+    "message": "ワークフローが見つかりませんでした。"
+  },
+  "workflowsUpdated": {
+    "message": "ワークフローを更新しました。"
+  },
+  "modalAddItem": {
+    "message": "監視項目の追加"
+  },
+  "modalEditItem": {
+    "message": "監視項目の編集"
+  },
+  "labelUrlShortcut": {
+    "message": "URL (一括入力)"
+  },
+  "placeholderUrlShortcut": {
+    "message": "例: https://github.com/owner/repo/actions/workflows/ci.yml"
+  },
+  "hintUrlShortcut": {
+    "message": "URLを入力すると下の項目が自動入力されます。"
+  },
+  "labelOwner": {
+    "message": "リポジトリ所有者 (Owner)"
+  },
+  "placeholderOwner": {
+    "message": "例: facebook"
+  },
+  "labelRepo": {
+    "message": "リポジトリ名 (Repo)"
+  },
+  "placeholderRepo": {
+    "message": "例: react"
+  },
+  "labelWorkflowFile": {
+    "message": "ワークフロー YAML ファイル名"
+  },
+  "placeholderWorkflowFile": {
+    "message": "例: ci.yml"
+  },
+  "labelAlias": {
+    "message": "表示エイリアス (任意)"
+  },
+  "placeholderAlias": {
+    "message": "例: 【本番】CIチェック"
+  },
+  "errAuthConfigNotFound": {
+    "message": "ワークスペースの認証設定が見つかりません。"
+  },
+  "errUrlDomainMismatch": {
+    "message": "URLのドメインがワークスペースの認証設定 ($1) と一致しません。"
+  },
+  "deleteWorkspaceConfirm": {
+    "message": "このワークスペースを削除してもよろしいですか？"
+  },
+  "deleteItemConfirm": {
+    "message": "この監視項目を削除してもよろしいですか？"
+  },
+  "labelRepoOrUrl": {
+    "message": "リポジトリ (URL または Owner/Repo)"
+  },
+  "placeholderRepoOrUrl": {
+    "message": "例: https://github.com/facebook/react"
+  },
+  "hintRepoOrUrl": {
+    "message": "指定されたリポジトリのワークフローを自動的に取得して登録します。"
+  },
+  "labelFetching": {
+    "message": "取得中..."
+  },
+  "errInvalidRepoOrUrl": {
+    "message": "正確なURLまたは Owner/Repo 形式で入力してください。"
+  },
+  "workspaceAdded": {
+    "message": "ワークスペース「$1」を追加しました。"
+  },
+  "sectionOtherSettings": {
+    "message": "設定"
+  },
+  "btnExport": {
+    "message": "エクスポート"
+  },
+  "btnImport": {
+    "message": "インポート"
+  },
+  "btnResetAll": {
+    "message": "全設定を初期化"
+  },
+  "hintExportSecurity": {
+    "message": "※ セキュリティのため、個人アクセストークン（PAT）はエクスポートに含まれません。"
+  },
+  "resetConfirm": {
+    "message": "すべての設定を初期化します。よろしいですか？"
+  },
+  "errInvalidConfigFile": {
+    "message": "無効な設定ファイルです。"
+  },
+  "errFileLoadFailed": {
+    "message": "ファイルの読み込みに失敗しました。"
+  },
+  "btnSave": {
+    "message": "保存"
+  },
+  "btnCancel": {
+    "message": "キャンセル"
+  }
+}

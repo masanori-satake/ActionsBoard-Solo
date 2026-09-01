@@ -19,7 +19,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Mapping: { 'ws:wsId': boolean, 'group:groupId': boolean }
   const accordionStates = {};
 
+  function applyI18n() {
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const msg = chrome.i18n.getMessage(el.dataset.i18n);
+      if (msg) el.textContent = msg;
+    });
+    document.querySelectorAll('[data-i18n-tooltip]').forEach((el) => {
+      const msg = chrome.i18n.getMessage(el.dataset.i18nTooltip);
+      if (msg) el.dataset.tooltip = msg;
+    });
+  }
+
   async function init() {
+    applyI18n();
+
     if (!init.initialized) {
       chrome.runtime.connect({ name: 'popup' });
 
@@ -99,8 +112,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     elements.main.innerHTML = `
       <div class="empty-state">
         <div style="font-size: 48px; margin-bottom: 16px;">🚀</div>
-        <p class="md-sys-typescale-title-medium">セットアップが必要です</p>
-        <button class="btn-primary" style="margin-top: 16px;" id="go-to-settings">設定を開く</button>
+        <p class="md-sys-typescale-title-medium">${escapeHtml(chrome.i18n.getMessage('setupRequiredTitle'))}</p>
+        <button class="btn-primary" style="margin-top: 16px;" id="go-to-settings">${escapeHtml(chrome.i18n.getMessage('openSettings'))}</button>
       </div>
     `;
     document.getElementById('go-to-settings').onclick = () => chrome.runtime.openOptionsPage();
@@ -138,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (myActivity.length === 0) {
       const p = document.createElement('p');
       p.className = 'empty-state';
-      p.textContent = 'アクティビティが見つかりませんでした。';
+      p.textContent = chrome.i18n.getMessage('noActivity');
       elements.main.appendChild(p);
       return;
     }
@@ -189,6 +202,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? 'status-progress'
             : 'status-success';
 
+      const statsText = chrome.i18n.getMessage('workspaceStats', [
+        successCount.toString(),
+        failureCount.toString(),
+        progressCount.toString(),
+      ]);
+
       header.innerHTML = `
         <div class="workspace-header-top">
           <div class="status-icon ${statusClass}"></div>
@@ -196,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="material-symbols-outlined expand-icon">expand_more</span>
         </div>
         <div class="workspace-stats">
-          成功: ${successCount}, 失敗: ${failureCount}, 実行中: ${progressCount}
+          ${escapeHtml(statsText)}
         </div>
       `;
 
@@ -249,9 +268,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderGroupedItems(items) {
     const groups = [
-      { id: 'failure', title: '失敗及びエラー', statuses: ['failure'], open: true },
-      { id: 'progress', title: '実行中', statuses: ['progress'], open: true },
-      { id: 'success', title: '成功及びキャンセル', statuses: ['success', 'neutral'], open: false },
+      {
+        id: 'failure',
+        title: chrome.i18n.getMessage('groupFailure'),
+        statuses: ['failure'],
+        open: true,
+      },
+      {
+        id: 'progress',
+        title: chrome.i18n.getMessage('groupProgress'),
+        statuses: ['progress'],
+        open: true,
+      },
+      {
+        id: 'success',
+        title: chrome.i18n.getMessage('groupSuccess'),
+        statuses: ['success', 'neutral'],
+        open: false,
+      },
     ];
 
     groups.forEach((group) => {
@@ -283,13 +317,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         else statusClass = 'status-success';
       }
 
+      const emptyTag = `<span style="font-weight: normal; opacity: 0.6; font-size: 0.9em;">${escapeHtml(chrome.i18n.getMessage('groupEmpty'))}</span>`;
+
       header.innerHTML = `
         <div class="status-icon ${statusClass}"></div>
-        <div class="group-title">${group.title} ${
-          groupItems.length === 0
-            ? '<span style="font-weight: normal; opacity: 0.6; font-size: 0.9em;">(空)</span>'
-            : ''
-        }</div>
+        <div class="group-title">${escapeHtml(group.title)} ${groupItems.length === 0 ? emptyTag : ''}</div>
         ${groupItems.length > 0 ? '<span class="material-symbols-outlined expand-icon">expand_more</span>' : ''}
       `;
 
@@ -347,14 +379,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const status = getWorkflowStatus(run);
     const statusClass = status !== 'neutral' ? `status-${status}` : '';
 
-    let runInfoHtml = '<div class="run-info">取得中...</div>';
+    let runInfoHtml = `<div class="run-info">${escapeHtml(chrome.i18n.getMessage('statusFetching'))}</div>`;
     if (run) {
       if (run.status === 'none') {
-        runInfoHtml = '<div class="run-info">実行履歴がありません</div>';
+        runInfoHtml = `<div class="run-info">${escapeHtml(chrome.i18n.getMessage('statusNoHistory'))}</div>`;
       } else if (run.status === 'error') {
-        runInfoHtml = `<div class="run-info" style="color: var(--md-sys-color-error)">エラー: ${escapeHtml(
-          run.error || '取得失敗',
-        )}</div>`;
+        const errText = chrome.i18n.getMessage('statusError', [
+          run.error || chrome.i18n.getMessage('apiFetchError'),
+        ]);
+        runInfoHtml = `<div class="run-info" style="color: var(--md-sys-color-error)">${escapeHtml(errText)}</div>`;
       } else {
         const displayTitle = run.display_title
           ? `<strong>${escapeHtml(run.display_title)}</strong> `
@@ -365,6 +398,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         )} | ${relativeTime(run.updated_at)}</span></div>`;
       }
     }
+
+    const pagesText =
+      pages?.status === 'deliverable'
+        ? chrome.i18n.getMessage('pagesDeployed')
+        : chrome.i18n.getMessage('pagesProcessing');
 
     card.innerHTML = `
       <div class="row-main">
@@ -385,9 +423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           .join('')}</div>
         ${
           pages && run?.conclusion === 'success'
-            ? `<div class="pages-badge"><span>🌐</span><span>${
-                pages.status === 'deliverable' ? 'Deployed' : 'Processing...'
-              }</span></div>`
+            ? `<div class="pages-badge"><span>🌐</span><span>${escapeHtml(pagesText)}</span></div>`
             : ''
         }
       </div>
@@ -425,7 +461,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function fetchAndShowLogs(run, logArea, auth) {
-    logArea.textContent = 'ログを取得中...';
+    logArea.textContent = chrome.i18n.getMessage('logFetching');
     logArea.style.display = 'block';
     try {
       const res = await fetchWithTimeout(`${run.jobs_url}`, {
@@ -436,11 +472,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       const failedJob = data.jobs.find((j) => j.conclusion === 'failure');
       if (failedJob) {
         const failedStep = failedJob.steps.find((s) => s.conclusion === 'failure');
-        logArea.textContent = `Failed at: ${failedStep?.name || failedJob.name}\n${
-          failedJob.html_url
-        }`;
+        logArea.textContent = chrome.i18n.getMessage('logFailedStep', [
+          failedStep?.name || failedJob.name,
+          failedJob.html_url,
+        ]);
       } else {
-        logArea.textContent = '失敗ジョブの詳細が見つかりませんでした。';
+        logArea.textContent = chrome.i18n.getMessage('logNoFailedJob');
       }
     } catch (err) {
       console.error(
@@ -450,7 +487,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           (err?.message || err),
         err,
       );
-      logArea.textContent = 'ログの取得に失敗しました。';
+      logArea.textContent = chrome.i18n.getMessage('logFetchFailed');
     }
   }
 
@@ -506,7 +543,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const btn = document.createElement('button');
     btn.className = 'icon-btn';
-    btn.dataset.tooltip = isExpandAction ? '全て展開' : '全て折りたたむ';
+    btn.dataset.tooltip = isExpandAction
+      ? chrome.i18n.getMessage('tooltipExpandAll')
+      : chrome.i18n.getMessage('tooltipCollapseAll');
     btn.dataset.tooltipPosition = 'bottom';
     btn.dataset.tooltipAlign = 'right';
     btn.disabled = isDisabled;
@@ -533,10 +572,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   function relativeTime(dateStr) {
     if (!dateStr) return '';
     const diff = Math.round((new Date() - new Date(dateStr)) / 1000);
-    if (diff < 60) return 'たった今';
-    if (diff < 3600) return `${Math.floor(diff / 60)}分前`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}時間前`;
-    return `${Math.floor(diff / 86400)}日前`;
+    if (diff < 60) return chrome.i18n.getMessage('timeJustNow');
+    if (diff < 3600)
+      return chrome.i18n.getMessage('timeMinutesAgo', [Math.floor(diff / 60).toString()]);
+    if (diff < 86400)
+      return chrome.i18n.getMessage('timeHoursAgo', [Math.floor(diff / 3600).toString()]);
+    return chrome.i18n.getMessage('timeDaysAgo', [Math.floor(diff / 86400).toString()]);
   }
 
   function escapeHtml(str) {

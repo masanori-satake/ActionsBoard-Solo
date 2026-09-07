@@ -1,8 +1,8 @@
 import json
-import zipfile
 import os
-import sys
 import subprocess
+import sys
+import zipfile
 
 
 def build_extension():

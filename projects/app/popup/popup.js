@@ -439,7 +439,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
     }
 
-    card.onclick = () => run?.html_url && chrome.tabs.create({ url: run.html_url });
+    card.onclick = () =>
+      run?.html_url &&
+      (run.html_url.startsWith('http://') || run.html_url.startsWith('https://')) &&
+      chrome.tabs.create({ url: run.html_url });
     return card;
   }
 
@@ -461,6 +464,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function fetchAndShowLogs(run, logArea, auth) {
+    if (!run?.jobs_url) return;
+    try {
+      const jobUrl = new URL(run.jobs_url, auth.baseUrl);
+      const authBaseUrl = new URL(auth.baseUrl || 'https://api.github.com');
+      if (
+        jobUrl.host !== authBaseUrl.host ||
+        (jobUrl.protocol !== 'http:' && jobUrl.protocol !== 'https:')
+      ) {
+        logArea.textContent = chrome.i18n.getMessage('logFetchFailed');
+        logArea.style.display = 'block';
+        return;
+      }
+    } catch {
+      return;
+    }
+
     logArea.textContent = chrome.i18n.getMessage('logFetching');
     logArea.style.display = 'block';
     try {

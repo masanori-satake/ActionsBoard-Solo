@@ -468,10 +468,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const jobUrl = new URL(run.jobs_url, auth.baseUrl);
       const authBaseUrl = new URL(auth.baseUrl || 'https://api.github.com');
-      if (
-        jobUrl.host !== authBaseUrl.host ||
-        (jobUrl.protocol !== 'http:' && jobUrl.protocol !== 'https:')
-      ) {
+      if (jobUrl.origin !== authBaseUrl.origin) {
         logArea.textContent = chrome.i18n.getMessage('logFetchFailed');
         logArea.style.display = 'block';
         return;

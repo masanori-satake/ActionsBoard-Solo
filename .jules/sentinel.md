@@ -11,5 +11,5 @@ API から取得した URL や設定された動的 URL へクレデンシャル
 
 **予防策:**
 
-- 外部レスポンス由来の URL へ認証ヘッダーを渡す前に `new URL(targetUrl).host === new URL(baseUrl).host` かつスキームが `http:`/`https:` であることを検証する標準処理を設ける。
+- 外部レスポンス由来の URL へ認証ヘッダーを渡す前に `new URL(targetUrl).origin === new URL(baseUrl).origin` でオリジンが完全に一致することを検証する標準処理を設ける。
 - REST API パス構築時には常に `encodeURIComponent` を適用するコードスタイルを徹底する。

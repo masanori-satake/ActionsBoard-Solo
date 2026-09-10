@@ -285,8 +285,10 @@ async function fetchWithTimeout(resource, options = {}) {
 
 async function fetchWorkflowRuns(settings, item, count) {
   const baseUrl = settings.baseUrl || DEFAULT_API_URL;
-  const workflowSelector = item.workflowId || item.workflowFile;
-  const url = `${baseUrl}/repos/${item.owner}/${item.repo}/actions/workflows/${workflowSelector}/runs?per_page=${count}`;
+  const workflowSelector = encodeURIComponent(item.workflowId || item.workflowFile);
+  const owner = encodeURIComponent(item.owner);
+  const repo = encodeURIComponent(item.repo);
+  const url = `${baseUrl}/repos/${owner}/${repo}/actions/workflows/${workflowSelector}/runs?per_page=${count}`;
 
   try {
     const response = await fetchWithTimeout(url, {
@@ -343,7 +345,7 @@ async function fetchCurrentUser(authConfig) {
 
 async function fetchPagesStatus(settings, owner, repo) {
   const baseUrl = settings.baseUrl || DEFAULT_API_URL;
-  const url = `${baseUrl}/repos/${owner}/${repo}/pages/deployments`;
+  const url = `${baseUrl}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/deployments`;
 
   try {
     const response = await fetchWithTimeout(url, {
@@ -432,7 +434,7 @@ chrome.notifications.onClicked.addListener((notificationId) => {
   if (notificationId.startsWith('notif|')) {
     const parts = notificationId.split('|');
     const url = parts[1];
-    if (url) {
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
       chrome.tabs.create({ url });
     }
     chrome.notifications.clear(notificationId);

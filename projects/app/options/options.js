@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
           const { owner, repo } = ws.repoContext;
           const response = await fetchWithTimeout(
-            `${authConfig.baseUrl}/repos/${owner}/${repo}/actions/workflows`,
+            `${authConfig.baseUrl}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/workflows`,
             {
               headers: {
                 Authorization: `token ${authConfig.pat}`,
@@ -960,7 +960,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       try {
         const response = await fetchWithTimeout(
-          `${authConfig.baseUrl}/repos/${owner}/${repo}/actions/workflows`,
+          `${authConfig.baseUrl}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/workflows`,
           {
             headers: {
               Authorization: `token ${authConfig.pat}`,
@@ -1207,6 +1207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function parseGitHubUrl(urlStr) {
     try {
       const url = new URL(urlStr);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
       const parts = url.pathname.split('/').filter((p) => p);
       if (parts.length < 2) return null;
 

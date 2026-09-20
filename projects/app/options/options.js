@@ -192,7 +192,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Request host permission if not already granted (e.g., GHE domains)
     if (auth.baseUrl !== DEFAULT_API_URL) {
       try {
-        const origin = new URL(auth.baseUrl).origin + '/*';
+        const urlObj = new URL(auth.baseUrl);
+        if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+          return {
+            success: false,
+            message: chrome.i18n.getMessage('authInvalidUrl'),
+          };
+        }
+        const origin = urlObj.origin + '/*';
         const granted = await chrome.permissions.request({ origins: [origin] });
         if (!granted) {
           return {
@@ -1230,13 +1237,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function validateUrlWithAuth(parsed, auth) {
     if (!parsed) return true; // Not a URL, allow Owner/Repo format
-    const authHost = new URL(auth.baseUrl).hostname;
-    // For github.com, hostname might be github.com while API is api.github.com
-    if (auth.baseUrl === DEFAULT_API_URL) {
-      return parsed.hostname === 'github.com';
+    try {
+      const authUrl = new URL(auth.baseUrl || DEFAULT_API_URL);
+      if (authUrl.protocol !== 'http:' && authUrl.protocol !== 'https:') return false;
+      let authHost = authUrl.hostname;
+      if (authHost === 'api.github.com') authHost = 'github.com';
+      return parsed.hostname === authHost;
+    } catch {
+      return false;
     }
-    // For GHE, typically hostname is the same
-    return parsed.hostname === authHost;
   }
 
   function escapeHtml(str) {

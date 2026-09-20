@@ -188,11 +188,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  /**
+   * Verify an authentication configuration against its GitHub API endpoint.
+   *
+   * @param {{baseUrl: string, pat: string}} auth Authentication configuration to verify.
+   * @returns {Promise<{success: boolean, login?: string, message?: string}>} Verification result.
+   */
   async function testAuthConfig(auth) {
     // Request host permission if not already granted (e.g., GHE domains)
     if (auth.baseUrl !== DEFAULT_API_URL) {
       try {
-        const origin = new URL(auth.baseUrl).origin + '/*';
+        const urlObj = new URL(auth.baseUrl);
+        if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+          return {
+            success: false,
+            message: chrome.i18n.getMessage('authInvalidUrl'),
+          };
+        }
+        const origin = urlObj.origin + '/*';
         const granted = await chrome.permissions.request({ origins: [origin] });
         if (!granted) {
           return {
@@ -1228,15 +1241,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  /**
+   * Check that a parsed repository URL belongs to the selected authentication host.
+   *
+   * @param {{hostname: string}|null} parsed Parsed repository URL, or null for owner/repo input.
+   * @param {{baseUrl?: string}} auth Authentication configuration selected for the repository.
+   * @returns {boolean} Whether the repository URL is compatible with the authentication host.
+   */
   function validateUrlWithAuth(parsed, auth) {
     if (!parsed) return true; // Not a URL, allow Owner/Repo format
-    const authHost = new URL(auth.baseUrl).hostname;
-    // For github.com, hostname might be github.com while API is api.github.com
-    if (auth.baseUrl === DEFAULT_API_URL) {
-      return parsed.hostname === 'github.com';
+    try {
+      const authUrl = new URL(auth.baseUrl || DEFAULT_API_URL);
+      if (authUrl.protocol !== 'http:' && authUrl.protocol !== 'https:') return false;
+      let authHost = authUrl.hostname;
+      if (authHost === 'api.github.com') authHost = 'github.com';
+      return parsed.hostname === authHost;
+    } catch {
+      return false;
     }
-    // For GHE, typically hostname is the same
-    return parsed.hostname === authHost;
   }
 
   function escapeHtml(str) {

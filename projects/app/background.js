@@ -430,16 +430,26 @@ function showNotification(title, message, url) {
   });
 }
 
-chrome.notifications.onClicked.addListener((notificationId) => {
+/**
+ * Open the URL embedded in an ActionsBoard notification identifier.
+ *
+ * @param {string} notificationId Notification identifier created by showNotification.
+ */
+function handleNotificationClick(notificationId) {
   if (notificationId.startsWith('notif|')) {
-    const parts = notificationId.split('|');
-    const url = parts[1];
-    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-      chrome.tabs.create({ url });
+    const firstPipe = notificationId.indexOf('|');
+    const lastPipe = notificationId.lastIndexOf('|');
+    if (firstPipe !== -1 && lastPipe > firstPipe) {
+      const url = notificationId.substring(firstPipe + 1, lastPipe);
+      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+        chrome.tabs.create({ url });
+      }
     }
     chrome.notifications.clear(notificationId);
   }
-});
+}
+
+chrome.notifications.onClicked.addListener(handleNotificationClick);
 
 function updateBadge(runs) {
   let failureCount = 0;

@@ -430,7 +430,12 @@ function showNotification(title, message, url) {
   });
 }
 
-chrome.notifications.onClicked.addListener((notificationId) => {
+/**
+ * Open the URL embedded in an ActionsBoard notification identifier.
+ *
+ * @param {string} notificationId Notification identifier created by showNotification.
+ */
+function handleNotificationClick(notificationId) {
   if (notificationId.startsWith('notif|')) {
     const firstPipe = notificationId.indexOf('|');
     const lastPipe = notificationId.lastIndexOf('|');
@@ -442,7 +447,9 @@ chrome.notifications.onClicked.addListener((notificationId) => {
     }
     chrome.notifications.clear(notificationId);
   }
-});
+}
+
+chrome.notifications.onClicked.addListener(handleNotificationClick);
 
 function updateBadge(runs) {
   let failureCount = 0;

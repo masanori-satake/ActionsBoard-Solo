@@ -188,6 +188,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  /**
+   * Verify an authentication configuration against its GitHub API endpoint.
+   *
+   * @param {{baseUrl: string, pat: string}} auth Authentication configuration to verify.
+   * @returns {Promise<{success: boolean, login?: string, message?: string}>} Verification result.
+   */
   async function testAuthConfig(auth) {
     // Request host permission if not already granted (e.g., GHE domains)
     if (auth.baseUrl !== DEFAULT_API_URL) {
@@ -1235,6 +1241,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  /**
+   * Check that a parsed repository URL belongs to the selected authentication host.
+   *
+   * @param {{hostname: string}|null} parsed Parsed repository URL, or null for owner/repo input.
+   * @param {{baseUrl?: string}} auth Authentication configuration selected for the repository.
+   * @returns {boolean} Whether the repository URL is compatible with the authentication host.
+   */
   function validateUrlWithAuth(parsed, auth) {
     if (!parsed) return true; // Not a URL, allow Owner/Repo format
     try {

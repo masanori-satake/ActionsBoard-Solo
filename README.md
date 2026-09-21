@@ -50,7 +50,7 @@ ActionsBoard-Solo is engineered with a strict **Privacy-First** architecture:
 
 - **100% Local Execution:** Communicates exclusively with the GitHub API directly from your browser. No middleman servers, external proxies, or tracking services.
 - **Zero Data Collection:** No telemetry, analytics, advertising trackers, or user data collection.
-- **Pure Vanilla JS:** Built entirely with standard Web APIs and Vanilla JS without third-party runtime libraries, eliminating supply chain vulnerabilities and black-box dependencies.
+- **Pure Vanilla JS:** Built entirely with standard Web APIs and Vanilla JS without third-party runtime libraries, reducing runtime dependency risk and avoiding black-box dependencies.
 
 ## Directory Structure
 
@@ -86,6 +86,10 @@ The developer assumes no responsibility or liability for any damage, data loss, 
 - **2段階デプロイ追跡:** ワークフローの実行完了だけでなく、GitHub Pages への反映までを一気通貫で監視。
 - **ノイズレス通知:** 自分に関連するビルド失敗などの重要な状態変化のみを通知。
 - **完全ローカル＆プライバシー重視:** 外部サーバー通信・データ収集・外部依存ライブラリを一切使用しない Pure Vanilla JS 構成。
+
+### 免責事項
+
+本ソフトウェアは個人が提供するオープンソースプロジェクトであり、いかなる種類の保証もなく「現状有姿」で提供されます。本ソフトウェアの利用により生じた損害、データ損失、または業務中断について、開発者は責任を負いません。利用は自己責任でお願いします。
 
 ---
 

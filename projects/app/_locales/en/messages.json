@@ -1,9 +1,9 @@
 {
   "extName": {
-    "message": "ActionsBoard-Solo"
+    "message": "ActionsBoard-Solo - GitHub Actions Monitor"
   },
   "extDescription": {
-    "message": "Context-oriented dashboard tracking GitHub Actions execution status and Pages deployment."
+    "message": "Track GitHub Actions CI/CD pipeline statuses across all your repositories in a unified dashboard. Catch build failures instantly."
   },
   "defaultAuthName": {
     "message": "Default"

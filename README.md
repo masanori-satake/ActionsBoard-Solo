@@ -1,6 +1,6 @@
 # ActionsBoard-Solo - GitHub Actions Real-time Monitor
 
-[![version](https://img.shields.io/badge/version-1.1.3-blue)](projects/app/manifest.json)
+[![version](https://img.shields.io/badge/version-1.1.4-blue)](projects/app/manifest.json)
 [![Chrome Web Store Version](https://img.shields.io/badge/Chrome%20Web%20Store-v1.1.3-blue)](https://chromewebstore.google.com/detail/oofegjdjnldkikigimkadlleaiolionm)
 [![License-MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](#-privacy--security)
@@ -71,17 +71,14 @@ The developer assumes no responsibility or liability for any damage, data loss, 
 ## 🇯🇵 日本語
 
 ### タイトル
-
 `ActionsBoard-Solo - GitHub Actions の実行状況をリアルタイム監視`
 
 ### 概要
-
 **ActionsBoard-Solo** は、全リポジトリの GitHub Actions ワークフローの成功・失敗ステータスを一覧ダッシュボード化し、CI/CD の失敗にいち早く気づいてビルド待ち時間を削減するローカル完結型 Chrome 拡張機能です。
 
 開発者、チームリード、運用保守といったユーザーのコンテキストに合わせた視点で情報を集約。外部サーバーを介さず、ブラウザから直接 GitHub API を通信する安全な設計です。
 
 ### 主要機能
-
 - **コンテキスト指向型ダッシュボード:** 自分自身のアクティビティ（My Activity）、ワークスペース全体の健全性、運用バッチ監視など目的別に切り替え可能。
 - **2段階デプロイ追跡:** ワークフローの実行完了だけでなく、GitHub Pages への反映までを一気通貫で監視。
 - **ノイズレス通知:** 自分に関連するビルド失敗などの重要な状態変化のみを通知。

@@ -2,20 +2,11 @@ import json
 import zipfile
 import os
 import sys
-import subprocess
 
 
 def build_extension():
-    # Generate icons before building the zip
-    print("Generating icons...")
-    try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        generator_path = os.path.join(script_dir, "generate_png_icons.py")
-        subprocess.run([sys.executable, generator_path], check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error generating icons: {e}", file=sys.stderr)
-        return False
-
+    # アイコン生成は common-workflows の generate-icons composite action に委譲したため、
+    # build.py 内では行わない（CI では base-release の generate_icons が事前に生成する）。
     try:
         with open("package.json", "r", encoding="utf-8") as f:
             package_data = json.load(f)

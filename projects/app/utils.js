@@ -46,9 +46,7 @@ function shouldNotify(type, run, context) {
   }
 
   if (notificationSettings.scope === 'workspaces') {
-    return (
-      itemWorkspaces?.some((ws) => notificationSettings.workspaces?.includes(ws.id)) || false
-    );
+    return itemWorkspaces?.some((ws) => notificationSettings.workspaces?.includes(ws.id)) || false;
   }
 
   return false;

@@ -23,9 +23,9 @@ describe('getWorkflowStatus', () => {
     progressStatuses.forEach((status) => {
       expect(getWorkflowStatus({ status })).toBe('progress');
     });
-    expect(getWorkflowStatus({ status: 'completed', conclusion: 'action_required' })).toBe(
-      'progress',
-    );
+    expect(
+      getWorkflowStatus({ status: 'completed', conclusion: 'action_required' }),
+    ).toBe('progress');
   });
 
   test('returns success for completed runs with success conclusion', () => {
@@ -87,8 +87,7 @@ describe('shouldNotify', () => {
 
 describe('parseNotificationUrl', () => {
   test('parses valid notification URL format', () => {
-    const id =
-      'notif|https://github.com/masanori-satake/ActionsBoard-Solo/actions/runs/12345|1700000000';
+    const id = 'notif|https://github.com/masanori-satake/ActionsBoard-Solo/actions/runs/12345|1700000000';
     expect(parseNotificationUrl(id)).toBe(
       'https://github.com/masanori-satake/ActionsBoard-Solo/actions/runs/12345',
     );

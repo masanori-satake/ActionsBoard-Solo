@@ -1,10 +1,13 @@
 # ActionsBoard-Solo - GitHub Actions Real-time Monitor
 
-[![version](https://img.shields.io/badge/version-1.1.4-blue)](projects/app/manifest.json)
-[![Chrome Web Store Version](https://img.shields.io/badge/Chrome%20Web%20Store-v1.1.3-blue)](https://chromewebstore.google.com/detail/oofegjdjnldkikigimkadlleaiolionm)
-[![License-MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Privacy-Local Only](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](#-privacy--security)
-[![Manifest-V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/oofegjdjnldkikigimkadlleaiolionm?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/oofegjdjnldkikigimkadlleaiolionm)
+[![version](https://img.shields.io/badge/version-1.1.5-blue)](projects/app/manifest.json)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](#-privacy--security)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
+[![Tests](https://img.shields.io/github/actions/workflow/status/masanori-satake/ActionsBoard-Solo/code-quality.yml?branch=main&label=Tests)](https://github.com/masanori-satake/ActionsBoard-Solo/actions/workflows/code-quality.yml)
+[![Coverage](https://img.shields.io/github/actions/workflow/status/masanori-satake/ActionsBoard-Solo/coverage.yml?branch=main&label=Coverage)](https://github.com/masanori-satake/ActionsBoard-Solo/actions/workflows/coverage.yml)
+[![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational?logo=javascript&logoColor=white)](#-privacy--security)
 
 ~ Streamline your CI/CD workflow monitoring with a smart, context-oriented, 100% local Chrome extension dashboard ~
 

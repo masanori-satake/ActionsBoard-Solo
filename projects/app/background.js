@@ -2,6 +2,8 @@
  * ActionsBoard-Solo Background Service Worker
  */
 
+importScripts('utils.js');
+
 // --- Constants & State ---
 const DEFAULT_API_URL = 'https://api.github.com';
 const ALARM_NAME = 'poll_actions';
@@ -436,17 +438,11 @@ function showNotification(title, message, url) {
  * @param {string} notificationId Notification identifier created by showNotification.
  */
 function handleNotificationClick(notificationId) {
-  if (notificationId.startsWith('notif|')) {
-    const firstPipe = notificationId.indexOf('|');
-    const lastPipe = notificationId.lastIndexOf('|');
-    if (firstPipe !== -1 && lastPipe > firstPipe) {
-      const url = notificationId.substring(firstPipe + 1, lastPipe);
-      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-        chrome.tabs.create({ url });
-      }
-    }
-    chrome.notifications.clear(notificationId);
+  const url = parseNotificationUrl(notificationId);
+  if (url) {
+    chrome.tabs.create({ url });
   }
+  chrome.notifications.clear(notificationId);
 }
 
 chrome.notifications.onClicked.addListener(handleNotificationClick);

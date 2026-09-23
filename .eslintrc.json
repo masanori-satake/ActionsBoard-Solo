@@ -2,7 +2,9 @@
   "env": {
     "browser": true,
     "es2021": true,
-    "webextensions": true
+    "webextensions": true,
+    "worker": true,
+    "serviceworker": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
@@ -11,5 +13,26 @@
   },
   "rules": {
     "no-console": "off"
-  }
+  },
+  "globals": {
+    "getWorkflowStatus": "readonly",
+    "shouldNotify": "readonly",
+    "parseNotificationUrl": "readonly",
+    "escapeHtml": "readonly"
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*.js"],
+      "env": {
+        "jest": true,
+        "node": true
+      }
+    },
+    {
+      "files": ["projects/app/utils.js"],
+      "env": {
+        "node": true
+      }
+    }
+  ]
 }

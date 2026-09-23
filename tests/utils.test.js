@@ -97,6 +97,7 @@ describe('parseNotificationUrl', () => {
   test('returns null for non-notif ID or invalid URL format', () => {
     expect(parseNotificationUrl('random-id')).toBeNull();
     expect(parseNotificationUrl('notif|javascript:alert(1)|1700000000')).toBeNull();
+    expect(parseNotificationUrl('notif|https://[invalid-url|1700000000')).toBeNull();
     expect(parseNotificationUrl(null)).toBeNull();
     expect(parseNotificationUrl(123)).toBeNull();
   });

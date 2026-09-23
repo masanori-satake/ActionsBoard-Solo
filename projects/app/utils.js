@@ -64,7 +64,14 @@ function parseNotificationUrl(notificationId) {
     if (firstPipe !== -1 && lastPipe > firstPipe) {
       const url = notificationId.substring(firstPipe + 1, lastPipe);
       if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-        return url;
+        try {
+          const parsed = new URL(url);
+          if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            return parsed.href;
+          }
+        } catch {
+          return null;
+        }
       }
     }
   }

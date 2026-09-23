@@ -1093,17 +1093,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const mergedAuth = (importedAuths || []).map((impAuth) => {
               let existingPat = '';
-              const ext = (existingAuth.authConfigs || []).find((e) => e.id === impAuth.id);
+              const ext = (existingAuth.authConfigs || []).find((e) => e?.id === impAuth?.id);
               if (ext && ext.pat) {
                 existingPat = ext.pat;
-              } else if (impAuth.id === 'default' && existingAuth.settings?.pat) {
+              } else if (impAuth?.id === 'default' && existingAuth.settings?.pat) {
                 existingPat = existingAuth.settings.pat;
               }
 
-              if (existingPat && !impAuth.pat) {
-                return { ...impAuth, pat: existingPat };
+              let baseUrl = DEFAULT_API_URL;
+              if (impAuth && typeof impAuth.baseUrl === 'string') {
+                try {
+                  const parsedUrl = new URL(impAuth.baseUrl);
+                  if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+                    baseUrl = impAuth.baseUrl;
+                  }
+                } catch {
+                  /* fallback to DEFAULT_API_URL */
+                }
               }
-              return impAuth;
+
+              const resultAuth = { ...impAuth, baseUrl };
+              if (existingPat && !impAuth.pat) {
+                resultAuth.pat = existingPat;
+              }
+              return resultAuth;
             });
 
             await chrome.storage.local.set({

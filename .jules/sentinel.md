@@ -28,3 +28,17 @@ API から取得した URL や設定された動的 URL へクレデンシャル
 
 - 区切り文字を用いた ID 文字列からのデータ抽出には `substring(firstPipe + 1, lastPipe)` などの安全な範囲抽出を使用する。
 - 外部設定の Base URL に対する検証関数では `try...catch` で保護したうえで `protocol === 'http:' || protocol === 'https:'` のチェックを標準化する。
+
+## 2026/09/23 - 設定ファイルインポート時のBaseURLスキーム検証と通知URL構文安全性
+
+**脆弱性:**
+
+1. 設定JSONインポート処理（`import-config`）において、インポートされた `authConfigs` 内の `baseUrl` に対するスキーム検証が行われておらず、非標準/危険なプロトコル（`javascript:` 等）や無効なURL文字列がストレージに保存されるリスクが存在した。
+2. `parseNotificationUrl` において、`new URL` による構文検証が行われておらず、構文エラーを含む不適切なHTTP URL文字列が `chrome.tabs.create` に渡された場合に未捕捉の例外が発生する潜在的リスクがあった。
+
+**学び:**
+UI上のフォーム入力値だけでなく、JSONファイル等の外部データインポート時にも一貫してプロトコルスキーム（`http:` / `https:`）と `new URL` による構造・構文バリデーションを適用する必要がある。
+
+**予防策:**
+
+- 設定インポート時には常に `new URL()` の `try...catch` と `protocol === 'http:' || protocol === 'https:'` チェックを適用し、不適切な場合は安全なデフォルト値へフォールバックさせる。

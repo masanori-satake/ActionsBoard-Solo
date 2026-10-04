@@ -370,5 +370,20 @@
   },
   "btnCancel": {
     "message": "Cancel"
+  },
+  "modalSoloTitle": {
+    "message": "Solo Series"
+  },
+  "soloCategoryProductivity": {
+    "message": "Productivity"
+  },
+  "soloCategoryMeeting": {
+    "message": "Meetings & Classes"
+  },
+  "soloCategoryDeveloper": {
+    "message": "For Developers"
+  },
+  "tooltipSoloSeries": {
+    "message": "Solo"
   }
 }

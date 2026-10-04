@@ -37,6 +37,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const msg = chrome.i18n.getMessage(el.dataset.i18nTooltip);
       if (msg) el.dataset.tooltip = msg;
     });
+    document.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+      const msg = chrome.i18n.getMessage(el.dataset.i18nAriaLabel);
+      if (msg) el.setAttribute('aria-label', msg);
+    });
   }
 
   applyI18n();

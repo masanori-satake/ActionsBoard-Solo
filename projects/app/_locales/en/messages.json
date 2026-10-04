@@ -371,6 +371,9 @@
   "btnCancel": {
     "message": "Cancel"
   },
+  "btnClose": {
+    "message": "Close"
+  },
   "modalSoloTitle": {
     "message": "Solo Series"
   },

@@ -371,6 +371,9 @@
   "btnCancel": {
     "message": "キャンセル"
   },
+  "btnClose": {
+    "message": "閉じる"
+  },
   "modalSoloTitle": {
     "message": "Soloシリーズ"
   },

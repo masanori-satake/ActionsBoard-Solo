@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     notifEventFailure: document.getElementById('notif-event-failure'),
     notifEventPages: document.getElementById('notif-event-pages'),
     versionDisplay: document.getElementById('version-display'),
+    soloBtn: document.getElementById('solo-btn'),
+    soloModal: document.getElementById('solo-modal'),
+    soloModalClose: document.getElementById('solo-modal-close'),
+    soloModalContent: document.getElementById('solo-modal-content'),
   };
 
   function applyI18n() {
@@ -32,6 +36,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('[data-i18n-tooltip]').forEach((el) => {
       const msg = chrome.i18n.getMessage(el.dataset.i18nTooltip);
       if (msg) el.dataset.tooltip = msg;
+    });
+    document.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+      const msg = chrome.i18n.getMessage(el.dataset.i18nAriaLabel);
+      if (msg) el.setAttribute('aria-label', msg);
     });
   }
 
@@ -1203,6 +1211,138 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   elements.notifEventFailure.onchange = onEventChange;
   elements.notifEventPages.onchange = onEventChange;
+
+  // --- Solo Modal Logic ---
+
+  const soloCategories = [
+    {
+      titleKey: 'soloCategoryProductivity',
+      items: [
+        {
+          name: 'QuickLog-Solo',
+          badge: '../assets/badges/solo/quicklog-solo.svg',
+          url: 'https://chromewebstore.google.com/detail/quicklog-solo-local-task/kllhfalcincleolgoepnailfjendigdh',
+        },
+        {
+          name: 'FlexPaste-Solo',
+          badge: '../assets/badges/solo/flexpaste-solo.svg',
+          url: 'https://chromewebstore.google.com/detail/flexpaste-solo-smart-clip/egmememialdjhohecnfkimpablkjfabg',
+        },
+        {
+          name: 'Replace-Solo',
+          badge: '../assets/badges/solo/replace-solo.svg',
+          url: 'https://chromewebstore.google.com/detail/replace-solo-microsoft-lo/iblfnonogpkajjfjfljngdaclhdinlfb',
+        },
+        {
+          name: 'TabMagnet-Solo',
+          badge: '../assets/badges/solo/tabmagnet-solo.svg',
+          url: 'https://chromewebstore.google.com/detail/tabmagnet-solo-smart-tab/lffgddghjafcjpfjdpknhfbonhnkdlmc',
+        },
+      ],
+    },
+    {
+      titleKey: 'soloCategoryMeeting',
+      items: [
+        {
+          name: 'OmniView-Solo',
+          badge: '../assets/badges/solo/omniview-solo.svg',
+          url: 'https://chromewebstore.google.com/detail/omniview-solo-whiteboard/jnkmbcicplfobgllfljekhlaofkdooam',
+        },
+      ],
+    },
+    {
+      titleKey: 'soloCategoryDeveloper',
+      items: [
+        {
+          name: 'Issues-Solo',
+          badge: '../assets/badges/solo/issues-solo.svg',
+          url: 'https://chromewebstore.google.com/detail/issues-solo-jira-issues-s/cehkajdhieihmoghbneckifpkoafmbco',
+        },
+        {
+          name: 'ActionsBoard-Solo',
+          badge: '../assets/badges/solo/actionsboard-solo.svg',
+          url: 'https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm',
+        },
+      ],
+    },
+  ];
+
+  function renderSoloModal() {
+    if (!elements.soloModalContent) return;
+    elements.soloModalContent.innerHTML = '';
+
+    soloCategories.forEach((cat, index) => {
+      const catDiv = document.createElement('div');
+      if (index < soloCategories.length - 1) {
+        catDiv.style.marginBottom = '28px';
+      }
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'md-sys-typescale-title-medium';
+      titleEl.style.fontWeight = 'bold';
+      titleEl.style.color = 'var(--md-sys-color-primary)';
+      titleEl.style.textAlign = 'left';
+      titleEl.style.marginBottom = '12px';
+      titleEl.style.borderBottom = '1px solid var(--md-sys-color-outline-variant)';
+      titleEl.style.paddingBottom = '4px';
+      titleEl.textContent = chrome.i18n.getMessage(cat.titleKey) || cat.titleKey;
+
+      const badgeContainer = document.createElement('div');
+      badgeContainer.style.display = 'flex';
+      badgeContainer.style.flexDirection = 'column';
+      badgeContainer.style.alignItems = 'center';
+      badgeContainer.style.gap = '10px';
+
+      cat.items.forEach((item) => {
+        const link = document.createElement('a');
+        link.href = item.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.style.display = 'inline-block';
+        link.style.lineHeight = '0';
+
+        const img = document.createElement('img');
+        img.src = item.badge;
+        img.alt = item.name;
+        img.style.cursor = 'pointer';
+        img.style.display = 'block';
+
+        link.appendChild(img);
+        badgeContainer.appendChild(link);
+      });
+
+      catDiv.appendChild(titleEl);
+      catDiv.appendChild(badgeContainer);
+      elements.soloModalContent.appendChild(catDiv);
+    });
+  }
+
+  if (elements.soloBtn && elements.soloModal) {
+    renderSoloModal();
+
+    elements.soloBtn.onclick = () => {
+      elements.soloModal.showModal();
+    };
+
+    if (elements.soloModalClose) {
+      elements.soloModalClose.onclick = () => {
+        elements.soloModal.close();
+      };
+    }
+
+    // Close when clicking outside modal content
+    elements.soloModal.onclick = (e) => {
+      const rect = elements.soloModal.getBoundingClientRect();
+      const isInDialog =
+        rect.top <= e.clientY &&
+        e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX &&
+        e.clientX <= rect.left + rect.width;
+      if (!isInDialog) {
+        elements.soloModal.close();
+      }
+    };
+  }
 
   // --- Utils ---
 

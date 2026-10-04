@@ -370,5 +370,23 @@
   },
   "btnCancel": {
     "message": "キャンセル"
+  },
+  "btnClose": {
+    "message": "閉じる"
+  },
+  "modalSoloTitle": {
+    "message": "Soloシリーズ"
+  },
+  "soloCategoryProductivity": {
+    "message": "作業効率化"
+  },
+  "soloCategoryMeeting": {
+    "message": "会議/授業支援"
+  },
+  "soloCategoryDeveloper": {
+    "message": "開発者向け"
+  },
+  "tooltipSoloSeries": {
+    "message": "Solo"
   }
 }

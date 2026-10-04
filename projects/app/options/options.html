@@ -245,11 +245,22 @@
           <h1 class="md-sys-typescale-headline-large" data-i18n="pageTitle">
             ActionsBoard-Solo Settings
           </h1>
-          <span
-            id="version-display"
-            class="md-sys-typescale-body-large"
-            style="color: var(--md-sys-color-on-surface-variant)"
-          ></span>
+          <div style="display: flex; align-items: center; gap: var(--md-sys-spacing-1)">
+            <button
+              id="solo-btn"
+              class="btn-icon-m3"
+              data-tooltip="Solo"
+              data-i18n-tooltip="tooltipSoloSeries"
+              data-tooltip-position="bottom"
+            >
+              <span class="material-symbols-outlined">extension</span>
+            </button>
+            <span
+              id="version-display"
+              class="md-sys-typescale-body-large"
+              style="color: var(--md-sys-color-on-surface-variant)"
+            ></span>
+          </div>
         </div>
       </header>
 
@@ -446,6 +457,51 @@
       >
         <button id="modal-cancel" class="btn-outline" data-i18n="btnCancel">Cancel</button>
         <button id="modal-save" class="btn-primary" data-i18n="btnSave">Save</button>
+      </div>
+    </dialog>
+
+    <!-- Modal for Solo Series Promotional Badges -->
+    <dialog
+      id="solo-modal"
+      aria-labelledby="solo-modal-title"
+      style="
+        border: none;
+        border-radius: var(--md-sys-shape-large);
+        padding: var(--md-sys-spacing-3);
+        background-color: var(--md-sys-color-surface-container-high);
+        box-shadow: var(--md-sys-elevation-3);
+        width: 420px;
+        max-width: 90vw;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: var(--md-sys-spacing-2);
+        "
+      >
+        <h3
+          id="solo-modal-title"
+          class="md-sys-typescale-title-large"
+          style="margin: 0"
+          data-i18n="modalSoloTitle"
+        >
+          Solo Series
+        </h3>
+        <button
+          id="solo-modal-close"
+          class="btn-icon-m3"
+          style="padding: 4px"
+          aria-label="Close"
+          data-i18n-aria-label="btnClose"
+        >
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div id="solo-modal-content">
+        <!-- Categories & badges rendered here dynamically -->
       </div>
     </dialog>
 

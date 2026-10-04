@@ -43,7 +43,7 @@
   --app-color-on-weekday-active: var(--md-sys-color-on-tertiary);
 
   /* --- Fonts --- */
-  --font-family: 'Roboto', 'Inter', 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
+  --font-family: 'Roboto', 'Inter', 'Noto Sans JP', sans-serif, 'Noto Color Emoji';
 
   /* --- Spacing --- */
   --md-sys-spacing-0: 0px;
@@ -169,6 +169,43 @@
   word-wrap: normal;
   direction: ltr;
   font-feature-settings: 'liga';
+}
+
+/* Typography Utility Classes */
+.md-sys-typescale-headline-large {
+  font-size: var(--md-sys-typescale-headline-large-size);
+  line-height: var(--md-sys-typescale-headline-large-line-height);
+  font-weight: var(--md-sys-typescale-headline-large-weight);
+}
+
+.md-sys-typescale-title-large {
+  font-size: var(--md-sys-typescale-title-large-size);
+  line-height: var(--md-sys-typescale-title-large-line-height);
+  font-weight: var(--md-sys-typescale-title-large-weight);
+}
+
+.md-sys-typescale-title-medium {
+  font-size: var(--md-sys-typescale-title-medium-size);
+  line-height: var(--md-sys-typescale-title-medium-line-height);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+}
+
+.md-sys-typescale-body-large {
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+  font-weight: var(--md-sys-typescale-body-large-weight);
+}
+
+.md-sys-typescale-label-large {
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line-height);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+}
+
+.md-sys-typescale-label-small {
+  font-size: var(--md-sys-typescale-label-small-size);
+  line-height: var(--md-sys-typescale-label-small-line-height);
+  font-weight: var(--md-sys-typescale-label-small-weight);
 }
 
 /* Custom Tooltip Support */

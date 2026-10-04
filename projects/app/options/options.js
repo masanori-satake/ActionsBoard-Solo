@@ -1263,6 +1263,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           badge: '../assets/badges/solo/actionsboard-solo.svg',
           url: 'https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm',
         },
+        {
+          name: 'MeetDock-Solo',
+          badge: '../assets/badges/solo/meetdock-solo.svg',
+          url: 'https://marketplace.visualstudio.com/items?itemName=masanori-satake.meetdock-solo',
+        },
       ],
     },
   ];

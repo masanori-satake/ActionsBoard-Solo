@@ -22,7 +22,7 @@ def main() -> int:
     failed = []
     for label, command in CHECKS:
         print(f"::group::{label}")
-        result = subprocess.run(command)
+        result = subprocess.run(command, check=False)
         print("::endgroup::")
         if result.returncode != 0:
             failed.append(label)

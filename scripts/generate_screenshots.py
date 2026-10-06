@@ -1,8 +1,9 @@
 import asyncio
-import os
 import json
-from playwright.async_api import async_playwright
+import os
+
 from PIL import Image, ImageDraw
+from playwright.async_api import async_playwright
 
 # Constants
 WIDTH = 1280
@@ -215,12 +216,18 @@ async def capture_screenshot(page, filename, width=WIDTH, height=HEIGHT):
 
     # Post-process to ensure 24-bit (remove alpha) and exact size
     with Image.open(filepath) as img:
-        img = img.convert("RGB")
-        if img.size != (width, height):
+        converted_img = img.convert("RGB")
+        if converted_img.size != (width, height):
             new_img = Image.new("RGB", (width, height), M3_BG_COLOR)
-            new_img.paste(img, ((width - img.width) // 2, (height - img.height) // 2))
-            img = new_img
-        img.save(filepath, "PNG")
+            new_img.paste(
+                converted_img,
+                (
+                    (width - converted_img.width) // 2,
+                    (height - converted_img.height) // 2,
+                ),
+            )
+            converted_img = new_img
+        converted_img.save(filepath, "PNG")
     print(f"Saved {filepath}")
 
 

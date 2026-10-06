@@ -1,7 +1,7 @@
 import json
-import sys
 import os
 import re
+import sys
 
 
 def check_version_consistency():
@@ -71,7 +71,7 @@ def check_version_consistency():
 
         print(f"\nAll versions are consistent: {package_version}")
         return True
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error: {e}", file=sys.stderr)
         return False
 

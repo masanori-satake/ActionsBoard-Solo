@@ -2,6 +2,9 @@
   "extName": {
     "message": "ActionsBoard-Solo - GitHub Actions の実行状況をリアルタイム監視"
   },
+  "extShortName": {
+    "message": "ActionsBoard"
+  },
   "extDescription": {
     "message": "全リポジトリの GitHub Actions ワークフローの成功・失敗ステータスを一覧ダッシュボード化。CI/CDの失敗にいち早く気づき、ビルド待ち時間を削減します。"
   },

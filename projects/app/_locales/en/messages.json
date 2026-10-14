@@ -2,6 +2,9 @@
   "extName": {
     "message": "ActionsBoard-Solo - GitHub Actions Monitor"
   },
+  "extShortName": {
+    "message": "ActionsBoard"
+  },
   "extDescription": {
     "message": "Track GitHub Actions CI/CD pipeline statuses across all your repositories in a unified dashboard. Catch build failures instantly."
   },

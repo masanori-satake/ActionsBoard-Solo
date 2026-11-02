@@ -6,7 +6,8 @@
     "test": "jest",
     "coverage": "jest --coverage --coverageReporters=json-summary lcov text",
     "version:check": "python3 scripts/check_version.py",
-    "screenshots": "python3 scripts/generate_screenshots.py"
+    "screenshots": "python3 scripts/generate_screenshots.py",
+    "update-version": "python3 scripts/update_version.py"
   },
   "author": "Masanori SATAKE",
   "license": "MIT",

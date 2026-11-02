@@ -74,7 +74,11 @@ JSON_TARGETS: list[JsonTarget] = [
 TEXT_TARGETS: list[TextTarget] = [
     # README のバージョンバッジ（例: https://img.shields.io/badge/version-1.2.3-blue）。
     # check_version.py の README の検出パターンと揃える
-    TextTarget("README.md", r"(img\.shields\.io/badge/version-)([0-9]+\.[0-9]+\.[0-9]+)(-)", required=True),
+    TextTarget(
+        "README.md",
+        r"(img\.shields\.io/badge/version-)([0-9]+\.[0-9]+\.[0-9]+)(-)",
+        required=True,
+    ),
 ]
 
 
@@ -88,12 +92,18 @@ def validate_version(raw: str) -> str:
         version = version[1:]
     match = SEMVER.match(version)
     if not match:
-        raise UpdateError(f'バージョンの形式が不正です: "{raw}"（X.Y.Z の ASCII 数字。例: 1.4.0）')
+        raise UpdateError(
+            f'バージョンの形式が不正です: "{raw}"（X.Y.Z の ASCII 数字。例: 1.4.0）'
+        )
     numbers = [int(n) for n in match.groups()]
     if any(n > CHROME_VERSION_MAX for n in numbers):
-        raise UpdateError(f"各数値は {CHROME_VERSION_MAX} 以下にしてください（Chrome の制約）: {version}")
+        raise UpdateError(
+            f"各数値は {CHROME_VERSION_MAX} 以下にしてください（Chrome の制約）: {version}"
+        )
     if all(n == 0 for n in numbers):
-        raise UpdateError(f"すべての数値が 0 のバージョンは使えません（Chrome の制約）: {version}")
+        raise UpdateError(
+            f"すべての数値が 0 のバージョンは使えません（Chrome の制約）: {version}"
+        )
     return version
 
 
@@ -124,15 +134,21 @@ def plan_json(target: JsonTarget, text: str, new_version: str) -> tuple[str, str
     # `"version": "<old>"` の最初の出現（package-lock.json は root と packages[""] の 2 か所）を置き換える。
     # `"manifest_version"` などは直前が `"` でないため一致しない
     pattern = re.compile(r'("version"\s*:\s*")' + re.escape(old) + r'(")')
-    updated, replaced = pattern.subn(lambda m: m.group(1) + new_version + m.group(2), text, count=count)
+    updated, replaced = pattern.subn(
+        lambda m: m.group(1) + new_version + m.group(2), text, count=count
+    )
     # 置き換え後の内容が「対象フィールドだけを変えた JSON」と完全に一致することを確認する
     if replaced != count or json.loads(updated) != expected:
-        raise UpdateError(f"{target.path} のバージョン表記を特定できませんでした（書式を確認してください）。")
+        raise UpdateError(
+            f"{target.path} のバージョン表記を特定できませんでした（書式を確認してください）。"
+        )
     return updated, old
 
 
 def plan_text(target: TextTarget, text: str, new_version: str) -> tuple[str, int]:
-    updated, count = re.subn(target.pattern, lambda m: m.group(1) + new_version + m.group(3), text)
+    updated, count = re.subn(
+        target.pattern, lambda m: m.group(1) + new_version + m.group(3), text
+    )
     return updated, count
 
 
@@ -149,7 +165,9 @@ def main(argv: list[str]) -> int:
         return 1
 
     # 1. すべての対象を読み込み、更新後の内容を作る（ここでは書き込まない）
-    contents: dict[str, str] = {}  # パス → 更新後の内容（同じファイルへの複数の対象を順に適用する）
+    contents: dict[
+        str, str
+    ] = {}  # パス → 更新後の内容（同じファイルへの複数の対象を順に適用する）
     originals: dict[str, str] = {}
     logs: list[str] = []
 
@@ -165,7 +183,9 @@ def main(argv: list[str]) -> int:
                 errors.append(f"必須ファイルが見つかりません: {target.path}")
             continue
         try:
-            contents[target.path], old = plan_json(target, load(target.path), new_version)
+            contents[target.path], old = plan_json(
+                target, load(target.path), new_version
+            )
             logs.append(f"Updated {target.path}: {old} -> {new_version}")
         except (OSError, ValueError, UpdateError) as e:
             errors.append(f"{target.path}: {e}")
@@ -176,7 +196,9 @@ def main(argv: list[str]) -> int:
                 errors.append(f"必須ファイルが見つかりません: {target.path}")
             continue
         try:
-            contents[target.path], count = plan_text(target, load(target.path), new_version)
+            contents[target.path], count = plan_text(
+                target, load(target.path), new_version
+            )
         except (OSError, UnicodeDecodeError) as e:
             errors.append(f"{target.path}: {e}")
             continue
@@ -206,7 +228,9 @@ def main(argv: list[str]) -> int:
     # 3. 整合性の検証（check_version.py があれば）
     if os.path.exists("scripts/check_version.py"):
         sys.stdout.flush()  # 子プロセスの出力より先に、更新結果のログを出す
-        return subprocess.run([sys.executable, "scripts/check_version.py"], check=False).returncode
+        return subprocess.run(
+            [sys.executable, "scripts/check_version.py"], check=False
+        ).returncode
     return 0
 
 

@@ -1268,6 +1268,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           badge: '../assets/badges/solo/meetdock-solo.svg',
           url: 'https://marketplace.visualstudio.com/items?itemName=masanori-satake.meetdock-solo',
         },
+        {
+          name: 'StructMap-Solo',
+          badge: '../assets/badges/solo/structmap-solo.svg',
+          url: 'https://marketplace.visualstudio.com/items?itemName=masanori-satake.structmap-solo',
+        },
       ],
     },
   ];

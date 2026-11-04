@@ -6,7 +6,7 @@
     "message": "ActionsBoard"
   },
   "extDescription": {
-    "message": "See all GitHub Actions runs in one dashboard. Spot CI failures across repos at a glance & jump to logs - your token stays local."
+    "message": "Track GitHub Actions runs in your registered workspaces from one dashboard. Spot CI failures at a glance & jump to logs."
   },
   "defaultAuthName": {
     "message": "Default"

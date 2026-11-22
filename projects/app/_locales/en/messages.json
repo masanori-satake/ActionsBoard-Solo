@@ -378,7 +378,7 @@
     "message": "Close"
   },
   "modalSoloTitle": {
-    "message": "Solo Series"
+    "message": "Solo/Duo Series"
   },
   "soloCategoryProductivity": {
     "message": "Productivity"
@@ -389,7 +389,10 @@
   "soloCategoryDeveloper": {
     "message": "For Developers"
   },
+  "soloCategoryEditor": {
+    "message": "Editor Extensions"
+  },
   "tooltipSoloSeries": {
-    "message": "Solo"
+    "message": "Solo/Duo"
   }
 }

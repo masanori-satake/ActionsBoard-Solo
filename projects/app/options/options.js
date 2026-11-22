@@ -1263,15 +1263,20 @@ document.addEventListener('DOMContentLoaded', async () => {
           badge: '../assets/badges/solo/actionsboard-solo.svg',
           url: 'https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm',
         },
+      ],
+    },
+    {
+      titleKey: 'soloCategoryEditor',
+      items: [
         {
-          name: 'MeetDock-Solo',
-          badge: '../assets/badges/solo/meetdock-solo.svg',
-          url: 'https://marketplace.visualstudio.com/items?itemName=masanori-satake.meetdock-solo',
+          name: 'VS Code Marketplace: masanori-satake',
+          badge: '../assets/badges/solo/vscode-marketplace-publisher.svg',
+          url: 'https://marketplace.visualstudio.com/publishers/masanori-satake',
         },
         {
-          name: 'StructMap-Solo',
-          badge: '../assets/badges/solo/structmap-solo.svg',
-          url: 'https://marketplace.visualstudio.com/items?itemName=masanori-satake.structmap-solo',
+          name: 'Open VSX Registry: masanori-satake',
+          badge: '../assets/badges/solo/open-vsx-publisher.svg',
+          url: 'https://open-vsx.org/namespace/masanori-satake',
         },
       ],
     },

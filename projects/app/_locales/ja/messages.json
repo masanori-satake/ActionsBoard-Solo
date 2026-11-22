@@ -378,7 +378,7 @@
     "message": "閉じる"
   },
   "modalSoloTitle": {
-    "message": "Soloシリーズ"
+    "message": "Solo/Duoシリーズ"
   },
   "soloCategoryProductivity": {
     "message": "作業効率化"
@@ -389,7 +389,10 @@
   "soloCategoryDeveloper": {
     "message": "開発者向け"
   },
+  "soloCategoryEditor": {
+    "message": "エディタ拡張"
+  },
   "tooltipSoloSeries": {
-    "message": "Solo"
+    "message": "Solo/Duo"
   }
 }

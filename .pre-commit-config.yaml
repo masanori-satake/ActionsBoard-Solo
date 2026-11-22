@@ -12,7 +12,16 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
+      - id: check-json
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: ['--fix=lf']
 
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.50.0
+    hooks:
+      - id: markdownlint
+        args: ['--config', '.markdownlint.json']
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.5
     hooks:
@@ -24,10 +33,10 @@ repos:
     rev: v10.15.0
     hooks:
       - id: eslint
-        files: \.[jt]sx?$
-        types: [file]
+        files: \.js$
         additional_dependencies:
-          - eslint@8.56.0
+          - eslint@9.19.0
+          - globals@15.15.0
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
     rev: v18.0.0

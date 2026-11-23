@@ -1220,22 +1220,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       items: [
         {
           name: 'QuickLog-Solo',
-          chromeUrl: 'https://chromewebstore.google.com/detail/quicklog-solo-local-task/kllhfalcincleolgoepnailfjendigdh',
-          edgeUrl: 'https://microsoftedge.microsoft.com/addons/detail/quicklogsolo-local-tas/lglkiddnadnnlkejdmpnfknmmkgklanb',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/quicklog-solo-local-task/kllhfalcincleolgoepnailfjendigdh',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/quicklogsolo-local-tas/lglkiddnadnnlkejdmpnfknmmkgklanb',
         },
         {
           name: 'FlexPaste-Solo',
-          chromeUrl: 'https://chromewebstore.google.com/detail/flexpaste-solo-smart-clip/egmememialdjhohecnfkimpablkjfabg',
-          edgeUrl: 'https://microsoftedge.microsoft.com/addons/detail/fdejlmadnlinkeedpfgagenllglmgmem',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/flexpaste-solo-smart-clip/egmememialdjhohecnfkimpablkjfabg',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/fdejlmadnlinkeedpfgagenllglmgmem',
         },
         {
           name: 'Replace-Solo',
-          chromeUrl: 'https://chromewebstore.google.com/detail/replace-solo-microsoft-lo/iblfnonogpkajjfjfljngdaclhdinlfb',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/replace-solo-microsoft-lo/iblfnonogpkajjfjfljngdaclhdinlfb',
           edgeReason: '審査中',
         },
         {
           name: 'TabMagnet-Solo',
-          chromeUrl: 'https://chromewebstore.google.com/detail/tabmagnet-solo-smart-tab/lffgddghjafcjpfjdpknhfbonhnkdlmc',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/tabmagnet-solo-smart-tab/lffgddghjafcjpfjdpknhfbonhnkdlmc',
           edgeReason: '審査中',
         },
       ],
@@ -1245,8 +1251,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       items: [
         {
           name: 'OmniView-Solo',
-          chromeUrl: 'https://chromewebstore.google.com/detail/omniview-solo-whiteboard/jnkmbcicplfobgllfljekhlaofkdooam',
-          edgeUrl: 'https://microsoftedge.microsoft.com/addons/detail/fplhoakelfblcamakgnjonebkiicifen',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/omniview-solo-whiteboard/jnkmbcicplfobgllfljekhlaofkdooam',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/fplhoakelfblcamakgnjonebkiicifen',
         },
       ],
     },
@@ -1255,12 +1263,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       items: [
         {
           name: 'Issues-Solo',
-          chromeUrl: 'https://chromewebstore.google.com/detail/issues-solo-jira-issues-s/cehkajdhieihmoghbneckifpkoafmbco',
-          edgeUrl: 'https://microsoftedge.microsoft.com/addons/detail/baedgadlmbiklkkcajkbhkkhadkjipji',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/issues-solo-jira-issues-s/cehkajdhieihmoghbneckifpkoafmbco',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/baedgadlmbiklkkcajkbhkkhadkjipji',
         },
         {
           name: 'ActionsBoard-Solo',
-          chromeUrl: 'https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm',
           edgeReason: '審査中',
         },
       ],
@@ -1281,7 +1292,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       ],
     },
   ];
-
 
   function createStoreIcon(storeName, iconSrc, url, reason, itemName) {
     const img = document.createElement('img');
@@ -1340,8 +1350,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         '../assets/badges/store/chrome-web-store.svg',
         item.chromeUrl,
         null,
-        item.name
-      )
+        item.name,
+      ),
     );
     icons.appendChild(
       createStoreIcon(
@@ -1349,8 +1359,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         '../assets/badges/store/edge-addons.svg',
         item.edgeUrl,
         item.edgeReason,
-        item.name
-      )
+        item.name,
+      ),
     );
 
     row.appendChild(nameEl);

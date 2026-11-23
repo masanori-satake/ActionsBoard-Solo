@@ -1220,23 +1220,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       items: [
         {
           name: 'QuickLog-Solo',
-          badge: '../assets/badges/solo/quicklog-solo.svg',
-          url: 'https://chromewebstore.google.com/detail/quicklog-solo-local-task/kllhfalcincleolgoepnailfjendigdh',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/quicklog-solo-local-task/kllhfalcincleolgoepnailfjendigdh',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/quicklogsolo-local-tas/lglkiddnadnnlkejdmpnfknmmkgklanb',
         },
         {
           name: 'FlexPaste-Solo',
-          badge: '../assets/badges/solo/flexpaste-solo.svg',
-          url: 'https://chromewebstore.google.com/detail/flexpaste-solo-smart-clip/egmememialdjhohecnfkimpablkjfabg',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/flexpaste-solo-smart-clip/egmememialdjhohecnfkimpablkjfabg',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/fdejlmadnlinkeedpfgagenllglmgmem',
         },
         {
           name: 'Replace-Solo',
-          badge: '../assets/badges/solo/replace-solo.svg',
-          url: 'https://chromewebstore.google.com/detail/replace-solo-microsoft-lo/iblfnonogpkajjfjfljngdaclhdinlfb',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/replace-solo-microsoft-lo/iblfnonogpkajjfjfljngdaclhdinlfb',
+          edgeReason: '審査中',
         },
         {
           name: 'TabMagnet-Solo',
-          badge: '../assets/badges/solo/tabmagnet-solo.svg',
-          url: 'https://chromewebstore.google.com/detail/tabmagnet-solo-smart-tab/lffgddghjafcjpfjdpknhfbonhnkdlmc',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/tabmagnet-solo-smart-tab/lffgddghjafcjpfjdpknhfbonhnkdlmc',
+          edgeReason: '審査中',
         },
       ],
     },
@@ -1245,8 +1251,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       items: [
         {
           name: 'OmniView-Solo',
-          badge: '../assets/badges/solo/omniview-solo.svg',
-          url: 'https://chromewebstore.google.com/detail/omniview-solo-whiteboard/jnkmbcicplfobgllfljekhlaofkdooam',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/omniview-solo-whiteboard/jnkmbcicplfobgllfljekhlaofkdooam',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/fplhoakelfblcamakgnjonebkiicifen',
         },
       ],
     },
@@ -1255,13 +1263,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       items: [
         {
           name: 'Issues-Solo',
-          badge: '../assets/badges/solo/issues-solo.svg',
-          url: 'https://chromewebstore.google.com/detail/issues-solo-jira-issues-s/cehkajdhieihmoghbneckifpkoafmbco',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/issues-solo-jira-issues-s/cehkajdhieihmoghbneckifpkoafmbco',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/baedgadlmbiklkkcajkbhkkhadkjipji',
         },
         {
           name: 'ActionsBoard-Solo',
-          badge: '../assets/badges/solo/actionsboard-solo.svg',
-          url: 'https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm',
+          chromeUrl:
+            'https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm',
+          edgeReason: '審査中',
         },
       ],
     },
@@ -1281,6 +1292,81 @@ document.addEventListener('DOMContentLoaded', async () => {
       ],
     },
   ];
+
+  function createStoreIcon(storeName, iconSrc, url, reason, itemName) {
+    const img = document.createElement('img');
+    img.src = iconSrc;
+    img.alt = storeName;
+    img.style.width = '22px';
+    img.style.height = '22px';
+    img.style.display = 'block';
+
+    if (url) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.title = storeName;
+      link.setAttribute('aria-label', `${itemName} - ${storeName}`);
+      link.style.display = 'inline-flex';
+      link.appendChild(img);
+      return link;
+    }
+
+    const span = document.createElement('span');
+    span.title = `${storeName}: ${reason}`;
+    span.setAttribute('aria-label', `${itemName} - ${storeName}: ${reason}`);
+    span.style.display = 'inline-flex';
+    span.style.cursor = 'default';
+    img.style.filter = 'grayscale(1)';
+    img.style.opacity = '0.35';
+    span.appendChild(img);
+    return span;
+  }
+
+  function createStoreRow(item) {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.justifyContent = 'space-between';
+    row.style.gap = '12px';
+    row.style.width = '100%';
+    row.style.maxWidth = '320px';
+    row.style.padding = '2px 0';
+    row.style.boxSizing = 'border-box';
+
+    const nameEl = document.createElement('span');
+    nameEl.textContent = item.name;
+    nameEl.style.fontSize = '13px';
+    nameEl.style.textAlign = 'left';
+
+    const icons = document.createElement('span');
+    icons.style.display = 'inline-flex';
+    icons.style.alignItems = 'center';
+    icons.style.gap = '10px';
+    icons.appendChild(
+      createStoreIcon(
+        'Chrome Web Store',
+        '../assets/badges/store/chrome-web-store.svg',
+        item.chromeUrl,
+        null,
+        item.name,
+      ),
+    );
+    icons.appendChild(
+      createStoreIcon(
+        'Microsoft Edge Add-ons',
+        '../assets/badges/store/edge-addons.svg',
+        item.edgeUrl,
+        item.edgeReason,
+        item.name,
+      ),
+    );
+
+    row.appendChild(nameEl);
+    row.appendChild(icons);
+    return row;
+  }
 
   function renderSoloModal() {
     if (!elements.soloModalContent) return;
@@ -1309,6 +1395,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       badgeContainer.style.gap = '10px';
 
       cat.items.forEach((item) => {
+        if (!item.badge) {
+          badgeContainer.appendChild(createStoreRow(item));
+          return;
+        }
+
         const link = document.createElement('a');
         link.href = item.url;
         link.target = '_blank';

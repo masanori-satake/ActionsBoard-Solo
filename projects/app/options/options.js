@@ -1279,7 +1279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
         {
           name: 'ServiceRoute-Solo',
-          chromeReason: '未公開',
+          chromeReason: 'storeReasonUnpublished',
           edgeUrl:
             'https://microsoftedge.microsoft.com/addons/detail/nbnjdnbmglineinhnjklmfgcnblbofoo',
         },
@@ -1322,9 +1322,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       return link;
     }
 
+    const localizedReason = chrome.i18n.getMessage(reason) || reason;
     const span = document.createElement('span');
-    span.title = `${storeName}: ${reason}`;
-    span.setAttribute('aria-label', `${itemName} - ${storeName}: ${reason}`);
+    span.title = `${storeName}: ${localizedReason}`;
+    span.setAttribute('aria-label', `${itemName} - ${storeName}: ${localizedReason}`);
+    img.alt = `${storeName}: ${localizedReason}`;
     span.style.display = 'inline-flex';
     span.style.cursor = 'default';
     img.style.filter = 'grayscale(1)';

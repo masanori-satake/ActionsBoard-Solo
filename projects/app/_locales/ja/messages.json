@@ -392,6 +392,9 @@
   "soloCategoryEditor": {
     "message": "エディタ拡張"
   },
+  "storeReasonUnpublished": {
+    "message": "未公開"
+  },
   "tooltipSoloSeries": {
     "message": "Solo/Duo"
   }

@@ -1236,13 +1236,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           name: 'Replace-Solo',
           chromeUrl:
             'https://chromewebstore.google.com/detail/replace-solo-microsoft-lo/iblfnonogpkajjfjfljngdaclhdinlfb',
-          edgeReason: '審査中',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/cklblnlcbhmahnpopfbdmpjaifbcdjeb',
         },
         {
           name: 'TabMagnet-Solo',
           chromeUrl:
             'https://chromewebstore.google.com/detail/tabmagnet-solo-smart-tab/lffgddghjafcjpfjdpknhfbonhnkdlmc',
-          edgeReason: '審査中',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/oglckeogobijbeemcboloibedlnofdgi',
         },
       ],
     },
@@ -1272,7 +1274,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           name: 'ActionsBoard-Solo',
           chromeUrl:
             'https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm',
-          edgeReason: '審査中',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/coipcfklopapiieokkgdopgnkboaekla',
+        },
+        {
+          name: 'ServiceRoute-Solo',
+          chromeReason: '未公開',
+          edgeUrl:
+            'https://microsoftedge.microsoft.com/addons/detail/nbnjdnbmglineinhnjklmfgcnblbofoo',
         },
       ],
     },
@@ -1349,7 +1358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         'Chrome Web Store',
         '../assets/badges/store/chrome-web-store.svg',
         item.chromeUrl,
-        null,
+        item.chromeReason,
         item.name,
       ),
     );

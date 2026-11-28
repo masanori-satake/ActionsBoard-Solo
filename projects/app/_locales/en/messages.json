@@ -392,6 +392,9 @@
   "soloCategoryEditor": {
     "message": "Editor Extensions"
   },
+  "storeReasonUnpublished": {
+    "message": "Unpublished"
+  },
   "tooltipSoloSeries": {
     "message": "Solo/Duo"
   }
